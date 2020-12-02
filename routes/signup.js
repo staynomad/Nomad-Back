@@ -4,7 +4,6 @@ const { getUserToken, passGenService } = require("../utils");
 const { check, body, validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
-const { baseURL } = require('../config')
 
 const router = express.Router();
 
@@ -69,7 +68,7 @@ router.post("/",
       userId: newUser._id
     }
     if (isHost) {
-      axios.post(`${baseURL}/accountVerification/sendVerificationEmail`, emailData, {
+      axios.post(`https://vhomes.herokuapp.com/accountVerification/sendVerificationEmail`, emailData, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
