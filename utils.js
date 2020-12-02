@@ -66,9 +66,23 @@ const passGenService = (password) => {
 
 const requireUserAuth = [bearerToken(), restoreUser];
 
+const getUserInfo = async (userId) => {
+  try {
+    const userFound = await User.findOne({_id: userId})
+    return ({
+      name: userFound.name,
+      email: userFound.email
+    });
+  }
+  catch(err) {
+    return null;
+  }
+}
+
 module.exports = {
   getUserToken,
   passGenService,
   requireUserAuth,
-  validatePassword
+  validatePassword,
+  getUserInfo
 };

@@ -1,13 +1,11 @@
-const axios = require('axios')
 const express = require("express");
 const router = express.Router();
 
 const Listing = require("../models/listing.model");
-const { requireUserAuth } = require("../utils");
+const { requireUserAuth, getUserInfo } = require("../utils");
 // const { check, validationResult } = require("express-validator");
 
 const nodemailer = require('nodemailer');
-const { baseURL } = require('../config')
 
 /* Add a listing */
 router.post("/createListing", requireUserAuth, async (req, res) => {
@@ -35,10 +33,10 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       userId: req.user._id,
     }).save();
 
+    const userInfo = getUserInfo(req.user._id)
+
     // Send confirmation email to host
-    axios.get(`${baseURL}/user/getUserInfo/${req.user._id}`)
-    .then((res) => {
-      const transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'vhomesgroup@gmail.com',
@@ -47,7 +45,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
     })
     const userMailOptions = {
       from: '"VHomes" <reservations@vhomesgroup.com>',
-      to: res.data.email,
+      to: userInfo.email,
       subject: `Thank you for listing on VHomes!`,
       text:
         `Your listing is live! Click the following link to view your listing page.
@@ -58,15 +56,14 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
           Your listing is live! Click the following link to view your listing page. <br>
           <a href="http://localhost:3000/listing/${newListing._id}">http://localhost:3000/listing/${newListing._id}</a>
          </p>`
+    }
+    transporter.sendMail(userMailOptions, (error, info) => {
+      if (error) {
+        console.log(error)
       }
-      transporter.sendMail(userMailOptions, (error, info) => {
-        if (error) {
-          console.log(error)
-        }
-        else {
-          console.log(`Create listing confirmation email sent to ${res.data.email}`)
-        }
-      })
+      else {
+        console.log(`Create listing confirmation email sent to ${userInfo.email}`)
+      }
     })
 
     // Need to talk about return values, validation, etc.
