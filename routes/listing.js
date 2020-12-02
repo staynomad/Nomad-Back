@@ -33,7 +33,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       userId: req.user._id,
     }).save();
 
-    const userInfo = getUserInfo(req.user._id)
+    const userInfo = await getUserInfo(req.user._id)
 
     // Send confirmation email to host
     const transporter = nodemailer.createTransport({
