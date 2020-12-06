@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router()
 const { body, validationResult } = require('express-validator');
 
-const User = require('../models/user');
+const Subscriber = require('../models/subscriber');
 
 router.post('/',
   body('email').isEmail(),
@@ -14,12 +14,12 @@ router.post('/',
         return res.status(422).json({ errors: `${req.body.email} is not a valid email address. Please try again.`});
       }
       const { email } = req.body;
-      const user = await User.findOne({ email });
-      if(user) {
+      const subscriber = await Subscriber.findOne({ email });
+      if(subscriber) {
         return res.status(422).json({ errors: `${email} has already been registered.`})
       }
-      // create a new user
-      const newUser = await new User({
+      // create a new subscriber
+      const newsubscriber = await new Subscriber({
         email,
       }).save()
       .then(
@@ -38,14 +38,14 @@ router.post('/',
 router.get('/',
   async (req, res) => {
     try {
-      const users = await User.find();
-      if (!users) {
-        res.status(400).json({"errors": "No users found."})
+      const subscribers = await Subscriber.find();
+      if (!subscribers) {
+        res.status(400).json({"errors": "No subscribers found."})
       }
       else {
         var data = []
-        for (let i = 0; i < users.length; i++) {
-          data.push(users[i].email)
+        for (let i = 0; i < subscribers.length; i++) {
+          data.push(subscribers[i].email)
         }
         res.status(200).json(data)
       }
