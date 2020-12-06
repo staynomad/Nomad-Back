@@ -37,7 +37,7 @@ app.use("/user", userRouter);
 app.use("/accountVerification", accountVerificationRouter);
 app.use("/photos", photosRouter);
 app.use("/reviews", reviewRouter);
-app.use("/subscrive", subscribeRouter);
+app.use("/subscribe", subscribeRouter);
 app.use("/contact", contactRouter);
 
 mongoose.connect(DATABASE_URI, {

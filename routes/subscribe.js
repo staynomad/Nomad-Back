@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router()
 const { body, validationResult } = require('express-validator');
 
-const Subscriber = require('../models/subscriber');
+const Subscriber = require('../models/subscriber.model');
 
 router.post('/',
   body('email').isEmail(),
