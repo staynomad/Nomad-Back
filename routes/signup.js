@@ -68,12 +68,23 @@ router.post("/",
       userId: newUser._id
     }
     if (isHost) {
-      axios.post(`https://vhomes.herokuapp.com/accountVerification/sendVerificationEmail`, emailData, {
+      await axios.post(`https://vhomes.herokuapp.com/accountVerification/sendVerificationEmail`, emailData, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       })
+      .catch((err) => {
+        console.log("Unable to send verification email to host.")
+      })
     }
+    // Add signed up user to Mailchimp subscription list
+    const subscriptionData = {
+      email: email
+    }
+    await axios.post('https://vhomes.herokuapp.com/subscribe', subscriptionData)
+    .catch((err) => {
+      console.log("Unable to add email to subscription list.")
+    })
     // we could send the 200 status code
     // but 201 indicates the resource is created
     res.status(201).json({
