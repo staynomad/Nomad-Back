@@ -25,6 +25,8 @@ router.post('/create-session', async (req, res) => {
 
       })
 
+      const address = `${listingDetails.location.street}, ${listingDetails.location.city}, ${listingDetails.location.state}, ${listingDetails.location.zipcode}`
+
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
@@ -32,7 +34,8 @@ router.post('/create-session', async (req, res) => {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: listingDetails.description + '\n' + listingDetails.location.city,
+                name:
+                `${listingDetails.description} - ${address}`,
                 images: [listingDetails.pictures[0]],
               },
               unit_amount: listingDetails.price * days * 100,
