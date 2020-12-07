@@ -17,9 +17,28 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       description,
       details,
       price,
-      rules,
       available,
     } = req.body;
+
+    const verifyData = {
+      title,
+      location,
+      pictures,
+      description,
+      details,
+      price,
+      available,
+    }
+
+    for (var key in verifyData) {
+      if (verifyData.hasOwnProperty(key)) {
+        if (verifyData[key] == null) {
+          return res.status(400).json({
+            error: `Entry for ${key} is invalid`
+          })
+        }
+      }
+    }
 
     const newListing = await new Listing({
       title,
@@ -28,7 +47,6 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       description,
       details,
       price,
-      rules,
       available,
       userId: req.user._id,
     }).save();
