@@ -121,7 +121,7 @@ router.post(
         }
       })
 
-      res.status(200).json({
+      res.status(201).json({
         "message": "Reservation created successfully"
       });
     }
@@ -401,17 +401,17 @@ router.get('/byId/:id', async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
     if (!reservation) {
-      res.status (404).json ({
+      res.status(404).json({
         errors: ['Reservation does not exist.'],
       });
     } else {
-      res.status (200).json ({
+      res.status(200).json({
         reservation,
       });
     }
   } catch (error) {
-    console.error (error);
-    res.status (500).json ({
+    console.error(error);
+    res.status(500).json({
       errors: ['Error occurred while getting reservations. Please try again!'],
     });
   }
