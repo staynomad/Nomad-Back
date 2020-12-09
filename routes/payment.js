@@ -12,12 +12,12 @@ const stripe = require('stripe')(stripeSecretKey);
 
 
 router.post('/create-session', async (req, res) => {
-    try{
-      const { listingId, days } = req.body
+  try {
+    const { listingId, days } = req.body
 
-      const listingDetails = await Listing.findOne({
-        '_id': listingId
-      })
+    const listingDetails = await Listing.findOne({
+      '_id': listingId
+    })
       .catch((err) => {
         return res.status(404).json({
           'error': 'Listing not Found'
@@ -25,41 +25,41 @@ router.post('/create-session', async (req, res) => {
 
       })
 
-      const address = `${listingDetails.location.street}, ${listingDetails.location.city}, ${listingDetails.location.state}, ${listingDetails.location.zipcode}`
+    const address = `${listingDetails.location.street}, ${listingDetails.location.city}, ${listingDetails.location.state}, ${listingDetails.location.zipcode}`
 
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name:
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name:
                 `${listingDetails.description} - ${address}`,
-                images: [listingDetails.pictures[0]],
-              },
-              unit_amount: listingDetails.price * days * 100,
+              images: [listingDetails.pictures[0]],
             },
-            quantity: 1,
+            unit_amount: listingDetails.price * days * 100,
           },
-        ],
+          quantity: 1,
+        },
+      ],
 
-        mode: 'payment',
-        success_url: `https://vhomesgroup.com/PaymentSuccess`,
-        cancel_url: `http://vhomesgroup.com/listing/${listingId}`,
-      });
-      res.status(200).json({
-        id: session.id ,
-        'output': listingDetails.price * days * 100
-      });
-    }
-    catch(error){
-      console.error(error);
-      res.status(500).json({
-        'error': 'invalid'
-      });
+      mode: 'payment',
+      success_url: `https://vhomesgroup.com/PaymentSuccess`,
+      cancel_url: `http://vhomesgroup.com/listing/${listingId}`,
+    });
+    res.status(201).json({
+      id: session.id,
+      'output': listingDetails.price * days * 100
+    });
+  }
+  catch (error) {
+    console.error(error);
+    res.status(500).json({
+      'error': 'invalid'
+    });
 
-    }
+  }
 });
 
 module.exports = router;
