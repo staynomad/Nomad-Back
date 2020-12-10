@@ -12,7 +12,7 @@ router.post(
   requireUserAuth,
   async (req, res) => {
     try {
-      const { user, listing, days } = req.body;
+      const { listing, days } = req.body;
       const listingInfo = await Listing.findOne({
         _id: listing
       })
@@ -22,17 +22,16 @@ router.post(
         })
       }
       // Parse string dates to new date objects
-      const availableStart = new Date(listingInfo.available[0])
-      const availableEnd = new Date(listingInfo.available[1])
-      const reservationStart = new Date(days[0])
-      const reservationEnd = new Date(days[1])
-      const totalDays = (reservationEnd - reservationStart) / (1000 * 3600 * 24) + 1
+      const availableStart = new Date(listingInfo.available[0]);
+      const availableEnd = new Date(listingInfo.available[1]);
+      const reservationStart = new Date(days[0]);
+      const reservationEnd = new Date(days[1]);
       // Verify that the booked dates and available dates do not conflict with reservation
       if (reservationStart.getTime() < availableStart.getTime() || reservationEnd.getTime() > availableEnd.getTime()) {
         return res.status(400).json({
           "errors": "Selected days are invalid. Please try again."
-        })
-      }
+        });
+      };
       for (let i = 0; i < listingInfo.booked.length; i++) {
         const bookedStart = new Date(listingInfo.booked[i].start)
         const bookedEnd = new Date(listingInfo.booked[i].end)
@@ -40,22 +39,58 @@ router.post(
           return res.status(400).json({
             "errors": "Selected days are invalid. Please try again."
           })
-        }
-      }
+        };
+      };
       // Create a new object in reservations collection and update 'booked' field in listing
       const newReservation = await new Reservation({
-        user,
+        user: req.user._id,
         listing,
-        active: true,
+        active: false,
         checkedIn: false,
         days
       }).save();
+      res.status(201).json({
+        "reservationId": newReservation._id,
+      });
+    }
+    catch (error) {
+      console.log(error);
+      res.status(500).json({
+        "errors":
+          ["Error creating reservation. Please try again!"]
+      });
+    }
+  }
+)
+
+// Activates a reservation -> call after payment
+router.put(
+  "/activateReservation",
+  requireUserAuth,
+  async (req, res) => {
+    try {
+      const { listingId, reservationId } = req.body;
+      const reservationInfo = await Reservation.findOneAndUpdate({ _id: reservationId }, { $set: { active: true } });
+      if (!reservationInfo) return res.status(404).json({
+        "errors": "Reservation could not be found.  Please contact us immediately."
+      });
+
+      const { days } = reservationInfo;
       const bookedInfo = {
         start: days[0],
         end: days[1],
-        reservationId: newReservation._id
-      }
-      const bookedListing = await Listing.findOneAndUpdate({ _id: listing }, { $push: { booked: bookedInfo } })
+        reservationId: reservationInfo._id
+      };
+      const bookedListing = await Listing.findOneAndUpdate({ _id: listingId }, { $push: { booked: bookedInfo } });
+      if (!bookedListing) {
+        return res.status(404).json({
+          "errors": "Listing could not be found.  Please contact us immediately."
+        })
+      };
+
+      const reservationStart = new Date(days[0])
+      const reservationEnd = new Date(days[1])
+      const totalDays = (reservationEnd - reservationStart) / (1000 * 3600 * 24) + 1
 
       // Create nodemailer transport to send reservation confirmation emails
       const transporter = nodemailer.createTransport({
@@ -67,7 +102,7 @@ router.post(
       })
 
       const hostInfo = await getUserInfo(bookedListing.userId)
-      const guestInfo = await getUserInfo(req.body.user)
+      const guestInfo = await getUserInfo(req.user)
 
       // Send confirmation email to guest
       const userMailOptions = {
@@ -78,10 +113,10 @@ router.post(
           `Thank you for booking with VHomes! Here's your reservation information:
 
               ${bookedListing.title}
-              Reservation number: ${newReservation._id}
+              Reservation number: ${reservationInfo._id}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
               Total cost: $${bookedListing.price * totalDays}
-              Days: ${newReservation.days[0]} to ${newReservation.days[1]}
+              Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Host name: ${hostInfo.name}
 
           When you arrive at the property, make sure to checkin via the VHomes website in order to alert the host that you have arrived. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}. To cancel your reservation, please contact us at reservations@vhomesgroup.com. Hope you enjoy your stay!`
@@ -104,10 +139,10 @@ router.post(
           `Thank you for listing on VHomes! Here's the information regarding your listing reservation:
 
               ${bookedListing.title}
-              Reservation number: ${newReservation._id}
+              Reservation number: ${reservationInfo._id}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
               Total cost: $${bookedListing.price * totalDays}
-              Days: ${newReservation.days[0]} to ${newReservation.days[1]}
+              Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Guest name: ${guestInfo.name}
 
           We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}. To cancel this reservation, please contact us at reservations@vhomesgroup.com. Thank you for choosing VHomes!`
@@ -121,9 +156,7 @@ router.post(
         }
       })
 
-      res.status(201).json({
-        "message": "Reservation created successfully"
-      });
+      res.status(200).json({});
     }
     catch (error) {
       console.log(error);
@@ -131,9 +164,9 @@ router.post(
         "errors":
           ["Error creating reservation. Please try again!"]
       });
-    }
+    };
   }
-)
+);
 
 // Get all reservations by userId
 router.get(
