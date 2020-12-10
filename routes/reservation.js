@@ -27,7 +27,7 @@ router.post(
       const reservationStart = new Date(days[0]);
       const reservationEnd = new Date(days[1]);
       // Verify that the booked dates and available dates do not conflict with reservation
-      if (reservationStart.getTime() < availableStart.getTime() || reservationEnd.getTime() > availableEnd.getTime()) {
+      if (reservationStart.getDate() < availableStart.getDate() || reservationEnd.getDate() > availableEnd.getDate()) {
         return res.status(400).json({
           "errors": "Selected days are invalid. Please try again."
         });
@@ -35,7 +35,7 @@ router.post(
       for (let i = 0; i < listingInfo.booked.length; i++) {
         const bookedStart = new Date(listingInfo.booked[i].start)
         const bookedEnd = new Date(listingInfo.booked[i].end)
-        if ((reservationStart.getTime() >= bookedStart.getTime() && reservationStart.getTime() <= bookedEnd.getTime()) || (reservationEnd.getTime() >= bookedStart.getTime() && reservationEnd.getTime() <= bookedEnd.getTime())) {
+        if ((reservationStart.getDate() >= bookedStart.getDate() && reservationStart.getDate() <= bookedEnd.getDate()) || (reservationEnd.getDate() >= bookedStart.getDate() && reservationEnd.getDate() <= bookedEnd.getDate())) {
           return res.status(400).json({
             "errors": "Selected days are invalid. Please try again."
           })
