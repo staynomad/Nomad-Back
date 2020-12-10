@@ -72,7 +72,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       html:
         `<p>
           Your listing is live! Click the following link to view your listing page. <br>
-          <a href="https://vhomesgroup.com/${newListing._id}">http://localhost:3000/listing/${newListing._id}</a>
+          <a href="https://vhomesgroup.com/${newListing._id}">https://vhomesgroup.com/${newListing._id}</a>
          </p>`
     }
     transporter.sendMail(userMailOptions, (error, info) => {
