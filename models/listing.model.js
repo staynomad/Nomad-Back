@@ -50,6 +50,10 @@ const ListingSchema = new Schema({
     type: Array,
     default: null,
   },
+  calendarURL: {
+    type: String,
+    default: null,
+  }
 });
 
 const Listing = mongoose.model("listing", ListingSchema);
