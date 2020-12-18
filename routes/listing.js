@@ -18,6 +18,8 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       details,
       price,
       available,
+      booked,
+      calendarURL
     } = req.body;
 
     const verifyData = {
@@ -32,7 +34,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
 
     for (var key in verifyData) {
       if (verifyData.hasOwnProperty(key)) {
-        if (verifyData[key] == null) {
+        if (!verifyData[key]) {
           return res.status(400).json({
             error: `Entry for ${key} is invalid`
           })
@@ -48,6 +50,8 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       details,
       price,
       available,
+      booked,
+      calendarURL,
       userId: req.user._id,
     }).save();
 
