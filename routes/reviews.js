@@ -14,25 +14,24 @@ router.post(
       // Rating is an integer ranging from 1-5
       // Review is the message posted by the user
       const { rating, review } = req.body
-      const { listingId } = req.params.listingId
-      const userIdAsObjectId = mongoose.Types.objectId(req.user._id)
-      const ratingData = {
-        userIdAsObjectId: {
-          stars: parseInt(rating),
-          review: review
-        }
+      const ratingData = {}
+      ratingData[mongoose.Types.ObjectId(String(req.user._id))] = {
+        stars: parseInt(rating),
+        review: review
       }
       // Check here to see if user has already submitted review for specific listing
-      const listingCheck = await Listing.findOne({ _id: listingId })
-      const reviewUsers = Object.keys(listingCheck.rating)
-      for (let i = 0; i < reviewUsers.length; i++) {
-        if (String(req.user._id) === String(reviewUsers[i])) {
-          return res.status(400).json({
-            "errors": "You have already reviewed this listing."
-          })
+      const listingCheck = await Listing.findById(req.params.listingId)
+      if (listingCheck.rating !== null) {
+        const reviewUsers = Object.keys(listingCheck.rating)
+        for (let i = 0; i < reviewUsers.length; i++) {
+          if (String(req.user._id) === String(reviewUsers[i])) {
+            return res.status(400).json({
+              "errors": "You have already reviewed this listing."
+            })
+          }
         }
       }
-      const listing = await Listing.findOneAndUpdate({ _id: listingId }, { $set: { rating: ratingData } }, { new: true })
+      const listing = await Listing.findOneAndUpdate({ _id: req.params.listingId }, { $set: { rating: ratingData } }, { new: true })
       if (!listing) {
         return res.status(400).json({
           "errors": "Listing does not exist. Please try again."
