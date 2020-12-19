@@ -44,7 +44,7 @@ router.post(
     catch (error) {
       console.log(error);
       res.status(500).json({
-        "errors": ["Error submitting review. Please try again!"]
+        "errors": "Error submitting review. Please try again!"
       });
     }
   }
