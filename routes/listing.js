@@ -49,6 +49,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       description,
       details,
       price,
+      tax: price + (price * 0), // update this later to reflect the right tax
       available,
       booked,
       calendarURL,
