@@ -12,8 +12,8 @@ const router = express.Router();
 /* POST users listing. */
 router.post("/",
 [
-  check('email', "the email address is not a valid email address").isEmail(),
-  check('name', "Name should be atleast 3 characters").isLength({ min: 3}),
+  check('email', "Invalid email address").isEmail(),
+  check('name', "Name should be at least 3 characters").isLength({ min: 3}), // might want to consider removing this, user's name could be 1 or 2 characters
   body('check')
   .custom((value, { req }) => {
     if (value !== req.body.password) {
@@ -24,11 +24,11 @@ router.post("/",
     }
   }),
   check('password')
-  .isLength({ min: 8 }).withMessage('Password must be of at least 8 characters')
-  .matches(/\d/).withMessage('Password must atleast contain a number')
-  .matches(/[A-Z]/).withMessage('Password must at least contain an uppercase character')
-  .matches(/[a-z]/).withMessage('Password must at least contain a lowercase character')
-  .matches(/^[a-zA-Z0-9!@#$%^&*)(+=._-]+$/).withMessage('Password must at least contain one special character')
+  .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+  .matches(/\d/).withMessage('Password must contain a number')
+  .matches(/[A-Z]/).withMessage('Password must contain an uppercase character')
+  .matches(/[a-z]/).withMessage('Password must contain a lowercase character')
+  .matches(/^[a-zA-Z0-9!@#$%^&*)(+=._-]+$/).withMessage('Password must contain one special character')
 ]
 , async (req, res) => {
   try {
@@ -38,7 +38,7 @@ router.post("/",
     const errors = validationResult(req);
     if(!errors.isEmpty()) {
       // map errors
-      const errorMessages = errors.array().map((x) => x.msg);
+      const errorMessages = errors.array().map(x => [x.param, x.msg]);
       return res.status(422).json({ errors: errorMessages});
     }
     const { name, email, password, isHost } = req.body;
