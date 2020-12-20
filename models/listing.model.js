@@ -26,6 +26,10 @@ const ListingSchema = new Schema({
     type: Number,
     required: true,
   },
+  tax: {
+    type: Number,
+    default: null,
+  },
   available: {
     type: Array,
     required: false,
