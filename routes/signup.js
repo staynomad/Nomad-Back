@@ -32,9 +32,8 @@ router.post("/", [
       // why 422 status code? -> https://www.bennadel.com/blog/2434-http-status-codes-for-invalid-data-400-vs-422.htm
       const errors = validationResult(req)
       if (!errors.isEmpty()) {
-        // map errors
-        const errorMessages = errors.array().map(x => [x.param, x.msg])
-        return res.status(422).json({ errors: errorMessages })
+        const errorArr = errors.array()
+        return res.status(422).json(errorArr)
       }
       const { name, email, password, isHost } = req.body
       const user = await User.findOne({ email })
