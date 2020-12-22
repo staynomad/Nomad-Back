@@ -30,16 +30,21 @@ router.post("/", [
     try {
       // data validation
       // why 422 status code? -> https://www.bennadel.com/blog/2434-http-status-codes-for-invalid-data-400-vs-422.htm
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        const errorArr = errors.array()
-        return res.status(422).json(errorArr)
-      }
+      let errors = validationResult(req).array()
       const { name, email, password, isHost } = req.body
       const user = await User.findOne({ email })
       if (user) {
-        return res.status(422).json({ errors: [`User already exists with email ${email}`] })
+        const emailError = {
+          value: email,
+          msg: `User already exists with email ${email}`,
+          param: 'email',
+          location: 'body'
+        }
+        errors.push(emailError)
       }
+      console.log(errors)
+      if (errors.length !== 0) return res.status(422).json(errors)
+
       // encrypt the password
       const encrypted_password = await passGenService(password)
       // create a new user
