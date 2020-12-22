@@ -42,7 +42,6 @@ router.post("/", [
         }
         errors.push(emailError)
       }
-      console.log(errors)
       if (errors.length !== 0) return res.status(422).json(errors)
 
       // encrypt the password
