@@ -5,7 +5,7 @@
   "scripts": {
     "start": "per-env",
     "start:development": "nodemon -r dotenv/config ./bin/www.js",
-    "start:production": "npm install && ./bin/www.js"
+    "start:production": "./bin/www.js"
   },
   "dependencies": {
     "aws-sdk": "^2.797.0",
