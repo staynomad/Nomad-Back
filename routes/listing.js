@@ -248,7 +248,7 @@ router.get("/byId/:id", async (req, res) => {
 router.post("/search", async (req, res) => {
   const { itemToSearch } = req.body;
   try {
-    let decodedItemToSearch = decodeURI(itemToSearch);
+    let decodedItemToSearch = decodeURI(itemToSearch).toLowerCase();
     const listings = await Listing.find({});
     const filteredListings = listings.filter((listing) => {
       const { street, city, zipcode, state } = listing.location;
