@@ -302,10 +302,40 @@ router.delete("/delete/:listingId", requireUserAuth, async (req, res) => {
     console.error(error);
     res.status(500).json({
       errors: [
-        "Error occurred while attempting to remove listing. Please try again!",
+        "Error occurred while attempting to remove listing. Please try again.",
       ],
     });
   }
 });
+
+router.put("/syncListing/:listingId", async (req, res) => {
+  try {
+    const { available, booked } = req.body
+    var update = {
+      $set: { available: available }
+    }
+    if (booked) {
+      update = {
+        $set: { available: available },
+        $push : { booked: booked }
+      }
+    }
+    const listing = await Listing.findOneAndUpdate({ _id: req.params.listingId }, update)
+    if (!listing) {
+      return res.status(400).json({
+        error: "Listing does not exist. Please try again."
+      })
+    }
+    return res.status(200).json({
+      message: "Successfully updated listing availability"
+    })
+  }
+  catch (error) {
+    console.error(error)
+    res.status(500).json({
+      error: "Error occurred while attempting to sync listing. Please try again.",
+    });
+  }
+})
 
 module.exports = router;
