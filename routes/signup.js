@@ -67,7 +67,7 @@ router.post("/", [
       }
       if (isHost) {
         await axios
-          .post(`https://vhomes.herokuapp.com/accountVerification/sendVerificationEmail`, emailData, {
+          .post(`https://nvestup.com/accountVerification/sendVerificationEmail`, emailData, {
             headers: {
               "Authorization": `Bearer ${token}`
             }
@@ -79,7 +79,7 @@ router.post("/", [
         email: email
       }
       await axios
-        .post('https://vhomes.herokuapp.com/subscribe', subscriptionData)
+        .post('https://nvestup.com/subscribe', subscriptionData)
         .catch(e => console.log("Unable to add email to subscription list."))
       // we could send the 200 status code
       // but 201 indicates the resource is created
