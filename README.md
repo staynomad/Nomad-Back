@@ -4,4 +4,4 @@
 3. To start the server, run `nodemon -r dotenv/config ./bin/www.js`
 
 ## Deployment
-https://medium.com/@xoor/deploying-a-node-js-app-to-aws-elastic-beanstalk-681fa88bac53
+`eb deploy`
