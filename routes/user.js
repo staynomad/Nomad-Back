@@ -21,11 +21,7 @@ router.get ('/getUserInfo/:userId', async (req, res) => {
         description: userFound.description,
       });
     } else {
-      res.status (200).json ({
-        name: userFound.name,
-        email: userFound.email,
-        password: userFound.password,
-      });
+      res.status (200).json (userFound);
     }
   } catch (error) {
     console.log (error);
@@ -63,13 +59,35 @@ router.post (
 
 router.post ('/setUserInfo/:userId', async (req, res) => {
   try {
+    let userFound = await User.findOne(
+      {_id: req.params.userId}
+    )
+    if (userFound.email === req.body.email) {
+      return res.status (406).json ({
+        error: 'Same as previous email.',
+      });
+    }
+    if (req.body.email && User.findOne(req.body.email)) {
+      return res.status (400).json ({
+        error: 'Email already taken. Please try again.',
+      });
+    }
+    userFound = 
     await User.findOneAndUpdate (
       {_id: req.params.userId},
       {$set: req.body},
       {strict: false}
     );
+    res.status (200).json ({
+      name: userFound.name,
+      email: userFound.email,
+      description: userFound.description
+    });
   } catch (e) {
     console.log ('there was an error in your post request...');
+    res.status (500).json ({
+      error: 'There was an error updating your info.',
+    });
   }
 });
 
