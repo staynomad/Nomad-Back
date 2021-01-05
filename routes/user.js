@@ -62,15 +62,13 @@ router.post ('/setUserInfo/:userId', async (req, res) => {
     let userFound = await User.findOne(
       {_id: req.params.userId}
     )
-    if (userFound.email === req.body.email) {
-      return res.status (406).json ({
-        error: 'Same as previous email.',
-      });
-    }
+
     if (req.body.email && User.findOne(req.body.email)) {
-      return res.status (400).json ({
-        error: 'Email already taken. Please try again.',
-      });
+      if (userFound.email !== req.body.email) {
+        return res.status (400).json ({
+          error: 'Email already taken. Please try again.', // assure that it is not the same email
+        });
+      }
     }
     userFound = 
     await User.findOneAndUpdate (
