@@ -9,7 +9,7 @@ const { jwtConfig } = require('./config');
 const { secret, expiresIn } = jwtConfig;
 
 const getUserToken = user => {
-  return jwt.sign( { data: { id : user.id }},
+  return jwt.sign({ data: { id: user.id } },
     secret,
     { expiresIn: parseInt(expiresIn, 10) }
   );
@@ -19,28 +19,29 @@ const restoreUser = (req, res, next) => {
   const { token } = req;
 
   return jwt.verify(token, secret, null, async (err, jwtPayload) => {
-      if (err) {
-          const customErr = new Error('Failed to verify token: missing or invalid.');
-          customErr.name = 'JWT Error';
-          customErr.status = 401;
-          return next(customErr);
-      }
+    if (err) {
+      const customErr = new Error('Failed to verify token: missing or invalid.');
+      customErr.name = 'JWT Error';
+      customErr.status = 401;
+      customErr.title = 'JWT Error';
+      return next(customErr);
+    }
 
-      const { id } = jwtPayload.data;
+    const { id } = jwtPayload.data;
 
-      try {
-          req.user = await User.findById(id);
-      } catch (e) {
-          return next(e);
-      }
+    try {
+      req.user = await User.findById(id);
+    } catch (e) {
+      return next(e);
+    }
 
-      if (!req.user) {
-          return res.set("WWW-Authenticate", "Bearer")
-              .status(401)
-              .end();
-      }
+    if (!req.user) {
+      return res.set("WWW-Authenticate", "Bearer")
+        .status(401)
+        .end();
+    }
 
-      return next();
+    return next();
   });
 };
 
@@ -68,13 +69,13 @@ const requireUserAuth = [bearerToken(), restoreUser];
 
 const getUserInfo = async (userId) => {
   try {
-    const userFound = await User.findOne({_id: userId})
+    const userFound = await User.findOne({ _id: userId })
     return ({
       name: userFound.name,
       email: userFound.email
     });
   }
-  catch(err) {
+  catch (err) {
     return null;
   }
 }
