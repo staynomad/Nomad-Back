@@ -76,10 +76,10 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       subject: `Thank you for listing on VHomes!`,
       text: `Your listing is live! Click the following link to view your listing page.
 
-         https://vhomesgroup.com/${newListing._id}`,
+         https://vhomesgroup.com/listing/${newListing._id}`,
       html: `<p>
           Your listing is live! Click the following link to view your listing page. <br>
-          <a href="https://vhomesgroup.com/${newListing._id}">https://vhomesgroup.com/${newListing._id}</a>
+          <a href="https://vhomesgroup.com/listing/${newListing._id}">https://vhomesgroup.com/listing/${newListing._id}</a>
          </p>`,
     };
     transporter.sendMail(userMailOptions, (error, info) => {
