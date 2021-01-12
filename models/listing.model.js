@@ -45,7 +45,7 @@ const ListingSchema = new Schema({
   },
   booked: {
     type: Array,
-    default: null
+    default: null,
   },
   rating: {
     type: Object,
@@ -58,7 +58,11 @@ const ListingSchema = new Schema({
   calendarURL: {
     type: String,
     default: null,
-  }
+  },
+  amenities: {
+    type: Array,
+    default: null,
+  },
 });
 
 const Listing = mongoose.model("listing", ListingSchema);
