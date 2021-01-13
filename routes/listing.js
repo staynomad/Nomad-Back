@@ -311,13 +311,14 @@ router.delete("/delete/:listingId", requireUserAuth, async (req, res) => {
 
 router.put("/syncListing/:listingId", async (req, res) => {
   try {
-    const { available, booked } = req.body;
+    const { /*available,*/ booked } = req.body;
     var update = {
-      $set: { available: available },
+      // $set: { available: available },
     };
     if (booked) {
       update = {
-        $set: { available: available },
+        // $set: { available: available },
+        // ^ will not work because calendar ics URL deletes dates past present day
         $push: { booked: booked },
       };
     }
