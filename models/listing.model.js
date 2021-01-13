@@ -61,7 +61,7 @@ const ListingSchema = new Schema({
   },
   amenities: {
     type: Array,
-    default: null,
+    default: [],
   },
 });
 
