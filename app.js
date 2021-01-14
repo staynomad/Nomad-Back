@@ -19,7 +19,7 @@ const photosRouter = require("./routes/photos");
 const reviewRouter = require("./routes/reviews")
 const subscribeRouter = require("./routes/subscribe")
 const contactRouter = require("./routes/contact")
-
+const googleLoginRouter = require("./routes/googleLogin")
 
 const app = express();
 app.use(bodyParser.json());
@@ -39,6 +39,7 @@ app.use("/photos", photosRouter);
 app.use("/reviews", reviewRouter);
 app.use("/subscribe", subscribeRouter);
 app.use("/contact", contactRouter);
+app.use("/googleLogin", googleLoginRouter)
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,

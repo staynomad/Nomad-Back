@@ -1,0 +1,10 @@
+# test login credentials:
+# email: test@test.com
+# password: TestPassword123$
+
+POST http://localhost:8080/googleLogin
+Content-Type: application/json
+
+{
+    
+}
