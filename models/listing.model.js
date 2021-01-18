@@ -45,7 +45,7 @@ const ListingSchema = new Schema({
   },
   booked: {
     type: Array,
-    default: null,
+    default: [],
   },
   rating: {
     type: Object,
