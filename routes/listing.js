@@ -317,7 +317,7 @@ router.put("/syncListing/:listingId", async (req, res) => {
     if (booked) {
       update = {
         $set: { available: available },
-        $push : { booked: booked }
+        $push: { booked: booked }
       }
     }
     const listing = await Listing.findOneAndUpdate({ _id: req.params.listingId }, update)
