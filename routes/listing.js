@@ -5,7 +5,7 @@ const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
 // const { check, validationResult } = require("express-validator");
 
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 /* Add a listing */
 router.post("/createListing", requireUserAuth, async (req, res) => {
@@ -20,7 +20,8 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       tax,
       available,
       booked,
-      calendarURL
+      calendarURL,
+      amenities,
     } = req.body;
 
     const verifyData = {
@@ -32,14 +33,14 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       price,
       tax,
       available,
-    }
+    };
 
     for (var key in verifyData) {
       if (verifyData.hasOwnProperty(key)) {
         if (!verifyData[key]) {
           return res.status(400).json({
-            error: `Entry for ${key} is invalid`
-          })
+            error: `Entry for ${key} is invalid`,
+          });
         }
       }
     }
@@ -55,41 +56,41 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       available,
       booked,
       calendarURL,
+      amenities,
       userId: req.user._id,
     }).save();
 
-    const userInfo = await getUserInfo(req.user._id)
+    const userInfo = await getUserInfo(req.user._id);
 
     // Send confirmation email to host
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        user: 'vhomesgroup@gmail.com',
-        pass: 'yowguokryuzjmbhj'
-      }
-    })
+        user: "vhomesgroup@gmail.com",
+        pass: "yowguokryuzjmbhj",
+      },
+    });
     const userMailOptions = {
       from: '"VHomes" <reservations@vhomesgroup.com>',
       to: userInfo.email,
       subject: `Thank you for listing on VHomes!`,
-      text:
-        `Your listing is live! Click the following link to view your listing page.
+      text: `Your listing is live! Click the following link to view your listing page.
 
-         https://vhomesgroup.com/${newListing._id}`,
-      html:
-        `<p>
+         https://vhomesgroup.com/listing/${newListing._id}`,
+      html: `<p>
           Your listing is live! Click the following link to view your listing page. <br>
-          <a href="https://vhomesgroup.com/${newListing._id}">https://vhomesgroup.com/${newListing._id}</a>
-         </p>`
-    }
+          <a href="https://vhomesgroup.com/listing/${newListing._id}">https://vhomesgroup.com/listing/${newListing._id}</a>
+         </p>`,
+    };
     transporter.sendMail(userMailOptions, (error, info) => {
       if (error) {
-        console.log(error)
+        console.log(error);
+      } else {
+        console.log(
+          `Create listing confirmation email sent to ${userInfo.email}`
+        );
       }
-      else {
-        console.log(`Create listing confirmation email sent to ${userInfo.email}`)
-      }
-    })
+    });
 
     // Need to talk about return values, validation, etc.
     res.status(201).json({
@@ -310,32 +311,61 @@ router.delete("/delete/:listingId", requireUserAuth, async (req, res) => {
 
 router.put("/syncListing/:listingId", async (req, res) => {
   try {
-    const { available, booked } = req.body
-    var update = {
-      $set: { available: available }
-    }
-    if (booked) {
-      update = {
-        $set: { available: available },
-        $push: { booked: booked }
+    let { booked } = req.body;
+    let prevListings = await Listing.findOne({ _id: req.params.listingId });
+
+    // Cleans booked array to only include non-duplicate booked items
+    prevListings = prevListings.booked.sort((a, b) => a.end > b.end ? 1 : -1);
+    booked = booked.sort((a, b) => a.end > b.end ? 1 : -1);
+
+    let cleaned_booked = [];
+    let prev_ptr = 0;
+    let booked_ptr = 0;
+    while (prev_ptr < prevListings.length || booked_ptr < booked.length) {
+      if (prev_ptr >= prevListings.length) {
+        cleaned_booked.push(booked[booked_ptr]);
+        booked_ptr++;
+      }
+      else if (booked_ptr >= booked.length) {
+        break;
+      }
+      else if (prevListings[prev_ptr].end === booked[booked_ptr].end && prevListings[prev_ptr].start === booked[booked_ptr].start) {
+        booked_ptr++;
+        prev_ptr++;
+      }
+      else if (prevListings[prev_ptr].end > booked[booked_ptr].end) {
+        cleaned_booked.push(booked[booked_ptr]);
+        booked_ptr++;
+      }
+      else {
+        prev_ptr++;
       }
     }
-    const listing = await Listing.findOneAndUpdate({ _id: req.params.listingId }, update)
-    if (!listing) {
-      return res.status(400).json({
-        error: "Listing does not exist. Please try again."
-      })
+
+    if (cleaned_booked.length > 0) {
+      const update = {
+        $push: { booked: cleaned_booked },
+      };
+      const listing = await Listing.findOneAndUpdate(
+        { _id: req.params.listingId },
+        update
+      );
+      if (!listing) {
+        return res.status(400).json({
+          error: "Listing does not exist. Please try again.",
+        });
+      }
     }
     return res.status(200).json({
-      message: "Successfully updated listing availability"
-    })
-  }
-  catch (error) {
-    console.error(error)
+      message: "Successfully updated listing availability",
+    });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({
-      error: "Error occurred while attempting to sync listing. Please try again.",
+      error:
+        "Error occurred while attempting to sync listing. Please try again.",
     });
   }
-})
+});
 
 module.exports = router;
