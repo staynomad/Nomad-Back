@@ -65,5 +65,7 @@ const ListingSchema = new Schema({
   },
 });
 
+ListingSchema.set('timestamps', true);
+
 const Listing = mongoose.model("listing", ListingSchema);
 module.exports = Listing;
