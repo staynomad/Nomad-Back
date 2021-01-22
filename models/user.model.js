@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const { Array, Boolean, String } = Schema.Types;
+
 const UserSchema = new Schema({
     name: {
         type: String,
@@ -24,7 +26,15 @@ const UserSchema = new Schema({
     // Only required for hosts
     isVerified: {
         type: Boolean,
-    }
+    },
+    coHost: {
+        type: Array,
+        default: [],
+    },
+    coHostReq: {
+        type: Array,
+        default: [],
+    },
 });
 
 const User = mongoose.model("user", UserSchema);
