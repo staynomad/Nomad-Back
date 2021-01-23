@@ -27,14 +27,6 @@ const UserSchema = new Schema({
     isVerified: {
         type: Boolean,
     },
-    coHost: {
-        type: Array,
-        default: [],
-    },
-    coHostReq: {
-        type: Array,
-        default: [],
-    },
 });
 
 const User = mongoose.model("user", UserSchema);

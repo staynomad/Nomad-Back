@@ -6,6 +6,7 @@ const { requireUserAuth, getUserInfo } = require("../utils");
 // const { check, validationResult } = require("express-validator");
 
 const nodemailer = require("nodemailer");
+const mongoose = require('mongoose');
 
 /* Add a listing */
 router.post("/createListing", requireUserAuth, async (req, res) => {
@@ -364,6 +365,133 @@ router.put("/syncListing/:listingId", async (req, res) => {
     res.status(500).json({
       error:
         "Error occurred while attempting to sync listing. Please try again.",
+    });
+  }
+});
+
+// Send request to transfer listing
+router.put(
+  '/sendListingTransfer',
+  requireUserAuth,
+  async (req, res) => {
+    try {
+      const { email, listingId } = req.body;
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'vhomesgroup@gmail.com',
+          pass: 'yowguokryuzjmbhj'
+        }
+      })
+      const userMailOptions = {
+        from: '"VHomes" <reservations@vhomesgroup.com>',
+        to: email,
+        subject: `VHomes Listing Transfer`,
+        text:
+          ``,
+        html:
+          ``
+      }
+
+      const listingToTransfer = await Listing.findOneAndUpdate({ _id: listingId }, { $set: { transferEmail: email } });
+      if (!listingToTransfer) {
+        return res.status(404).json({
+          "errors": "Listing could not be found."
+        });
+      } else {
+        transporter.sendMail(userMailOptions, (error, info) => {
+          if (error) {
+            console.log(error)
+          }
+          else {
+            console.log(`Transfer request has been sent to ${email}`)
+          }
+        })
+        res.status(200).json({
+          "message": `Transfer request has been sent to ${email}`
+        });
+      }
+    }
+    catch (error) {
+      console.log(error);
+      res.status(500).json({
+        "errors": ["Error transferring listing. Please try again!"]
+      });
+    }
+  }
+)
+
+// Get all transfer requests
+router.get("/byTransferEmail", requireUserAuth, async (req, res) => {
+  try {
+    const listingsToTransfer = await Listing.find({ transferEmail: req.user.email });
+    if (!listingsToTransfer) {
+      res.status(404).json({
+        errors: ["No listing transfer request(s) found."],
+      });
+    } else {
+      res.status(200).json({
+        listingsToTransfer,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["An error occurred while searching for listing transfers."],
+    });
+  }
+});
+
+// Accept request(s)
+router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
+  try {
+    const { acceptAll, listingId } = req.body;
+    if (acceptAll) {
+      const listingsToTransfer = await Listing.updateMany(
+        { transferEmail: req.user.email },
+        {
+          $set:
+          {
+            userId: mongoose.Types.ObjectId(req.user._id),
+            transferEmail: null
+          }
+        }
+      );
+      if (!listingsToTransfer) {
+        res.status(404).json({
+          errors: ["No listing transfer request(s) found."],
+        });
+      } else {
+        res.status(200).json({
+          listingsToTransfer,
+        });
+      }
+    } else {
+      const listingToTransfer = await Listing.findOneAndUpdate(
+        { _id: listingId },
+        {
+          $set:
+          {
+            userId: mongoose.Types.ObjectId(req.user._id),
+            transferEmail: null
+          }
+        }
+      );
+      if (!listingToTransfer) {
+        return res.status(404).json({
+          "errors": "Listing could not be found."
+        });
+      } else {
+        res.status(200).json({
+          listingToTransfer
+        });
+      }
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["An error occurred while searching for listing transfers."],
     });
   }
 });
