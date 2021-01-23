@@ -393,7 +393,7 @@ router.put(
           ``
       }
 
-      const listingToTransfer = await Listing.findOneAndUpdate({ _id: listingId }, { $set: { transferEmail: email } });
+      const listingToTransfer = await Listing.findOneAndUpdate({ _id: listingId }, { transferEmail: email });
       if (!listingToTransfer) {
         return res.status(404).json({
           "errors": "Listing could not be found."
@@ -450,11 +450,8 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
       const listingsToTransfer = await Listing.updateMany(
         { transferEmail: req.user.email },
         {
-          $set:
-          {
-            userId: mongoose.Types.ObjectId(req.user._id),
-            transferEmail: null
-          }
+          userId: mongoose.Types.ObjectId(req.user._id),
+          transferEmail: null
         }
       );
       if (!listingsToTransfer) {
@@ -470,11 +467,8 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
       const listingToTransfer = await Listing.findOneAndUpdate(
         { _id: listingId },
         {
-          $set:
-          {
-            userId: mongoose.Types.ObjectId(req.user._id),
-            transferEmail: null
-          }
+          userId: mongoose.Types.ObjectId(req.user._id),
+          transferEmail: null
         }
       );
       if (!listingToTransfer) {
