@@ -58,11 +58,36 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       booked,
       calendarURL,
       amenities,
+      active: false,
       userId: req.user._id,
     }).save();
 
-    const userInfo = await getUserInfo(req.user._id);
+    // Need to talk about return values, validation, etc.
+    res.status(201).json({
+      newListing,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["Error occurred while creating listing. Please try again!"],
+    });
+  }
+});
 
+// Change listing's active field to true
+router.post("/activateListing/:listingId", requireUserAuth, async (req, res) => {
+  try {
+    const update = {
+      active: true
+    }
+    const listing = Listing.findOneAndUpdate({ _id: req.params.listingId }, update);
+    if (!listing) {
+      return res.status(400).json({
+        error: "Listing does not exist. Please try again.",
+      });
+    }
+
+    const userInfo = await getUserInfo(req.user._id);
     // Send confirmation email to host
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -92,18 +117,17 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
         );
       }
     });
-
-    // Need to talk about return values, validation, etc.
-    res.status(201).json({
-      newListing,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while creating listing. Please try again!"],
+    return res.status(200).json({
+      message: "Successfully activated listing",
     });
   }
-});
+  catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Error occurred while activating listing. Please try again!",
+    });
+  }
+})
 
 /* Update a listing */
 router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {

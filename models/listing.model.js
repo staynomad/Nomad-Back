@@ -67,6 +67,10 @@ const ListingSchema = new Schema({
     type: String,
     default: null,
     required: false,
+  },
+  active: {
+    type: Boolean,
+    default: false,
   }
 });
 
