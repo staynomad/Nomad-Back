@@ -386,11 +386,25 @@ router.put(
       const userMailOptions = {
         from: '"VHomes" <reservations@vhomesgroup.com>',
         to: email,
-        subject: `VHomes Listing Transfer`,
-        text:
-          ``,
+        subject: `You've Been Invited!`,
+        text: // we want to include the original host's name here as well
+          `
+          ___ has invited you to host their listing! To accept this invitation, please do the following:
+              1. Go to https://vhomesgroup.com/MyAccount. If you do not yet have a VHomes account, please sign up for a host account first.
+              2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
+              3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
+              4. You're all done! Click on "My Listings" in the side menu to view your new listing.
+          `,
         html:
-          ``
+          `
+          <p>
+          _ has invited you to host their listing! To accept this invitation, please do the following:
+              1. Go to <a href="https://vhomesgroup.com/MyAccount">https://vhomesgroup.com/MyAccount</a>. If you do not yet have a VHomes account, please sign up for a host account first.
+              2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
+              3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
+              4. You're all done! Click on "My Listings" in the side menu to view your new listing.
+          </p>
+          `
       }
 
       const listingToTransfer = await Listing.findOneAndUpdate({ _id: listingId }, { transferEmail: email });
@@ -446,6 +460,33 @@ router.get("/byTransferEmail", requireUserAuth, async (req, res) => {
 router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { acceptAll, listingId } = req.body;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'vhomesgroup@gmail.com',
+        pass: 'yowguokryuzjmbhj'
+      }
+    })
+    let listingEmailBody = [listingId];
+    let userMailOptions = {
+      from: '"VHomes" <reservations@vhomesgroup.com>',
+      to: email,
+      subject: `Your Transfer Was Successful!`,
+      text: // we'll need to add in the new host's name here
+        `
+        ___ has accepted your invitation! You will no longer have access to the following listing(s):
+            ${listingEmailBody.join('\n')}
+        `,
+      html:
+        `
+        <p>
+        ___ has accepted your invitation! You will no longer have access to the following listing(s):
+            ${listingEmailBody.join('\n')}
+        </p>
+        `
+    }
+
     if (acceptAll) {
       const listingsToTransfer = await Listing.updateMany(
         { transferEmail: req.user.email },
@@ -459,6 +500,17 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
           errors: ["No listing transfer request(s) found."],
         });
       } else {
+        for (let i = 0; i < listingsToTransfer.length; i++) {
+          listingEmailBody.push(listingsToTransfer[i]._id)
+        }
+        transporter.sendMail(userMailOptions, (error, info) => {
+          if (error) {
+            console.log(error)
+          }
+          else {
+            console.log(`All transfers successful`)
+          }
+        })
         res.status(200).json({
           listingsToTransfer,
         });
@@ -476,6 +528,14 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
           "errors": "Listing could not be found."
         });
       } else {
+        transporter.sendMail(userMailOptions, (error, info) => {
+          if (error) {
+            console.log(error)
+          }
+          else {
+            console.log(`Transfer successful`)
+          }
+        })
         res.status(200).json({
           listingToTransfer
         });
