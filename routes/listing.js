@@ -389,7 +389,7 @@ router.put(
         subject: `You've Been Invited!`,
         text: // we want to include the original host's name here as well
           `
-          ___ has invited you to host their listing! To accept this invitation, please do the following:
+          ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
               1. Go to https://vhomesgroup.com/MyAccount. If you do not yet have a VHomes account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
@@ -398,7 +398,7 @@ router.put(
         html:
           `
           <p>
-          _ has invited you to host their listing! To accept this invitation, please do the following:
+          ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
               1. Go to <a href="https://vhomesgroup.com/MyAccount">https://vhomesgroup.com/MyAccount</a>. If you do not yet have a VHomes account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
@@ -475,13 +475,13 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
       subject: `Your Transfer Was Successful!`,
       text: // we'll need to add in the new host's name here
         `
-        ___ has accepted your invitation! You will no longer have access to the following listing(s):
+        ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
             ${listingEmailBody.join('\n')}
         `,
       html:
         `
         <p>
-        ___ has accepted your invitation! You will no longer have access to the following listing(s):
+        ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
             ${listingEmailBody.join('\n')}
         </p>
         `
