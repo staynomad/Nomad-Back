@@ -63,6 +63,11 @@ const ListingSchema = new Schema({
     type: Array,
     default: [],
   },
+  transferEmail: {
+    type: String,
+    default: null,
+    required: false,
+  }
 });
 
 ListingSchema.set('timestamps', true);
