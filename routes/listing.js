@@ -190,6 +190,27 @@ router.get("/", async (req, res) => {
   }
 });
 
+/* Get all active listings */
+router.get("/active", async (req, res) => {
+  try {
+    const listings = await Listing.find({active: true});
+    if (!listings) {
+      res.status(404).json({
+        errors: ["There are currently no listings! Please try again later."],
+      });
+    } else {
+      res.status(200).json({
+        listings,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["Error occurred while getting listings. Please try again!"],
+    });
+  }
+});
+
 /* Get all listings by filter */
 router.post("/filteredListings", async (req, res) => {
   const { minRatingClicked, startingPriceClicked, minGuestsClicked } = req.body;
