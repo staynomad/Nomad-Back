@@ -77,10 +77,11 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
 // Change listing's active field to true
 router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
   try {
-    const update = {
-      active: true
-    }
-    const listing = Listing.findOneAndUpdate({ _id: req.params.listingId }, update);
+    const listing = await Listing.findOneAndUpdate(
+      { _id: req.params.listingId },
+      { $set: { "active": true } },
+      { returnNewDocument: true}
+    );
     if (!listing) {
       return res.status(400).json({
         error: "Listing does not exist. Please try again.",
