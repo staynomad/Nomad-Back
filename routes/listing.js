@@ -18,7 +18,6 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       description,
       details,
       price,
-      tax,
       available,
       booked,
       calendarURL,
@@ -32,7 +31,6 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       description,
       details,
       price,
-      tax,
       available,
     };
 
@@ -53,7 +51,6 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       description,
       details,
       price,
-      tax,
       available,
       booked,
       calendarURL,
