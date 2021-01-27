@@ -58,11 +58,37 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       booked,
       calendarURL,
       amenities,
+      active: false,
       userId: req.user._id,
     }).save();
 
-    const userInfo = await getUserInfo(req.user._id);
+    // Need to talk about return values, validation, etc.
+    res.status(201).json({
+      newListing,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["Error occurred while creating listing. Please try again!"],
+    });
+  }
+});
 
+// Change listing's active field to true
+router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
+  try {
+    const listing = await Listing.findOneAndUpdate(
+      { _id: req.params.listingId },
+      { $set: { "active": true } },
+      { returnNewDocument: true}
+    );
+    if (!listing) {
+      return res.status(400).json({
+        error: "Listing does not exist. Please try again.",
+      });
+    }
+
+    const userInfo = await getUserInfo(req.user._id);
     // Send confirmation email to host
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -77,10 +103,10 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       subject: `Thank you for listing on VHomes!`,
       text: `Your listing is live! Click the following link to view your listing page.
 
-         https://vhomesgroup.com/listing/${newListing._id}`,
+         https://vhomesgroup.com/listing/${req.params.listingId}`,
       html: `<p>
           Your listing is live! Click the following link to view your listing page. <br>
-          <a href="https://vhomesgroup.com/listing/${newListing._id}">https://vhomesgroup.com/listing/${newListing._id}</a>
+          <a href="https://vhomesgroup.com/listing/${req.params.listingId}">https://vhomesgroup.com/listing/${req.params.listingId}</a>
          </p>`,
     };
     transporter.sendMail(userMailOptions, (error, info) => {
@@ -92,18 +118,17 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
         );
       }
     });
-
-    // Need to talk about return values, validation, etc.
-    res.status(201).json({
-      newListing,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while creating listing. Please try again!"],
+    return res.status(200).json({
+      message: "Successfully activated listing",
     });
   }
-});
+  catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Error occurred while activating listing. Please try again!",
+    });
+  }
+})
 
 /* Update a listing */
 router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
@@ -148,6 +173,27 @@ router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const listings = await Listing.find({});
+    if (!listings) {
+      res.status(404).json({
+        errors: ["There are currently no listings! Please try again later."],
+      });
+    } else {
+      res.status(200).json({
+        listings,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["Error occurred while getting listings. Please try again!"],
+    });
+  }
+});
+
+/* Get all active listings */
+router.get("/active", async (req, res) => {
+  try {
+    const listings = await Listing.find({active: true});
     if (!listings) {
       res.status(404).json({
         errors: ["There are currently no listings! Please try again later."],
