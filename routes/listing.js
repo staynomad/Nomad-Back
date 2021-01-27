@@ -75,7 +75,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
 });
 
 // Change listing's active field to true
-router.post("/activateListing/:listingId", requireUserAuth, async (req, res) => {
+router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
   try {
     const update = {
       active: true
@@ -102,10 +102,10 @@ router.post("/activateListing/:listingId", requireUserAuth, async (req, res) => 
       subject: `Thank you for listing on VHomes!`,
       text: `Your listing is live! Click the following link to view your listing page.
 
-         https://vhomesgroup.com/listing/${newListing._id}`,
+         https://vhomesgroup.com/listing/${req.params.listingId}`,
       html: `<p>
           Your listing is live! Click the following link to view your listing page. <br>
-          <a href="https://vhomesgroup.com/listing/${newListing._id}">https://vhomesgroup.com/listing/${newListing._id}</a>
+          <a href="https://vhomesgroup.com/listing/${req.params.listingId}">https://vhomesgroup.com/listing/${req.params.listingId}</a>
          </p>`,
     };
     transporter.sendMail(userMailOptions, (error, info) => {
