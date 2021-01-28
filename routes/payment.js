@@ -67,6 +67,7 @@ router.post('/create-session', async (req, res) => {
       ],
 
       mode: 'payment',
+      allow_promotion_codes: true,
       success_url: `${baseURL}/completeReservation/${listingId}/${reservationId}`,
       cancel_url: `${baseURL}/listing/${listingId}`,
     });
