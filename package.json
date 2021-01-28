@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.797.0",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -25,6 +25,6 @@
     "stripe": "^8.121.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.7"
   }
 }

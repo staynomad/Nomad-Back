@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const Listing = require('../models/listing.model');
+const Reservation = require('../models/reservation.model');
 const { baseURL } = require('../config/index');
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
@@ -20,6 +21,15 @@ router.post('/create-session', async (req, res) => {
     if (!listingDetails) {
       return res.status(404).json({
         'error': 'Listing not Found',
+      });
+    };
+
+    const reservationDetails = await Reservation.findOne({
+      '_id': reservationId
+    })
+    if (!reservationDetails) {
+      return res.status(404).json({
+        'error': 'Reservation not Found',
       });
     };
 
@@ -42,20 +52,22 @@ router.post('/create-session', async (req, res) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          description: `Reservation Dates: ${dateOne.month}/${dateOne.day}/${dateOne.year} - ${dateTwo.month}/${dateTwo.day}/${dateTwo.year}`,
+          description: `Reservation Dates: ${dateOne.month}/${dateOne.day}/${dateOne.year} - ${dateTwo.month}/${dateTwo.day}/${dateTwo.year} | 
+                        Guest Fees: 10%, $${reservationDetails.guestFee}`,
           price_data: {
             currency: 'usd',
             product_data: {
               name: `${address}`,
               images: [listingDetails.pictures[0]],
             },
-            unit_amount: listingDetails.price * days * 100,
+            unit_amount: (listingDetails.price * days * 100) + (reservationDetails.guestFee * 100),
           },
           quantity: 1,
         },
       ],
 
       mode: 'payment',
+      allow_promotion_codes: true,
       success_url: `${baseURL}/completeReservation/${listingId}/${reservationId}`,
       cancel_url: `${baseURL}/listing/${listingId}`,
     });

@@ -45,7 +45,7 @@ const ListingSchema = new Schema({
   },
   booked: {
     type: Array,
-    default: null
+    default: [],
   },
   rating: {
     type: Object,
@@ -58,8 +58,23 @@ const ListingSchema = new Schema({
   calendarURL: {
     type: String,
     default: null,
+  },
+  amenities: {
+    type: Array,
+    default: [],
+  },
+  transferEmail: {
+    type: String,
+    default: null,
+    required: false,
+  },
+  active: {
+    type: Boolean,
+    default: false,
   }
 });
+
+ListingSchema.set('timestamps', true);
 
 const Listing = mongoose.model("listing", ListingSchema);
 module.exports = Listing;

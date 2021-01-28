@@ -47,7 +47,9 @@ router.post(
         listing,
         active: false,
         checkedIn: false,
-        days
+        days,
+        guestFee: (listingInfo.price * .1).toFixed(2),
+        hostFee: (listingInfo.price * .01).toFixed(2),
       }).save();
       res.status(201).json({
         "reservationId": newReservation._id,
