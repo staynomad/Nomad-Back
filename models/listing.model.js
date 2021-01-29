@@ -64,8 +64,8 @@ const ListingSchema = new Schema({
     default: [],
   },
   transferEmail: {
-    type: String,
-    default: null,
+    type: Mixed,
+    default: {},
     required: false,
   },
   active: {

@@ -77,7 +77,7 @@ router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
     const listing = await Listing.findOneAndUpdate(
       { _id: req.params.listingId },
       { $set: { "active": true } },
-      { returnNewDocument: true}
+      { returnNewDocument: true }
     );
     if (!listing) {
       return res.status(400).json({
@@ -190,7 +190,7 @@ router.get("/", async (req, res) => {
 /* Get all active listings */
 router.get("/active", async (req, res) => {
   try {
-    const listings = await Listing.find({active: true});
+    const listings = await Listing.find({ active: true });
     if (!listings) {
       res.status(404).json({
         errors: ["There are currently no listings! Please try again later."],
@@ -412,6 +412,27 @@ router.put("/syncListing/:listingId", async (req, res) => {
   }
 });
 
+// Get all transfer requests
+router.get("/byTransferEmail", requireUserAuth, async (req, res) => {
+  try {
+    const listingsToTransfer = await Listing.find({ 'transferEmail.to': req.user.email });
+    if (!listingsToTransfer) {
+      res.status(404).json({
+        errors: ["No listing transfer request(s) found."],
+      });
+    } else {
+      res.status(200).json({
+        listingsToTransfer,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["An error occurred while searching for listing transfers."],
+    });
+  }
+});
+
 // Send request to transfer listing
 router.put(
   '/sendListingTransfer',
@@ -450,7 +471,8 @@ router.put(
           `
       }
 
-      const listingToTransfer = await Listing.findOneAndUpdate({ _id: listingId }, { transferEmail: email });
+      const transferEmail = { from: req.user.email, to: email }
+      const listingToTransfer = await Listing.findOneAndUpdate({ _id: listingId }, { transferEmail });
       if (!listingToTransfer) {
         return res.status(404).json({
           "errors": "Listing could not be found."
@@ -476,28 +498,7 @@ router.put(
       });
     }
   }
-)
-
-// Get all transfer requests
-router.get("/byTransferEmail", requireUserAuth, async (req, res) => {
-  try {
-    const listingsToTransfer = await Listing.find({ transferEmail: req.user.email });
-    if (!listingsToTransfer) {
-      res.status(404).json({
-        errors: ["No listing transfer request(s) found."],
-      });
-    } else {
-      res.status(200).json({
-        listingsToTransfer,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["An error occurred while searching for listing transfers."],
-    });
-  }
-});
+);
 
 // Accept request(s)
 router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
@@ -511,72 +512,224 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
         pass: 'yowguokryuzjmbhj'
       }
     })
-    let listingEmailBody = [listingId];
-    let userMailOptions = {
-      from: '"VHomes" <reservations@vhomesgroup.com>',
-      to: email,
-      subject: `Your Transfer Was Successful!`,
-      text: // we'll need to add in the new host's name here
-        `
-        ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
-            ${listingEmailBody.join('\n')}
-        `,
-      html:
-        `
-        <p>
-        ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
-            ${listingEmailBody.join('\n')}
-        </p>
-        `
-    }
 
     if (acceptAll) {
-      const listingsToTransfer = await Listing.updateMany(
-        { transferEmail: req.user.email },
-        {
-          userId: mongoose.Types.ObjectId(req.user._id),
-          transferEmail: null
-        }
-      );
+      const listingsToTransfer = await Listing.find({ 'transferEmail.to': req.user.email });
       if (!listingsToTransfer) {
         res.status(404).json({
           errors: ["No listing transfer request(s) found."],
         });
       } else {
-        for (let i = 0; i < listingsToTransfer.length; i++) {
-          listingEmailBody.push(listingsToTransfer[i]._id)
-        }
-        transporter.sendMail(userMailOptions, (error, info) => {
-          if (error) {
-            console.log(error)
+        let groupByEmail = {};
+        listingsToTransfer.forEach(listing => {
+          const userToMailTo = listing.transferEmail.from;
+          if (groupByEmail[userToMailTo]) groupByEmail[userToMailTo].push(listing);
+          else groupByEmail[userToMailTo] = [listing];
+        });
+
+        Object.keys(groupByEmail).forEach(async email => {
+          let currentEmailGroup = groupByEmail[email];
+          let listingEmailBody = [];
+
+          for (let i = 0; i < currentEmailGroup.length; i++) {
+            const currentListing = currentEmailGroup[i];
+
+            listingEmailBody.push(currentListing._id);
+            currentListing.transferEmail = {};
+            currentListing.userId = mongoose.Types.ObjectId(req.user._id);
+            await currentListing.save();
+          };
+
+
+          let userMailOptions = {
+            from: '"VHomes" <reservations@vhomesgroup.com>',
+            to: email,
+            subject: `Your Transfer Was Successful!`,
+            text: // we'll need to add in the new host's name here
+              `
+                ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
+                  ${listingEmailBody.join('\n')}
+              `,
+            html:
+              `
+                <p>
+                  ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
+                  ${listingEmailBody.join('\n')}
+                </p>
+              `
           }
-          else {
-            console.log(`All transfers successful`)
-          }
-        })
+
+          transporter.sendMail(userMailOptions, (error, info) => {
+            if (error) {
+              console.log(error)
+            }
+            else {
+              console.log(`All transfers successful`)
+            }
+          })
+        });
+
         res.status(200).json({
           listingsToTransfer,
         });
       }
     } else {
-      const listingToTransfer = await Listing.findOneAndUpdate(
-        { _id: listingId },
-        {
-          userId: mongoose.Types.ObjectId(req.user._id),
-          transferEmail: null
-        }
-      );
+      const listingToTransfer = await Listing.findById(listingId);
       if (!listingToTransfer) {
         return res.status(404).json({
           "errors": "Listing could not be found."
         });
       } else {
+        const emailToSendTo = listingToTransfer.transferEmail.from;
+        listingToTransfer.userId = mongoose.Types.ObjectId(req.user._id);
+        listingToTransfer.transferEmail = {};
+        await listingToTransfer.save();
+
+        let userMailOptions = {
+          from: '"VHomes" <reservations@vhomesgroup.com>',
+          to: emailToSendTo,
+          subject: `Your Transfer Was Successful!`,
+          text: // we'll need to add in the new host's name here
+            `
+              ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
+                ${listingToTransfer._id}
+            `,
+          html:
+            `
+              <p>
+                ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
+                  ${listingToTransfer._id}
+              </p>
+            `
+        }
         transporter.sendMail(userMailOptions, (error, info) => {
           if (error) {
             console.log(error)
           }
           else {
             console.log(`Transfer successful`)
+          }
+        })
+        res.status(200).json({
+          listingToTransfer
+        });
+      }
+    }
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["An error occurred while searching for listing transfers."],
+    });
+  }
+});
+
+// Reject request(s)
+router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
+  try {
+    const { rejectAll, listingId } = req.body;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'vhomesgroup@gmail.com',
+        pass: 'yowguokryuzjmbhj'
+      }
+    })
+
+    if (rejectAll) {
+      const listingsToTransfer = await Listing.find({ 'transferEmail.to': req.user.email });
+      if (!listingsToTransfer) {
+        res.status(404).json({
+          errors: ["No listing transfer request(s) found."],
+        });
+      } else {
+        let groupByEmail = {};
+        listingsToTransfer.forEach(listing => {
+          const userToMailTo = listing.transferEmail.from;
+          if (groupByEmail[userToMailTo]) groupByEmail[userToMailTo].push(listing);
+          else groupByEmail[userToMailTo] = [listing];
+        });
+
+        Object.keys(groupByEmail).forEach(async email => {
+          let currentEmailGroup = groupByEmail[email];
+          let listingEmailBody = [];
+
+          for (let i = 0; i < currentEmailGroup.length; i++) {
+            const currentListing = currentEmailGroup[i];
+
+            listingEmailBody.push(currentListing._id);
+            currentListing.transferEmail = {};
+            await currentListing.save();
+          };
+
+
+          let userMailOptions = {
+            from: '"VHomes" <reservations@vhomesgroup.com>',
+            to: email,
+            subject: `Your Transfer Was Rejected`,
+            text: // we'll need to add in the new host's name here
+              `
+                ${req.user.name} has rejected your invitation. You will retain access to the following listing(s):
+                  ${listingEmailBody.join('\n')}
+              `,
+            html:
+              `
+                <p>
+                ${req.user.name} has rejected your invitation. You will retain access to the following listing(s):
+                  ${listingEmailBody.join('\n')}
+                </p>
+              `
+          }
+
+          transporter.sendMail(userMailOptions, (error, info) => {
+            if (error) {
+              console.log(error)
+            }
+            else {
+              console.log(`All transfers successfully rejected`)
+            }
+          })
+        });
+
+        res.status(200).json({
+          listingsToTransfer,
+        });
+      }
+    } else {
+      const listingToTransfer = await Listing.findById(listingId);
+      if (!listingToTransfer) {
+        return res.status(404).json({
+          "errors": "Listing could not be found."
+        });
+      } else {
+        let emailToSendTo = listingToTransfer.transferEmail.from;
+        listingToTransfer.transferEmail = {};
+        await listingToTransfer.save();
+
+        let userMailOptions = {
+          from: '"VHomes" <reservations@vhomesgroup.com>',
+          to: emailToSendTo,
+          subject: `Your Transfer Was Rejected`,
+          text: // we'll need to add in the new host's name here
+            `
+                ${req.user.name} has rejected your invitation. You will retain access to the following listing(s):
+                  ${listingToTransfer._id}
+              `,
+          html:
+            `
+                <p>
+                ${req.user.name} has rejected your invitation. You will retain access to the following listing(s):
+                  ${listingToTransfer._id}
+                </p>
+            `
+        }
+        transporter.sendMail(userMailOptions, (error, info) => {
+          if (error) {
+            console.log(error)
+          }
+          else {
+            console.log(`Transfer rejection successful`)
           }
         })
         res.status(200).json({
