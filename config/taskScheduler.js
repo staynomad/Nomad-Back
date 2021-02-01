@@ -2,13 +2,15 @@ const Popularity = require('../models/popularity.model');
 
 const resetDayCounts = () => {
   currDay = new Date().getDay();
-  Popularity.findOneAndUpdate(
-    { _id: '6016fad4b33f1f851a4f7d0a' },
-    {
-      $inc: { visitCount: ['$temp'] },
-      $set: { ['visits.' + currDay]: 0 },
-    }
-  ).then(() => console.log('adf'));
+  Popularity.find({}, (err, doc) => {
+    doc.forEach((listing) => {
+      const decrease = listing.visits[currDay] * -1;
+      Popularity.findByIdAndUpdate(
+        { _id: listing._id },
+        { $set: { ['visits.' + currDay]: 0 }, $inc: { visitCount: decrease } }
+      );
+    });
+  });
 };
 
 module.exports = resetDayCounts;
