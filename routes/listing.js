@@ -294,7 +294,7 @@ router.post("/search", async (req, res) => {
   const { itemToSearch } = req.body;
   try {
     let decodedItemToSearch = decodeURI(itemToSearch).toLowerCase();
-    const listings = await Listing.find({});
+    const listings = await Listing.find({active: true});
     const filteredListings = listings.filter((listing) => {
       const { street, city, zipcode, state } = listing.location;
       if (
