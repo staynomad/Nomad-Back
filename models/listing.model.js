@@ -71,6 +71,14 @@ const ListingSchema = new Schema({
   active: {
     type: Boolean,
     default: false,
+  },
+  coords: {
+    type: Mixed,
+    default: {
+      listingLat: null,
+      listingLng: null,
+    },
+    unique: true
   }
 });
 
