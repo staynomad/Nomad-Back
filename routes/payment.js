@@ -32,7 +32,7 @@ router.post('/create-session', async (req, res) => {
         'error': 'Reservation not Found',
       });
     };
-
+    // address here isn't needed, will keep temporarily in case we revert back
     const address = `${listingDetails.location.street}, ${listingDetails.location.city}, ${listingDetails.location.state}, ${listingDetails.location.zipcode}`;
     const parseDateOne = new Date(Date.parse(dates[0]));
     const parseDateTwo = new Date(Date.parse(dates[1]));
@@ -52,12 +52,12 @@ router.post('/create-session', async (req, res) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          description: `Reservation Dates: ${dateOne.month}/${dateOne.day}/${dateOne.year} - ${dateTwo.month}/${dateTwo.day}/${dateTwo.year} | 
+          description: `Reservation Dates: ${dateOne.month}/${dateOne.day}/${dateOne.year} - ${dateTwo.month}/${dateTwo.day}/${dateTwo.year} |
                         Guest Fees: 10%, $${reservationDetails.guestFee}`,
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `${address}`,
+              name: `${listingDetails.title}`,
               images: [listingDetails.pictures[0]],
             },
             unit_amount: (listingDetails.price * days * 100) + (reservationDetails.guestFee * 100),
