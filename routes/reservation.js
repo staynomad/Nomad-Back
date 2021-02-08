@@ -12,7 +12,7 @@ router.post(
   requireUserAuth,
   async (req, res) => {
     try {
-      const { listing, days } = req.body;
+      const { listing, days, numDays } = req.body;
       const listingInfo = await Listing.findOne({
         _id: listing
       })
@@ -48,8 +48,9 @@ router.post(
         active: false,
         checkedIn: false,
         days,
-        guestFee: (listingInfo.price * .1).toFixed(2),
-        hostFee: (listingInfo.price * .01).toFixed(2),
+        guestFee: (listingInfo.price * numDays * .1).toFixed(2),
+        hostFee: (listingInfo.price * numDays * .01).toFixed(2),
+        totalPrice: (listingInfo.price * numDays).toFixed(2),
       }).save();
       res.status(201).json({
         "reservationId": newReservation._id,
