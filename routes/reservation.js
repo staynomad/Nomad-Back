@@ -118,7 +118,7 @@ router.put(
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Total cost: $${bookedListing.price * totalDays}
+              Total cost: $${reservationInfo.totalPrice}
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Host name: ${hostInfo.name}
 
@@ -144,7 +144,7 @@ router.put(
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Total cost: $${bookedListing.price * totalDays}
+              Total Payout: $${reservationInfo.totalPrice - reservationInfo.hostFee}
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Guest name: ${guestInfo.name}
 
