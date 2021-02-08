@@ -36,6 +36,11 @@ const ReservationSchema = new Schema({
         default: 0,
         required: true,
     },
+    totalPrice: {
+        type: Number,
+        default: 0,
+        required: true,
+    }
 },
     {
         timestamps: true
