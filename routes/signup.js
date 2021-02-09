@@ -24,7 +24,7 @@ router.post("/", [
     .matches(/\d/).withMessage('Password must contain a number')
     .matches(/[A-Z]/).withMessage('Password must contain an uppercase character')
     .matches(/[a-z]/).withMessage('Password must contain a lowercase character')
-    .matches(/^[a-zA-Z0-9!@#$%^&*)(+=._-]+$/).withMessage('Password must contain one special character')
+    .matches(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/).withMessage('Password must contain one special character')
 ],
   async (req, res) => {
     try {

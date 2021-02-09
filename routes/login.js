@@ -18,7 +18,7 @@ router.post(
         return res.status(422).json({ errors: errorMessages });
       }
       const { email, password } = req.body;
-      const user = await User.findOne({ email: email });
+      const user = await User.findOne({ email });
       // explicit error handling for both user and password
       // 404 - status code if the user does not exist
       // 401 - status code if the passwords do not match
