@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const { baseURL } = require('../config/index');
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
 // const { check, validationResult } = require("express-validator");
@@ -103,10 +103,10 @@ router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
       subject: `Thank you for listing on VHomes!`,
       text: `Your listing is live! Click the following link to view your listing page.
 
-         https://vhomesgroup.com/listing/${req.params.listingId}`,
+         ${baseURL}/listing/${req.params.listingId}`,
       html: `<p>
           Your listing is live! Click the following link to view your listing page. <br>
-          <a href="https://vhomesgroup.com/listing/${req.params.listingId}">https://vhomesgroup.com/listing/${req.params.listingId}</a>
+          <a href="${baseURL}/listing/${req.params.listingId}">${baseURL}/listing/${req.params.listingId}</a>
          </p>`,
     };
     transporter.sendMail(userMailOptions, (error, info) => {
@@ -502,7 +502,7 @@ router.put(
         text: // we want to include the original host's name here as well
           `
           ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to https://vhomesgroup.com/MyAccount. If you do not yet have a VHomes account, please sign up for a host account first.
+              1. Go to ${baseURL}/MyAccount. If you do not yet have a VHomes account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
               4. You're all done! Click on "My Listings" in the side menu to view your new listing.
@@ -511,7 +511,7 @@ router.put(
           `
           <p>
           ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to <a href="https://vhomesgroup.com/MyAccount">https://vhomesgroup.com/MyAccount</a>. If you do not yet have a VHomes account, please sign up for a host account first.
+              1. Go to <a href="${baseURL}/MyAccount">${baseURL}/MyAccount</a>. If you do not yet have a VHomes account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
               4. You're all done! Click on "My Listings" in the side menu to view your new listing.
