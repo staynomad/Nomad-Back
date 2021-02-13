@@ -22,6 +22,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       booked,
       calendarURL,
       amenities,
+      coords
     } = req.body;
 
     const verifyData = {
@@ -32,9 +33,10 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       details,
       price,
       available,
+      coords
     };
 
-    for (var key in verifyData) {
+    for (const key in verifyData) {
       if (verifyData.hasOwnProperty(key)) {
         if (!verifyData[key]) {
           return res.status(400).json({
@@ -55,6 +57,7 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       booked,
       calendarURL,
       amenities,
+      coords,
       active: false,
       userId: req.user._id,
     }).save();
@@ -339,7 +342,7 @@ router.post("/search", async (req, res) => {
   const { itemToSearch } = req.body;
   try {
     let decodedItemToSearch = decodeURI(itemToSearch).toLowerCase();
-    const listings = await Listing.find({active: true});
+    const listings = await Listing.find({ active: true });
     const filteredListings = listings.filter((listing) => {
       const { street, city, zipcode, state } = listing.location;
       if (
