@@ -73,8 +73,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-const temp = require('./config/taskScheduler');
-console.log('hi');
-temp();
-
 module.exports = app;
