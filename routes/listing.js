@@ -4,6 +4,7 @@ const { baseURL } = require('../config/index');
 const Listing = require('../models/listing.model');
 const { requireUserAuth, getUserInfo } = require('../utils');
 // const { check, validationResult } = require("express-validator");
+const popularity = require('../models/popularity.model');
 
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
@@ -776,16 +777,18 @@ router.put('/increment/:listingId', (req, res) => {
                 last_visited: new Date(),
               })
               .then(() => res.status(200).json({ success: true }))
-              .catch((_err) =>
+              .catch((terr) => {
+                console.log(terr);
                 res.status(500).json({
                   errors: [
                     'Error occurred while creating new popularity field. Please try again!',
                   ],
-                })
-              );
+                });
+              });
           }
         });
       } else if (err) {
+        console.log(err);
         res.status(500).json({
           errors: [
             'Error occurred while incrementing listings. Please try again!',
