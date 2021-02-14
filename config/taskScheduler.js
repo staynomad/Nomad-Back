@@ -1,9 +1,8 @@
 const Popularity = require('../models/popularity.model');
-const mongoose = require('mongoose');
 
-const resetDayCounts = () => {
+const resetDayCounts = async () => {
   currDay = new Date().getDay();
-  Popularity.find({}, (err, doc) => {
+  await Popularity.find({}, (err, doc) => {
     doc.forEach((listing) => {
       const decrease = listing.visits[currDay] * -1;
       Popularity.findByIdAndUpdate(
@@ -23,6 +22,14 @@ const resetDayCounts = () => {
         }
       );
     });
+  });
+
+  await Popularity.deleteMany({ visitCount: 0 }, (err) => {
+    if (err) {
+      console.log('There was an error while deleting');
+    } else {
+      console.log('successfully deleted empty doc');
+    }
   });
 };
 

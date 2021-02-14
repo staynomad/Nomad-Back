@@ -746,6 +746,7 @@ router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
 
 router.put('/increment/:listingId', (req, res) => {
   currDay = new Date().getDay();
+  mong.set('debug', true);
   popularity.findOneAndUpdate(
     { listingId: req.params.listingId },
     {
@@ -773,6 +774,7 @@ router.put('/increment/:listingId', (req, res) => {
                 listingId: req.params.listingId,
                 visitCount: 1,
                 visits: visits,
+                last_visited: new Date(),
               })
               .then(() => res.status(200).json({ success: true }))
               .catch((_err) =>
