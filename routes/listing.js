@@ -746,7 +746,6 @@ router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
 
 router.put('/increment/:listingId', (req, res) => {
   currDay = new Date().getDay();
-  mong.set('debug', true);
   popularity.findOneAndUpdate(
     { listingId: req.params.listingId },
     {
@@ -799,10 +798,10 @@ router.put('/increment/:listingId', (req, res) => {
   );
 });
 
-router.put('/resetCount', (req, res) => {
-  const temp = require('../config/taskScheduler');
-  temp();
-  res.status(200).json({ success: true });
-});
+// router.put('/resetCount', (req, res) => {
+//   const temp = require('../config/taskScheduler');
+//   temp();
+//   res.status(200).json({ success: true });
+// });
 
 module.exports = router;
