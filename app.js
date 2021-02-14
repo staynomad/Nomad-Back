@@ -75,6 +75,6 @@ app.use((err, req, res, next) => {
 
 const cron = require('node-cron');
 const resetCount = require('./config/taskScheduler');
-cron.schedule('0 0 * * *', resetCount);
+cron.schedule('0 0 * * *', resetCount, { timezone: 'America/Los_Angeles' });
 
 module.exports = app;
