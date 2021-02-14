@@ -9,13 +9,13 @@ const { check, validationResult } = require("express-validator");
 router.post(
   "/",
   [check("email").isEmail().withMessage('The email address is not valid')],
-  async (req, res) => {
+  async (req, res, next) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        // map errors
-        const errorMessages = errors.array().map((x) => x.msg);
-        return res.status(422).json({ errors: errorMessages });
+        let invalidEmail = new Error({ name: 'Invalid email format' });
+        invalidEmail.status = 401;
+        throw invalidEmail;
       }
       const { email, password } = req.body;
       const user = await User.findOne({ email });
@@ -24,14 +24,15 @@ router.post(
       // 401 - status code if the passwords do not match
       // 200 - if everything is ok
       if (!user) {
-        return res.status(404).json({
-          errors: ["The user with this email address does not exist"],
-        });
-      }
+        let missingUser = new Error("The user with this email address does not exist");
+        missingUser.status = 404;
+        throw missingUser;
+      };
+
       if (!validatePassword(password, user.password)) {
-        return res.status(401).json({
-          errors: ["Incorrect password"],
-        });
+        let incorrectPassword = new Error("Incorrect password.");
+        incorrectPassword.status = 401;
+        throw incorrectPassword;
       }
       const token = getUserToken(user);
       return res.status(200).json({
@@ -40,10 +41,7 @@ router.post(
         isHost: user.isHost,
       });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        errors: ["Error logging up user. Please try again!"],
-      });
+      next(error);
     }
   }
 );

@@ -1,20 +1,22 @@
 const express = require("express");
-const router = express.Router();
+const mongoose = require('mongoose');
+const multer = require('multer');
+const nodemailer = require("nodemailer");
+
 const { baseURL } = require('../config/index');
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
+const { multerUploads, uploadImagesToAWS } = require("./photos");
 // const { check, validationResult } = require("express-validator");
 
-const nodemailer = require("nodemailer");
-const mongoose = require('mongoose');
+const router = express.Router();
 
 /* Add a listing */
-router.post("/createListing", requireUserAuth, async (req, res) => {
+router.post("/createListing", multerUploads, requireUserAuth, async (req, res) => {
   try {
     const {
       title,
       location,
-      pictures,
       description,
       details,
       price,
@@ -22,18 +24,20 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       booked,
       calendarURL,
       amenities,
-      coords
-    } = req.body;
+    } = JSON.parse(req.files['listingData'][0].buffer.toString()).newListing;
+
+    console.log(JSON.parse(req.files['listingData'][0].buffer.toString()).newListing)
+
+    const imageUploadRes = await uploadImagesToAWS(req.files['image']);
 
     const verifyData = {
       title,
       location,
-      pictures,
+      pictures: imageUploadRes,
       description,
       details,
       price,
       available,
-      coords
     };
 
     for (const key in verifyData) {
@@ -42,14 +46,14 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
           return res.status(400).json({
             error: `Entry for ${key} is invalid`,
           });
-        }
-      }
-    }
+        };
+      };
+    };
 
     const newListing = await new Listing({
       title,
       location,
-      pictures,
+      pictures: imageUploadRes,
       description,
       details,
       price,
@@ -57,14 +61,13 @@ router.post("/createListing", requireUserAuth, async (req, res) => {
       booked,
       calendarURL,
       amenities,
-      coords,
       active: false,
       userId: req.user._id,
     }).save();
 
     // Need to talk about return values, validation, etc.
     res.status(201).json({
-      newListing,
+      newListingId: newListing._id,
     });
   } catch (error) {
     console.error(error);

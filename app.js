@@ -15,7 +15,6 @@ const reservationRouter = require("./routes/reservation");
 const paymentRouter = require("./routes/payment");
 const userRouter = require("./routes/user");
 const accountVerificationRouter = require("./routes/accountVerification");
-const photosRouter = require("./routes/photos");
 const reviewRouter = require("./routes/reviews")
 const subscribeRouter = require("./routes/subscribe")
 const contactRouter = require("./routes/contact")
@@ -35,7 +34,6 @@ app.use("/reservation", reservationRouter);
 app.use("/payment", paymentRouter);
 app.use("/user", userRouter);
 app.use("/accountVerification", accountVerificationRouter);
-app.use("/photos", photosRouter);
 app.use("/reviews", reviewRouter);
 app.use("/subscribe", subscribeRouter);
 app.use("/contact", contactRouter);
@@ -64,9 +62,8 @@ app.get("/", async (req, res) => {
 // error handler\
 app.use((err, req, res, next) => {
   console.log(err);
-  res.status(err.status || 500);
   const isProduction = environment === "production";
-  res.json({
+  res.status(err.status || 500).json({
     title: err.title || "Server Error",
     errors: err.errors,
     stack: isProduction ? null : err.stack,

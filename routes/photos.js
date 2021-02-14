@@ -1,33 +1,54 @@
-const express = require("express");
-const aws = require("aws-sdk");
-const router = express.Router();
+const AWS = require("aws-sdk");
+const multer = require('multer');
 
-aws.config.region = "us-east-1";
-const S3_BUCKET = process.env.S3_BUCKET;
-router.get("/sign-s3", (req, res) => {
-  const s3 = new aws.S3();
-  const fileName = req.query["file-name"];
-  const fileType = req.query["file-type"];
-  const fileBucket = req.query["file-bucket"];
-  const s3Params = {
-    Bucket: fileBucket,
-    Key: fileName,
-    Expires: 60,
-    ContentType: fileType,
-    ACL: "public-read",
-  };
+const storage = multer.memoryStorage(); // save file to memory
+const multerUploads = multer({ storage }).fields([{ name: 'image' }, { name: 'listingData' }]);
 
-  s3.getSignedUrl("putObject", s3Params, (err, data) => {
-    if (err) {
-      console.log(err);
-      return res.end();
-    }
-    const returnData = {
-      signedReq: data,
-      url: `https://${S3_BUCKET}.s3.amazonaws.com/${fileName}`,
-    };
-    res.write(JSON.stringify(returnData));
-    res.end();
+/* Default Image Upload Function */
+const uploadImagesToAWS = async (images) => {
+  if (!images) return;
+  const BucketName = 'vhomes-images-bucket';
+  const BucketFolder = process.env.NODE_ENV === 'production' ? '/production' : '/development'
+  let s3bucket = new AWS.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    Bucket: BucketName
   });
-});
-module.exports = router;
+
+  let imgArr = typeof images[Symbol.iterator] === 'function' ? [...images] : [images];
+  let params = [];
+
+  imgArr.forEach((image) => {
+    params.push({
+      Bucket: BucketName + BucketFolder,
+      Key: image.originalname,
+      Body: image.buffer,
+      ACL: 'public-read',
+      Expires: 60,
+    });
+  });
+
+  const imageUploadRes = await Promise.all(
+    params.map(param => {
+      return new Promise((res, rej) => {
+        s3bucket.upload(param, (err, data) => {
+          if (err) {
+            console.error(error)
+            let failedUpload = new Error('Failed to upload image to server.')
+            failedUpload.status = 500;
+            rej(failedUpload);
+          } else {
+            res(data.Location);
+          };
+        });
+      });
+    })
+  );
+
+  return imageUploadRes;
+};
+
+module.exports = {
+  multerUploads,
+  uploadImagesToAWS
+};
