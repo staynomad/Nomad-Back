@@ -801,6 +801,37 @@ router.put('/increment/:listingId', (req, res) => {
   );
 });
 
+const getPopularFunc = (numberOfListings) => {
+  return popularity
+    .find({}, null, { sort: { visitCount: -1 }, limit: numberOfListings })
+    .catch((err) => {
+      return err;
+    });
+};
+
+router.get('/popularlistings/:numberOfListing', async (req, res) => {
+  const numberOfListing = parseInt(req.params.numberOfListing);
+  const listings = await getPopularFunc(numberOfListing);
+  if (listings instanceof Error) {
+    res.status(500).json({
+      errors: 'Error occured while getting popular listings',
+    });
+  } else {
+    res.status(200).json({ listings });
+  }
+});
+
+router.get('/allPopularityListings', async (req, res) => {
+  const listings = await getPopularFunc(0);
+  if (listings instanceof Error) {
+    res.status(500).json({
+      errors: 'Error occured while getting popular listings',
+    });
+  } else {
+    res.status(200).json({ listings });
+  }
+});
+
 // router.put('/resetCount', (req, res) => {
 //   const temp = require('../config/taskScheduler');
 //   temp();
