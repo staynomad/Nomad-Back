@@ -811,7 +811,6 @@ const getPopularFunc = (numberOfListings) => {
 
 router.get('/popularlistings/:numberOfListing', async (req, res) => {
   const numberOfListing = parseInt(req.params.numberOfListing);
-  console.log(numberOfListing);
   if (numberOfListing == 0) {
     res.status(200).json({
       listings: [],
