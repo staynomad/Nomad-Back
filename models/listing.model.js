@@ -72,6 +72,14 @@ const ListingSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  coords: {
+    type: Mixed,
+    default: {
+      listingLat: null,
+      listingLng: null,
+    },
+    unique: true
+  }
 });
 
 ListingSchema.set('timestamps', true);

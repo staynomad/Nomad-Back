@@ -247,6 +247,51 @@ router.post('/filteredListings', async (req, res) => {
   }
 });
 
+/* Get all listings in a radius around lat and lng */
+router.get("/byRadius", async (req, res) => {
+  try {
+    await Listing.find({}, (err, listingDocs) => {
+      if (err || !listingDocs) {
+        res.status(404).json({
+          errors: ["There are currently no listings! Please try again later."],
+        });
+      } else {
+        // Radius will be in kilometers
+        const { lat, lng, radiusInKilometers } = req.query;
+
+        const listingsInRadius = listingDocs.filter(listing => {
+          if (!listing.coords.listingLat || !listing.coords.listingLng || !listing.active) return false;
+          else {
+            const { listingLat, listingLng } = listing.coords;
+            const listingLatConverted = parseFloat(listingLat, 10);
+            const listingLngConverted = parseFloat(listingLng, 10);
+
+            const ky = 40000 / 360;
+            const kx = Math.cos(Math.PI * lat / 180.0) * ky;
+            const dx = Math.abs(lng - listingLngConverted) * kx;
+            const dy = Math.abs(lat - listingLatConverted) * ky;
+
+            // console.log(Math.sqrt(dx ** 2 + dy ** 2))
+            // console.log(radiusInKilometers)
+            // console.log(Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers)
+
+            return Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers;
+          };
+        });
+
+        res.status(200).json({
+          listingsInRadius,
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["Error occurred while getting listings. Please try again!"],
+    });
+  }
+});
+
 /* Get all listings belonging to user */
 router.get('/byUserId', requireUserAuth, async (req, res) => {
   try {
