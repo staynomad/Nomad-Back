@@ -27,6 +27,10 @@ const UserSchema = new Schema({
     isVerified: {
         type: Boolean,
     },
+    isPublic: {
+        type: Boolean,
+        default: false
+    }
 });
 
 const User = mongoose.model("user", UserSchema);

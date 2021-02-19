@@ -12,7 +12,7 @@ router.post(
   requireUserAuth,
   async (req, res) => {
     try {
-      const { listing, days } = req.body;
+      const { listing, days, numDays } = req.body;
       const listingInfo = await Listing.findOne({
         _id: listing
       })
@@ -47,7 +47,10 @@ router.post(
         listing,
         active: false,
         checkedIn: false,
-        days
+        days,
+        guestFee: (listingInfo.price * numDays * .1).toFixed(2),
+        hostFee: (listingInfo.price * numDays * .01).toFixed(2),
+        totalPrice: (listingInfo.price * numDays).toFixed(2),
       }).save();
       res.status(201).json({
         "reservationId": newReservation._id,
@@ -115,7 +118,7 @@ router.put(
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Total cost: $${bookedListing.price * totalDays}
+              Total cost: $${reservationInfo.totalPrice}
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Host name: ${hostInfo.name}
 
@@ -141,7 +144,7 @@ router.put(
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Total cost: $${bookedListing.price * totalDays}
+              Total Payout: $${reservationInfo.totalPrice - reservationInfo.hostFee}
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Guest name: ${guestInfo.name}
 

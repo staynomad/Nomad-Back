@@ -24,7 +24,7 @@ router.post("/", [
     .matches(/\d/).withMessage('Password must contain a number')
     .matches(/[A-Z]/).withMessage('Password must contain an uppercase character')
     .matches(/[a-z]/).withMessage('Password must contain a lowercase character')
-    .matches(/^[a-zA-Z0-9!@#$%^&*)(+=._-]+$/).withMessage('Password must contain one special character')
+    .matches(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/).withMessage('Password must contain one special character')
 ],
   async (req, res) => {
     try {
@@ -43,7 +43,6 @@ router.post("/", [
         errors.push(emailError)
       }
       if (errors.length !== 0) return res.status(422).json(errors)
-
       // encrypt the password
       const encrypted_password = await passGenService(password)
       // create a new user
@@ -51,7 +50,8 @@ router.post("/", [
         name,
         email,
         password: encrypted_password,
-        isHost
+        isHost,
+        isPublic: isHost,
       }
       // Set isVerified to false only if user is a host
       if (isHost) {

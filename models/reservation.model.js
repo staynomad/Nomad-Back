@@ -26,6 +26,21 @@ const ReservationSchema = new Schema({
         type: Array,
         required: true,
     },
+    guestFee: {
+        type: Number,
+        default: 0,
+        required: true,
+    },
+    hostFee: {
+        type: Number,
+        default: 0,
+        required: true,
+    },
+    totalPrice: {
+        type: Number,
+        default: 0,
+        required: true,
+    }
 },
     {
         timestamps: true
