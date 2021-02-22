@@ -127,6 +127,30 @@ router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
   }
 });
 
+// Change listing's active field to false
+router.put('/deactivateListing/:listingId', requireUserAuth, async (req, res) => {
+  try {
+    const listing = await Listing.findOneAndUpdate(
+      { _id: req.params.listingId },
+      { $set: { active: false } },
+      { returnNewDocument: true }
+    );
+    if (!listing) {
+      return res.status(400).json({
+        error: 'Listing does not exist. Please try again.',
+      });
+    }
+    return res.status(200).json({
+      message: 'Successfully activated listing',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: 'Error occurred while deactivating listing. Please try again!',
+    });
+  }
+});
+
 /* Update a listing */
 router.put('/editListing/:listingId', requireUserAuth, async (req, res) => {
   try {
