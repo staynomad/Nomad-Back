@@ -923,25 +923,44 @@ router.get('/allPopularityListings', async (req, res) => {
 
 router.post('/exportListing', async (req, res) => {
   const { email, listingID, listingCalendar } = req.body
-  // Update this to reflect listingCalendar data
-  // example listingCalendar data
-// {
-//   available: ['2020-02-28', '2020-04-01'],
-//   booked: [
-//     {
-//       start: '2020-03-02',
-//       end: '2020-03-14',
-//       reservationId: null,
-//     }
-//   ]
-// }
-  ics.createEvent({
-    title: 'Dinner',
-    description: 'Nightly thing I do',
-    busyStatus: 'FREE',
-    start: [2018, 1, 15, 6, 30],
-    duration: { minutes: 50 }
-  }, (error, value) => {
+  // example listingCalendar body
+  // {
+  //   available: ['2020-02-28', '2020-04-01'],
+  //   booked: [
+  //     {
+  //       start: '2020-03-02',
+  //       end: '2020-03-14',
+  //       reservationId: null,
+  //     }
+  //   ]
+  // }
+  var curr = new Date;
+  var events = [
+    {
+      title: 'NomΛd Listing',
+      description: 'UNAVAILABLE',
+      url: `${baseURL}/listing/${listingID}`,
+      start: [curr.getFullYear(), 1, 1],
+      end: [listingCalendar.available[0].substring(0, 4), listingCalendar.available[0].substring(5, 7), listingCalendar.available[0].substring(8)]
+    },
+    {
+      title: 'NomΛd Listing',
+      description: 'UNAVAILABLE',
+      url: `${baseURL}/listing/${listingID}`,
+      start: [listingCalendar.available[1].substring(0, 4), listingCalendar.available[1].substring(5, 7), listingCalendar.available[1].substring(8)],
+      end: [curr.getFullYear() + 1, 12, 31]
+    },
+  ]
+  for (let i = 0; i < listingCalendar.booked.length; i++) {
+    events.push({
+        title: 'NomΛd Listing',
+        description: 'UNAVAILABLE',
+        url: `${baseURL}/listing/${listingID}`,
+        start: [listingCalendar.booked[i].start.substring(0, 4), listingCalendar.booked[i].start.substring(5, 7), listingCalendar.booked[i].start.substring(8)],
+        end: [listingCalendar.booked[i].end.substring(0, 4), listingCalendar.booked[i].end.substring(5, 7), listingCalendar.booked[i].end.substring(8)],
+    })
+  }
+  ics.createEvents(events, (error, value) => {
     if (error) {
       console.log(error)
     }
