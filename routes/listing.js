@@ -9,6 +9,9 @@ const popularity = require('../models/popularity.model');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 
+const fs = require('fs')
+const ics = require('ics')
+
 /* Add a listing */
 router.post('/createListing', requireUserAuth, async (req, res) => {
   try {
@@ -917,5 +920,62 @@ router.get('/allPopularityListings', async (req, res) => {
 //   temp();
 //   res.status(200).json({ success: true });
 // });
+
+router.post('/exportListing', async (req, res) => {
+  const { email, listingID, listingCalendar } = req.body
+  // example listingCalendar body
+  // {
+  //   available: ['2020-02-28', '2020-04-01'],
+  //   booked: [
+  //     {
+  //       start: '2020-03-02',
+  //       end: '2020-03-14',
+  //       reservationId: null,
+  //     }
+  //   ]
+  // }
+  var curr = new Date;
+  var events = [
+    {
+      title: 'NomΛd Listing',
+      description: 'UNAVAILABLE',
+      url: `${baseURL}/listing/${listingID}`,
+      start: [curr.getFullYear(), 1, 1],
+      end: [listingCalendar.available[0].substring(0, 4), listingCalendar.available[0].substring(5, 7), listingCalendar.available[0].substring(8)]
+    },
+    {
+      title: 'NomΛd Listing',
+      description: 'UNAVAILABLE',
+      url: `${baseURL}/listing/${listingID}`,
+      start: [listingCalendar.available[1].substring(0, 4), listingCalendar.available[1].substring(5, 7), listingCalendar.available[1].substring(8)],
+      end: [curr.getFullYear() + 1, 12, 31]
+    },
+  ]
+  for (let i = 0; i < listingCalendar.booked.length; i++) {
+    events.push({
+        title: 'NomΛd Listing',
+        description: 'UNAVAILABLE',
+        url: `${baseURL}/listing/${listingID}`,
+        start: [listingCalendar.booked[i].start.substring(0, 4), listingCalendar.booked[i].start.substring(5, 7), listingCalendar.booked[i].start.substring(8)],
+        end: [listingCalendar.booked[i].end.substring(0, 4), listingCalendar.booked[i].end.substring(5, 7), listingCalendar.booked[i].end.substring(8)],
+    })
+  }
+  ics.createEvents(events, (error, value) => {
+    if (error) {
+      console.log(error)
+    }
+    fs.writeFile(
+      `./exports/${email}-${listingID}.ics`,
+      value,
+      { flag: 'w' },
+      (err) => {
+        if (err) return res.status(400).json({
+          errors: "Unable to export file."
+        });
+        return res.status(200).json({ listingID })
+      }
+    )
+  })
+});
 
 module.exports = router;
