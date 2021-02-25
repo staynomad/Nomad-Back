@@ -20,6 +20,7 @@ const reviewRouter = require('./routes/reviews');
 const subscribeRouter = require('./routes/subscribe');
 const contactRouter = require('./routes/contact');
 const googleLoginRouter = require('./routes/googleLogin');
+const exportsRouter = require('./routes/exports.js');
 
 const app = express();
 app.use(bodyParser.json());
@@ -40,6 +41,7 @@ app.use('/reviews', reviewRouter);
 app.use('/subscribe', subscribeRouter);
 app.use('/contact', contactRouter);
 app.use('/googleLogin', googleLoginRouter);
+app.use('/exports', exportsRouter);
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { baseURL } = require('../config/index');
+const { baseURL, exportURL } = require('../config/index');
 const Listing = require('../models/listing.model');
 const { requireUserAuth, getUserInfo } = require('../utils');
 // const { check, validationResult } = require("express-validator");
@@ -922,31 +922,20 @@ router.get('/allPopularityListings', async (req, res) => {
 // });
 
 router.post('/exportListing', async (req, res) => {
-  const { email, listingID, listingCalendar } = req.body
-  // example listingCalendar body
-  // {
-  //   available: ['2020-02-28', '2020-04-01'],
-  //   booked: [
-  //     {
-  //       start: '2020-03-02',
-  //       end: '2020-03-14',
-  //       reservationId: null,
-  //     }
-  //   ]
-  // }
+  const { userId, listingId, listingCalendar } = req.body
   var curr = new Date;
   var events = [
     {
       title: 'NomΛd Listing',
       description: 'UNAVAILABLE',
-      url: `${baseURL}/listing/${listingID}`,
+      url: `${baseURL}/listing/${listingId}`,
       start: [curr.getFullYear(), 1, 1],
       end: [listingCalendar.available[0].substring(0, 4), listingCalendar.available[0].substring(5, 7), listingCalendar.available[0].substring(8)]
     },
     {
       title: 'NomΛd Listing',
       description: 'UNAVAILABLE',
-      url: `${baseURL}/listing/${listingID}`,
+      url: `${baseURL}/listing/${listingId}`,
       start: [listingCalendar.available[1].substring(0, 4), listingCalendar.available[1].substring(5, 7), listingCalendar.available[1].substring(8)],
       end: [curr.getFullYear() + 1, 12, 31]
     },
@@ -955,7 +944,7 @@ router.post('/exportListing', async (req, res) => {
     events.push({
         title: 'NomΛd Listing',
         description: 'UNAVAILABLE',
-        url: `${baseURL}/listing/${listingID}`,
+        url: `${baseURL}/listing/${listingId}`,
         start: [listingCalendar.booked[i].start.substring(0, 4), listingCalendar.booked[i].start.substring(5, 7), listingCalendar.booked[i].start.substring(8)],
         end: [listingCalendar.booked[i].end.substring(0, 4), listingCalendar.booked[i].end.substring(5, 7), listingCalendar.booked[i].end.substring(8)],
     })
@@ -965,14 +954,14 @@ router.post('/exportListing', async (req, res) => {
       console.log(error)
     }
     fs.writeFile(
-      `./exports/${email}-${listingID}.ics`,
+      `./exports/${userId}-${listingId}.ics`,
       value,
       { flag: 'w' },
       (err) => {
         if (err) return res.status(400).json({
           errors: "Unable to export file."
         });
-        return res.status(200).json({ listingID })
+        return res.status(200).json({ url: `${exportURL}/exports/${userId}-${listingId}.ics` })
       }
     )
   })
