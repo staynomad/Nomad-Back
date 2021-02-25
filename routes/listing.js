@@ -9,6 +9,9 @@ const popularity = require('../models/popularity.model');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 
+const fs = require('fs')
+const ics = require('ics')
+
 /* Add a listing */
 router.post('/createListing', requireUserAuth, async (req, res) => {
   try {
@@ -917,5 +920,43 @@ router.get('/allPopularityListings', async (req, res) => {
 //   temp();
 //   res.status(200).json({ success: true });
 // });
+
+router.post('/exportListing', async (req, res) => {
+  const { email, listingID, listingCalendar } = req.body
+  // Update this to reflect listingCalendar data
+  // example listingCalendar data
+// {
+//   available: ['2020-02-28', '2020-04-01'],
+//   booked: [
+//     {
+//       start: '2020-03-02',
+//       end: '2020-03-14',
+//       reservationId: null,
+//     }
+//   ]
+// }
+  ics.createEvent({
+    title: 'Dinner',
+    description: 'Nightly thing I do',
+    busyStatus: 'FREE',
+    start: [2018, 1, 15, 6, 30],
+    duration: { minutes: 50 }
+  }, (error, value) => {
+    if (error) {
+      console.log(error)
+    }
+    fs.writeFile(
+      `./exports/${email}-${listingID}.ics`,
+      value,
+      { flag: 'w' },
+      (err) => {
+        if (err) return res.status(400).json({
+          errors: "Unable to export file."
+        });
+        return res.status(200).json({ listingID })
+      }
+    )
+  })
+});
 
 module.exports = router;
