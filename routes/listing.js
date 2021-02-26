@@ -1,24 +1,24 @@
-const express = require('express');
-const router = express.Router();
-const { baseURL, exportURL } = require('../config/index');
-const Listing = require('../models/listing.model');
-const { requireUserAuth, getUserInfo } = require('../utils');
+const express = require("express");
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+const { baseURL } = require('../config/index');
+const Listing = require("../models/listing.model");
+const { requireUserAuth, getUserInfo } = require("../utils");
+const { multerUploads, uploadImagesToAWS } = require("./photos");
 // const { check, validationResult } = require("express-validator");
 const popularity = require('../models/popularity.model');
 
-const nodemailer = require('nodemailer');
-const mongoose = require('mongoose');
+const router = express.Router();
 
 const fs = require('fs')
 const ics = require('ics')
 
 /* Add a listing */
-router.post('/createListing', requireUserAuth, async (req, res) => {
+router.post("/createListing", multerUploads, requireUserAuth, async (req, res) => {
   try {
     const {
       title,
       location,
-      pictures,
       description,
       details,
       price,
@@ -26,32 +26,36 @@ router.post('/createListing', requireUserAuth, async (req, res) => {
       booked,
       calendarURL,
       amenities,
-    } = req.body;
+    } = JSON.parse(req.files['listingData'][0].buffer.toString()).newListing;
+
+    console.log(JSON.parse(req.files['listingData'][0].buffer.toString()).newListing)
+
+    const imageUploadRes = await uploadImagesToAWS(req.files['image']);
 
     const verifyData = {
       title,
       location,
-      pictures,
+      pictures: imageUploadRes,
       description,
       details,
       price,
       available,
     };
 
-    for (var key in verifyData) {
+    for (const key in verifyData) {
       if (verifyData.hasOwnProperty(key)) {
         if (!verifyData[key]) {
           return res.status(400).json({
             error: `Entry for ${key} is invalid`,
           });
-        }
-      }
-    }
+        };
+      };
+    };
 
     const newListing = await new Listing({
       title,
       location,
-      pictures,
+      pictures: imageUploadRes,
       description,
       details,
       price,
@@ -65,7 +69,7 @@ router.post('/createListing', requireUserAuth, async (req, res) => {
 
     // Need to talk about return values, validation, etc.
     res.status(201).json({
-      newListing,
+      newListingId: newListing._id,
     });
   } catch (error) {
     console.error(error);
@@ -618,16 +622,14 @@ router.put('/acceptListingTransfer', requireUserAuth, async (req, res) => {
             subject: `Your Transfer Was Successful!`,
             // we'll need to add in the new host's name here
             text: `
-                ${
-                  req.user.name
-                } has accepted your invitation! You will no longer have access to the following listing(s):
+                ${req.user.name
+              } has accepted your invitation! You will no longer have access to the following listing(s):
                   ${listingEmailBody.join('\n')}
               `,
             html: `
                 <p>
-                  ${
-                    req.user.name
-                  } has accepted your invitation! You will no longer have access to the following listing(s):
+                  ${req.user.name
+              } has accepted your invitation! You will no longer have access to the following listing(s):
                   ${listingEmailBody.join('\n')}
                 </p>
               `,
@@ -742,16 +744,14 @@ router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
             subject: `Your Transfer Was Rejected`,
             // we'll need to add in the new host's name here
             text: `
-                ${
-                  req.user.name
-                } has rejected your invitation. You will retain access to the following listing(s):
+                ${req.user.name
+              } has rejected your invitation. You will retain access to the following listing(s):
                   ${listingEmailBody.join('\n')}
               `,
             html: `
                 <p>
-                ${
-                  req.user.name
-                } has rejected your invitation. You will retain access to the following listing(s):
+                ${req.user.name
+              } has rejected your invitation. You will retain access to the following listing(s):
                   ${listingEmailBody.join('\n')}
                 </p>
               `,
@@ -942,11 +942,11 @@ router.post('/exportListing', async (req, res) => {
   ]
   for (let i = 0; i < listingCalendar.booked.length; i++) {
     events.push({
-        title: 'NomΛd Listing',
-        description: 'UNAVAILABLE',
-        url: `${baseURL}/listing/${listingId}`,
-        start: [listingCalendar.booked[i].start.substring(0, 4), listingCalendar.booked[i].start.substring(5, 7), listingCalendar.booked[i].start.substring(8)],
-        end: [listingCalendar.booked[i].end.substring(0, 4), listingCalendar.booked[i].end.substring(5, 7), listingCalendar.booked[i].end.substring(8)],
+      title: 'NomΛd Listing',
+      description: 'UNAVAILABLE',
+      url: `${baseURL}/listing/${listingId}`,
+      start: [listingCalendar.booked[i].start.substring(0, 4), listingCalendar.booked[i].start.substring(5, 7), listingCalendar.booked[i].start.substring(8)],
+      end: [listingCalendar.booked[i].end.substring(0, 4), listingCalendar.booked[i].end.substring(5, 7), listingCalendar.booked[i].end.substring(8)],
     })
   }
   ics.createEvents(events, (error, value) => {
