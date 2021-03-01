@@ -757,36 +757,39 @@ router.put('/increment/:listingId', (req, res) => {
       if (!doc) {
         // if the their is no corresponding document in popularity collection
         // then look into the listing collection to check if it exist
-        Listing.findOne({ _id: req.params.listingId }, (nerr, ndoc) => {
-          if (!ndoc) {
-            res.status(404).json({
-              errors: ['Listing does not exist.'],
-            });
-          } else if (nerr) {
-            res.status(500).json({
-              errors: ['Error occured while finding corresponding listing'],
-            });
-          } else {
-            visits = [0, 0, 0, 0, 0, 0, 0];
-            visits[currDay] = 1;
-            popularity
-              .create({
-                listingId: req.params.listingId,
-                visitCount: 1,
-                visits: visits,
-                last_visited: new Date(),
-              })
-              .then(() => res.status(200).json({ success: true }))
-              .catch((terr) => {
-                console.log(terr);
-                res.status(500).json({
-                  errors: [
-                    'Error occurred while creating new popularity field. Please try again!',
-                  ],
-                });
+        Listing.findOne(
+          { _id: req.params.listingId, active: true },
+          (nerr, ndoc) => {
+            if (!ndoc) {
+              res.status(404).json({
+                errors: ['Listing does not exist or listing is not active'],
               });
+            } else if (nerr) {
+              res.status(500).json({
+                errors: ['Error occured while finding corresponding listing'],
+              });
+            } else {
+              visits = [0, 0, 0, 0, 0, 0, 0];
+              visits[currDay] = 1;
+              popularity
+                .create({
+                  listingId: req.params.listingId,
+                  visitCount: 1,
+                  visits: visits,
+                  last_visited: new Date(),
+                })
+                .then(() => res.status(200).json({ success: true }))
+                .catch((terr) => {
+                  console.log(terr);
+                  res.status(500).json({
+                    errors: [
+                      'Error occurred while creating new popularity field. Please try again!',
+                    ],
+                  });
+                });
+            }
           }
-        });
+        );
       } else if (err) {
         console.log(err);
         res.status(500).json({
