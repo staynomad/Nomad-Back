@@ -323,23 +323,29 @@ router.get("/byRadius", async (req, res) => {
   }
 });
 
-/* Get all listings belonging to user */
-router.get('/byUserId', requireUserAuth, async (req, res) => {
-  try {
-    const userListings = await Listing.find({ userId: req.user._id });
-    if (!userListings) {
-      res.status(404).json({
-        errors: ['There are currently no listings! Please try again later.'],
-      });
-    } else {
-      res.status(200).json({
-        userListings,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ['Error occurred while getting listings. Please try again!'],
+const getByUserIdFunc = async (userId) => {
+  return await Listing
+    .find({ userId: userId })
+    .catch((err) => {
+      return err;
+    });
+};
+
+/* Get all listings belonging to user in parameter */
+router.get('/byUserId/:userId', async (req, res) => {
+  const userListings = await getByUserIdFunc(req.params.userId);
+  if (userListings instanceof Error) {
+    return res.status(500).json({
+      errors: 'Error occured while getting popular listings',
+    });
+  }
+  if (!userListings) {
+    return res.status(404).json({
+      errors: ['There are currently no listings! Please try again later.'],
+    });
+  } else {
+    return res.status(200).json({
+      userListings,
     });
   }
 });
