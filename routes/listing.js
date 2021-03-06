@@ -820,7 +820,8 @@ router.get('/popularlistings/:numberOfListing', async (req, res) => {
     });
     return;
   }
-  const listings = await getPopularFunc(numberOfListing);
+  const listings = await getPopularFunc(2);
+  // const listings = await getPopularFunc(numberOfListing);
   if (listings instanceof Error) {
     res.status(500).json({
       errors: 'Error occured while getting popular listings',
@@ -830,9 +831,20 @@ router.get('/popularlistings/:numberOfListing', async (req, res) => {
       .status(400)
       .json({ errors: 'Parameter argument provided should be integers' });
   } else {
+    if (listings.length < 5) {
+      const listingSet = new Set(listings);
+      const newListing = Listings.find({ active: true }).limit(5);
+      for (element of newListing) {
+        if (!listingSet.has(element)) {
+          listings.push(element);
+        }
+        if (listing.length == 5) {
+          break;
+        }
+      }
+    }
     res.status(200).json({ listings });
   }
-  ``;
 });
 
 router.get('/allPopularityListings', async (req, res) => {
