@@ -17,7 +17,8 @@ router.post(
       const ratingData = {}
       ratingData[mongoose.Types.ObjectId(String(req.user._id))] = {
         stars: parseInt(rating),
-        review: review
+        review: review,
+        timestamp: new Date()
       }
       // Check here to see if user has already submitted review for specific listing
       const listingCheck = await Listing.findById(req.params.listingId)
