@@ -820,30 +820,35 @@ router.get('/popularlistings/:numberOfListing', async (req, res) => {
     });
     return;
   }
-  const listings = await getPopularFunc(2);
-  // const listings = await getPopularFunc(numberOfListing);
-  if (listings instanceof Error) {
-    res.status(500).json({
-      errors: 'Error occured while getting popular listings',
-    });
-  } else if (isNaN(numberOfListing)) {
+  if (isNaN(numberOfListing)) {
     res
       .status(400)
       .json({ errors: 'Parameter argument provided should be integers' });
-  } else {
+    return;
+  }
+  try {
+    const listings = await getPopularFunc(numberOfListing);
     if (listings.length < 5) {
-      const listingSet = new Set(listings);
-      const newListing = Listings.find({ active: true }).limit(5);
+      const listingSet = new Set();
+      for (element of listings) {
+        listingSet.add(element.listingId);
+      }
+      const newListing = await Listing.find({ active: true }).limit(5);
       for (element of newListing) {
         if (!listingSet.has(element)) {
-          listings.push(element);
+          listings.push(element._id);
         }
-        if (listing.length == 5) {
+        if (listings.length == 5) {
           break;
         }
       }
     }
     res.status(200).json({ listings });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ error: 'There was an error while getting the popular listings' });
   }
 });
 
