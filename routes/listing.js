@@ -813,7 +813,10 @@ const getPopularFunc = (numberOfListings) => {
 };
 
 router.get('/popularlistings/:numberOfListing', async (req, res) => {
-  const numberOfListing = parseInt(req.params.numberOfListing);
+  let numberOfListing = parseInt(req.params.numberOfListing);
+  if (numberOfListing < 5) {
+    numberOfListing = 5;
+  }
   if (numberOfListing == 0) {
     res.status(200).json({
       listings: [],
@@ -836,7 +839,7 @@ router.get('/popularlistings/:numberOfListing', async (req, res) => {
       const newListing = await Listing.find({ active: true }).limit(5);
       for (element of newListing) {
         if (!listingSet.has(element)) {
-          listings.push(element._id);
+          listings.push({ listingId: element._id });
         }
         if (listings.length == 5) {
           break;
