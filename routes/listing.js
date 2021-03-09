@@ -891,26 +891,46 @@ const getPopularFunc = (numberOfListings) => {
 };
 
 router.get('/popularlistings/:numberOfListing', async (req, res) => {
-  const numberOfListing = parseInt(req.params.numberOfListing);
+  let numberOfListing = parseInt(req.params.numberOfListing);
+  if (numberOfListing < 5) {
+    numberOfListing = 5;
+  }
   if (numberOfListing == 0) {
     res.status(200).json({
       listings: [],
     });
     return;
   }
-  const listings = await getPopularFunc(numberOfListing);
-  if (listings instanceof Error) {
-    res.status(500).json({
-      errors: 'Error occured while getting popular listings',
-    });
-  } else if (isNaN(numberOfListing)) {
+  if (isNaN(numberOfListing)) {
     res
       .status(400)
       .json({ errors: 'Parameter argument provided should be integers' });
-  } else {
-    res.status(200).json({ listings });
+    return;
   }
-  ``;
+  try {
+    const listings = await getPopularFunc(numberOfListing);
+    if (listings.length < 5) {
+      const listingSet = new Set();
+      for (element of listings) {
+        listingSet.add(element.listingId);
+      }
+      const newListing = await Listing.find({ active: true }).limit(5);
+      for (element of newListing) {
+        if (!listingSet.has(element)) {
+          listings.push({ listingId: element._id });
+        }
+        if (listings.length == 5) {
+          break;
+        }
+      }
+    }
+    res.status(200).json({ listings });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ error: 'There was an error while getting the popular listings' });
+  }
 });
 
 router.get('/allPopularityListings', async (req, res) => {
