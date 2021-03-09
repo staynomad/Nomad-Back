@@ -48,8 +48,8 @@ const ListingSchema = new Schema({
     default: [],
   },
   rating: {
-    type: Object,
-    default: null,
+    type: Array,
+    default: [],
   },
   rules: {
     type: Array,
