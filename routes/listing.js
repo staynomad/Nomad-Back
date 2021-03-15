@@ -240,22 +240,22 @@ router.get('/active', async (req, res) => {
 });
 
 /* Get all listings by filter */
-router.post('/filteredListings', async (req, res) => {
+router.get('/filteredListings', async (req, res) => {
   const { minRatingClicked, startingPriceClicked, minGuestsClicked } = req.body;
   try {
     var listings;
     var filterClicked = minRatingClicked || startingPriceClicked; // or minGuestsClicked
     if (filterClicked) {
       listings = await Listing.find({
-        'rating.user': { $gte: req.body.minRating },
-        price: { $gte: req.body.startingPrice },
-      });
+        'rating.user': { $lte: req.body.minRating },
+        price: { $lte: req.body.startingPrice },
+      })
     } else if (minGuestsClicked) {
       // ideally want to get rid of this part
       listings = await Listing.find({
-        'rating.user': { $gte: req.body.minRating },
-        price: { $gte: req.body.startingPrice },
-        'details.maxpeople': { $gte: req.body.minGuests }, // doesn't work since this field is a String
+        'rating.user': { $lte: req.body.minRating },
+        price: { $lte: req.body.startingPrice },
+        'details.maxpeople': { $lte: req.body.minGuests }, // doesn't work since this field is a String
       });
     } else {
       console.log('no listings have been specified');
