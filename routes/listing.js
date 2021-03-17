@@ -245,11 +245,6 @@ router.get('/filteredListings', async (req, res) => {
   try {
     var listings;
     var filterClicked = minRatingClicked || startingPriceClicked || minGuestsClicked
-    if (!filterClicked) {
-      return res.status(400).json({
-        errors: ['No filters were selected.']
-      })
-    }
     minRating = 0, startingPrice = 10000; minGuests = 0;
     // if (minRatingClicked) {
     //   minRating = req.body.minRating
@@ -264,6 +259,7 @@ router.get('/filteredListings', async (req, res) => {
       // 'rating.user': { $gte: minRating },
       price: { $lte: startingPrice },
       'details.maxpeople': { $gte: minGuests },
+      active: true,
     });
     if (!listings) {
       res.status(404).json({
