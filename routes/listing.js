@@ -244,23 +244,27 @@ router.get('/filteredListings', async (req, res) => {
   const { minRatingClicked, startingPriceClicked, minGuestsClicked } = req.body;
   try {
     var listings;
-    var filterClicked = minRatingClicked || startingPriceClicked; // or minGuestsClicked
-    if (filterClicked) {
-      listings = await Listing.find({
-        'rating.user': { $lte: req.body.minRating },
-        price: { $lte: req.body.startingPrice },
+    var filterClicked = minRatingClicked || startingPriceClicked || minGuestsClicked
+    if (!filterClicked) {
+      return res.status(400).json({
+        errors: ['No filters were selected.']
       })
-    } else if (minGuestsClicked) {
-      // ideally want to get rid of this part
-      listings = await Listing.find({
-        'rating.user': { $lte: req.body.minRating },
-        price: { $lte: req.body.startingPrice },
-        'details.maxpeople': { $lte: req.body.minGuests }, // doesn't work since this field is a String
-      });
-    } else {
-      console.log('no listings have been specified');
-      listings = await Listing.find({});
     }
+    minRating = 0, startingPrice = 10000; minGuests = 0;
+    // if (minRatingClicked) {
+    //   minRating = req.body.minRating
+    // }
+    if (startingPriceClicked) {
+      startingPrice = req.body.startingPrice
+    }
+    if (minGuestsClicked) {
+      minGuests = req.body.minGuests
+    }
+    listings = await Listing.find({
+      // 'rating.user': { $gte: minRating },
+      price: { $lte: startingPrice },
+      'details.maxpeople': { $gte: minGuests },
+    });
     if (!listings) {
       res.status(404).json({
         errors: ['There are currently no listings! Please try again later.'],
