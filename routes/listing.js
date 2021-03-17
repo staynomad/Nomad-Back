@@ -240,19 +240,17 @@ router.get('/active', async (req, res) => {
 });
 
 /* Get all listings by filter */
-router.get('/filteredListings', async (req, res) => {
-  const { minRatingClicked, startingPriceClicked, minGuestsClicked } = req.body;
+router.post('/filteredListings', async (req, res) => {
   try {
     var listings;
-    var filterClicked = minRatingClicked || startingPriceClicked || minGuestsClicked
     minRating = 0, startingPrice = 10000; minGuests = 0;
     // if (minRatingClicked) {
     //   minRating = req.body.minRating
     // }
-    if (startingPriceClicked) {
+    if (req.body.startingPriceClicked) {
       startingPrice = req.body.startingPrice
     }
-    if (minGuestsClicked) {
+    if (req.body.minGuestsClicked) {
       minGuests = req.body.minGuests
     }
     listings = await Listing.find({
