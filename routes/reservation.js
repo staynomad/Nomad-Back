@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const { nodemailerPass } = require('../config')
 const Reservation = require("../models/reservation.model");
 const Listing = require("../models/listing.model")
 const { requireUserAuth, getUserInfo } = require("../utils");
@@ -99,8 +99,8 @@ router.put(
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'vhomesgroup@gmail.com',
-          pass: 'yowguokryuzjmbhj'
+          user: 'staynomadhomes@gmail.com',
+          pass: nodemailerPass
         }
       })
 
@@ -109,11 +109,11 @@ router.put(
 
       // Send confirmation email to guest
       const userMailOptions = {
-        from: '"VHomes" <reservations@vhomesgroup.com>',
+        from: '"NomΛd" <reservations@visitnomad.com>',
         to: guestInfo.email,
         subject: `Your Reservation has been Confirmed: ${bookedListing.title}`,
         text:
-          `Thank you for booking with VHomes! Here's your reservation information:
+          `Thank you for booking with NomΛd! Here's your reservation information:
 
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
@@ -122,7 +122,7 @@ router.put(
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Host name: ${hostInfo.name}
 
-          When you arrive at the property, make sure to checkin via the VHomes website in order to alert the host that you have arrived. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}. To cancel your reservation, please contact us at reservations@vhomesgroup.com. Hope you enjoy your stay!`
+          When you arrive at the property, make sure to checkin via the NomΛd website in order to alert the host that you have arrived. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}. To cancel your reservation, please contact us at contact@visitnomad.com. Hope you enjoy your stay!`
       }
       transporter.sendMail(userMailOptions, (error, info) => {
         if (error) {
@@ -135,11 +135,11 @@ router.put(
 
       // Send confirmation email to host
       const hostMailOptions = {
-        from: '"VHomes" <reservations@vhomesgroup.com>',
+        from: '"NomΛd" <reservations@visitnomad.com>',
         to: hostInfo.email,
         subject: `Your listing has been booked: ${bookedListing.title}`,
         text:
-          `Thank you for listing on VHomes! Here's the information regarding your listing reservation:
+          `Thank you for listing on NomΛd! Here's the information regarding your listing reservation:
 
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
@@ -148,7 +148,7 @@ router.put(
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Guest name: ${guestInfo.name}
 
-          We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}. To cancel this reservation, please contact us at reservations@vhomesgroup.com. Thank you for choosing VHomes!`
+          We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}. To cancel this reservation, please contact us at contact@visitnomad.com. Thank you for choosing NomΛd!`
       }
       transporter.sendMail(hostMailOptions, (error, info) => {
         if (error) {
@@ -269,8 +269,8 @@ router.post(
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'vhomesgroup@gmail.com',
-          pass: 'yowguokryuzjmbhj'
+          user: 'staynomadhomes@gmail.com',
+          pass: nodemailerPass
         }
       })
 
@@ -279,7 +279,7 @@ router.post(
 
       // Send checkin confirmation email to guest
       const userMailOptions = {
-        from: '"VHomes" <reservations@vhomesgroup.com>',
+        from: '"NomΛd" <reservations@visitnomad.com>',
         to: guestInfo.email,
         subject: `Thanks for checking out from ${bookedListing.title}!`,
         text:
@@ -304,7 +304,7 @@ router.post(
 
       // Send checkin confirmation email to host
       const hostMailOptions = {
-        from: '"VHomes" <reservations@vhomesgroup.com>',
+        from: '"NomΛd" <reservations@visitnomad.com>',
         to: hostInfo.email,
         subject: `${guestInfo.name} has checked out from ${bookedListing.title}!`,
         text:
@@ -315,7 +315,7 @@ router.post(
               Days: ${reservation.days[0]} to ${reservation.days[1]}
               Guest name: ${guestInfo.name}
 
-          Thank you for choosing VHomes!`
+          Thank you for choosing NomΛd!`
       }
       transporter.sendMail(hostMailOptions, (error, info) => {
         if (error) {
@@ -360,7 +360,7 @@ router.post(
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'vhomesgroup@gmail.com',
+          user: 'staynomadhomes@gmail.com',
           pass: 'yowguokryuzjmbhj'
         }
       })
@@ -370,7 +370,7 @@ router.post(
 
       // Send checkin confirmation email to guest
       const userMailOptions = {
-        from: '"VHomes" <reservations@vhomesgroup.com>',
+        from: '"NomΛd" <reservations@visitnomad.com>',
         to: guestInfo.email,
         subject: `Thanks for checking in to ${bookedListing.title}!`,
         text:
@@ -395,7 +395,7 @@ router.post(
 
       // Send checkin confirmation email to host
       const hostMailOptions = {
-        from: '"VHomes" <reservations@vhomesgroup.com>',
+        from: '"NomΛd" <reservations@visitnomad.com>',
         to: hostInfo.email,
         subject: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
         text:
@@ -406,7 +406,7 @@ router.post(
               Days: ${reservation.days[0]} to ${reservation.days[1]}
               Guest name: ${guestInfo.name}
 
-          Thank you for choosing VHomes!`
+          Thank you for choosing NomΛd!`
       }
       transporter.sendMail(hostMailOptions, (error, info) => {
         if (error) {

@@ -7,4 +7,5 @@ module.exports = {
     },
     baseURL: process.env.NODE_ENV === 'production' ? 'https://visitnomad.com' : 'http://localhost:3000',
     exportURL: process.env.NODE_ENV === 'production' ? 'https://exports.visitnomad.com' : 'http://localhost:8080',
+    nodemailerPass: 'lztihdfmqztstuiw',
 };

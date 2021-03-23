@@ -1,5 +1,4 @@
-const { baseURL } = require('../config')
-
+const { baseURL, nodemailerPass } = require('../config')
 const express = require("express");
 const router = express.Router();
 
@@ -15,14 +14,14 @@ router.post(
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'vhomesgroup@gmail.com',
-          pass: 'yowguokryuzjmbhj'
+          user: 'staynomadhomes@gmail.com',
+          pass: nodemailerPass
         }
       })
       const userMailOptions = {
-        from: '"VHomes" <reservations@vhomesgroup.com>',
+        from: '"NomΛd" <reservations@visitnomad.com>',
         to: email,
-        subject: `VHomes host account email verification needed`,
+        subject: `NomΛd email verification needed`,
         text:
           `Please click the following link to verify your account
            ${baseURL}/accountVerification/${email}`,
