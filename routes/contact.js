@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body } = require('express-validator');
 const nodemailer = require('nodemailer');
+const { nodemailerPass } = require('../config')
 
 router.post(
   '/',
@@ -13,14 +14,14 @@ router.post(
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'vhomesgroup@gmail.com',
-          pass: 'yowguokryuzjmbhj'
+          user: 'staynomadhomes@gmail.com',
+          pass: nodemailerPass
         }
       })
       const ccto = [email, 'aiden@vhomesgroup.com']
       const userMailOptions = {
-        from: `"${name}" <vhomesgroup@gmail.com>`,
-        to: "contact@vhomesgroup.com",
+        from: `"${name}" <staynomadhomes@gmail.com>`,
+        to: "contact@visitnomad.com",
         cc: ccto,
         subject: subject,
         text:

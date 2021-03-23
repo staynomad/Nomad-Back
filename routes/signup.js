@@ -2,7 +2,6 @@ const express = require("express")
 const User = require("../models/user.model")
 const { getUserToken, passGenService } = require("../utils")
 const { check, body, validationResult } = require('express-validator')
-const nodemailer = require('nodemailer')
 const axios = require('axios')
 const router = express.Router()
 
