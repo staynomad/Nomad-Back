@@ -13,8 +13,8 @@ MAPBOX_KEY = os.getenv('MAPBOX_TOKEN')
 myclient = pymongo.MongoClient(MONGO_URL)
 
 # Comment/Uncomment the relevant line to update the relevant collection
-# mydb =  myclient['VHomes-Production']
-mydb = myclient['VHomes']
+mydb =  myclient['VHomes-Production']
+# mydb = myclient['VHomes']
 
 mycol = mydb['listings']
 
@@ -23,11 +23,11 @@ for x in mycol.find():
     # If the current listing doesn't have any coordinates, add them. 
     if not x.get('coords'):  
         loc = x.get('location')
-        
-        print("Updating " + loc)
 
         # Get the address of the listing
         address = loc.get('street') + ' ' + loc.get('city') + ' '  + loc.get('state') + ' '  + loc.get('country') + ' '  + loc.get('zipcode')
+
+        print("Updating " + address)
 
         # Query the address and output and get the coordinates
         query = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' + address + '.json?access_token=' + MAPBOX_KEY
@@ -35,8 +35,8 @@ for x in mycol.find():
         features = output.get('features')
         coordinates = features[0].get('geometry').get('coordinates')
         
-        lat = coordinates[0]
-        lng = coordinates[1]
+        lng = coordinates[0]
+        lat = coordinates[1]
 
         # Get the id of the listing
         currID = x.get('_id')
