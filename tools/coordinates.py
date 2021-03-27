@@ -11,7 +11,11 @@ load_dotenv()
 MONGO_URL = os.getenv('DATABASE_URI')
 MAPBOX_KEY = os.getenv('MAPBOX_TOKEN')
 myclient = pymongo.MongoClient(MONGO_URL)
+
+# Comment/Uncomment the relevant line to update the relevant collection
+# mydb =  myclient['VHomes-Production']
 mydb = myclient['VHomes']
+
 mycol = mydb['listings']
 
 # Search through the current listings
