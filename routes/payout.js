@@ -19,9 +19,9 @@ router.post('/payout', async(req, res) => {
 
 
 
-    const accountLinks = await stripe.accountLinks.create({
+    const accountLink = await stripe.accountLinks.create({
     account: account.id,
-    refresh_url: `${baseURL}/payout`,
+    refresh_url: `${baseURL}/myAccount`,
     return_url: `${baseURL}`,
     type: 'account_onboarding',
     });
