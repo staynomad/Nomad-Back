@@ -39,6 +39,7 @@ router.post(
         token,
         userId: user.id,
         isHost: user.isHost,
+        user: user,
       });
     } catch (error) {
       next(error);
