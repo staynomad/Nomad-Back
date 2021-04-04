@@ -54,6 +54,7 @@ app.use('/housekeeping', housekeepingRouter);
 // get esClient setup and running
 // require('./config/esClientSetup');
 
+
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
   useFindAndModify: false, // flag needed to enable findOneAndUpdate
