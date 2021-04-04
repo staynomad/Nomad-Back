@@ -8,13 +8,12 @@ const stripe = require('stripe')(stripeSecretKey);
 
 router.post('/payout', async(req, res) => {
 
-
-
+  console.log("hi")
 
     const account = await stripe.accounts.create({
         type: 'express',
         country: 'US',
-        email: 'jenny.rosen@example.com',
+        // email: 'jenny.rosen@example.com',
       });
 
 
@@ -25,8 +24,15 @@ router.post('/payout', async(req, res) => {
     return_url: `${baseURL}`,
     type: 'account_onboarding',
     });
+
+    const redirectURL = accountLink['url'];
+
+    return res.status(200).json({
+      link: redirectURL,
+    })
 });
 
+module.exports = router;
 
 
 

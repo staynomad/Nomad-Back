@@ -66,6 +66,15 @@ router.post('/create-session', async (req, res) => {
         },
       ],
 
+      // // Allows transfer to connected account but need to make sure their account is connected first 
+      // payment_intent_data: {
+      //   application_fee_amount: 123,
+      //   transfer_data: {
+      //     destination: '{{CONNECTED_ACCOUNT_ID}}',
+      //   },
+      // },
+
+
       mode: 'payment',
       allow_promotion_codes: true,
       success_url: `${baseURL}/completeReservation/${listingId}/${reservationId}`,
