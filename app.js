@@ -20,6 +20,7 @@ const subscribeRouter = require('./routes/subscribe');
 const contactRouter = require('./routes/contact');
 const googleLoginRouter = require('./routes/googleLogin');
 const exportsRouter = require('./routes/exports.js');
+const adminVerifyRouter = require('./routes/adminVerification');
 
 const app = express();
 app.use(bodyParser.json());
@@ -40,6 +41,7 @@ app.use('/subscribe', subscribeRouter);
 app.use('/contact', contactRouter);
 app.use('/googleLogin', googleLoginRouter);
 app.use('/exports', exportsRouter);
+app.use('/adminVerify', adminVerifyRouter);
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
@@ -64,9 +66,9 @@ app.get('/', async (req, res) => {
 // error handler\
 app.use((err, req, res, next) => {
   console.log(err);
-  const isProduction = environment === "production";
+  const isProduction = environment === 'production';
   res.status(err.status || 500).json({
-    title: err.title || "Server Error",
+    title: err.title || 'Server Error',
     errors: err.errors,
     stack: isProduction ? null : err.stack,
   });
