@@ -171,6 +171,17 @@ router.put(
   }
 );
 
+// Get ALL reservations. Not requiring user auth
+router.get(
+  "/",
+  async (req, res) => {
+    const reservations = await Reservation.find()
+    return res.status(200).json({
+      reservations: reservations
+    })
+  }
+)
+
 // Get all reservations by userId
 router.get(
   "/getByUser",
