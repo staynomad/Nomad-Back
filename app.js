@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const morgan = require('morgan');
 
 const { DATABASE_URI, environment } = require('./config');
-// const contactRouter = require('./routes/contact');
 const loginRouter = require('./routes/login');
 const signUpRouter = require('./routes/signup');
 const roommateRouter = require('./routes/roommates');
@@ -21,6 +20,7 @@ const contactRouter = require('./routes/contact');
 const googleLoginRouter = require('./routes/googleLogin');
 const exportsRouter = require('./routes/exports.js');
 const adminVerifyRouter = require('./routes/adminVerification');
+const containerRouter = require('./routes/container')
 
 const app = express();
 app.use(bodyParser.json());
@@ -42,6 +42,7 @@ app.use('/contact', contactRouter);
 app.use('/googleLogin', googleLoginRouter);
 app.use('/exports', exportsRouter);
 app.use('/adminVerify', adminVerifyRouter);
+app.use('/container', containerRouter);
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
