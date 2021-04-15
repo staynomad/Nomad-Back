@@ -43,6 +43,8 @@ app.use('/googleLogin', googleLoginRouter);
 app.use('/exports', exportsRouter);
 app.use('/adminVerify', adminVerifyRouter);
 
+const elasticsearch = require('./elastic-search/client');
+
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
   useFindAndModify: false, // flag needed to enable findOneAndUpdate
