@@ -80,9 +80,10 @@ router.post('/addListing',
           error: 'Listing does not exist.',
         });
       }
+      const update = { $push: { listings: listingId } }
       const existingContainer = await Container.findOneAndUpdate({
         title: title,
-        { $push: { listings: listingId } }
+        update
       })
       if (!existingContainer) {
         return res.status(404).json({
@@ -139,9 +140,10 @@ router.delete('/deleteListing',
   async (req, res) => {
     try {
       const { title, listingId } = req.body
+      const update = { $pull: { listings: listingId } }
       const existingContainer = await Container.findOneAndUpdate({
-        { title: title },
-        { $pull: { listings: listingId } }
+        title: title,
+        update
       })
       if (!existingContainer) {
         return res.status(404).json({
