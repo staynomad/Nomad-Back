@@ -167,7 +167,7 @@ router.delete('/deleteListing',
 INPUT:
   Null
 */
-router.get('/byTitle/:title',
+router.get('/allContainers',
   async (req, res) => {
     try {
       const containers = await Container.find()
