@@ -163,4 +163,30 @@ router.delete('/deleteListing',
 })
 
 
+/*
+INPUT:
+  Null
+*/
+router.get('/byTitle/:title',
+  async (req, res) => {
+    try {
+      const containers = await Container.find()
+      if (!containers) {
+        return res.status(404).json({
+          error: `There are no containers.`
+        })
+      }
+      return res.status(200).json({
+        containers
+      })
+    }
+    catch(error) {
+      console.error(error);
+      res.status(500).json({
+        error: "Problem connecting with database. Please try again!"
+      });
+    }
+})
+
+
 module.exports = router
