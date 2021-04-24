@@ -1,83 +1,99 @@
-const express = require("express");
+const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const { baseURL, nodemailerPass } = require('../config/index');
-const Listing = require("../models/listing.model");
-const { requireUserAuth, getUserInfo } = require("../utils");
-const { multerUploads, uploadImagesToAWS } = require("./photos");
+const Listing = require('../models/listing.model');
+const { requireUserAuth, getUserInfo } = require('../utils');
+const { multerUploads, uploadImagesToAWS } = require('./photos');
 // const { check, validationResult } = require("express-validator");
 const popularity = require('../models/popularity.model');
+const { insertIndex } = require('../elastic-search/esClient');
+const {
+  listingIndex,
+  listingType,
+  convertListing,
+} = require('../elastic-search/esClientconst');
 
 const router = express.Router();
 
-const fs = require('fs')
-const ics = require('ics')
+const fs = require('fs');
+const ics = require('ics');
 
 /* Add a listing */
-router.post("/createListing", multerUploads, requireUserAuth, async (req, res) => {
-  try {
-    const {
-      title,
-      location,
-      description,
-      details,
-      price,
-      available,
-      booked,
-      calendarURL,
-      amenities,
-    } = JSON.parse(req.files['listingData'][0].buffer.toString()).newListing;
+router.post(
+  '/createListing',
+  multerUploads,
+  requireUserAuth,
+  async (req, res) => {
+    try {
+      const {
+        title,
+        location,
+        description,
+        details,
+        price,
+        available,
+        booked,
+        calendarURL,
+        amenities,
+      } = JSON.parse(req.files['listingData'][0].buffer.toString()).newListing;
 
-    console.log(JSON.parse(req.files['listingData'][0].buffer.toString()).newListing)
+      console.log(
+        JSON.parse(req.files['listingData'][0].buffer.toString()).newListing
+      );
 
-    const imageUploadRes = await uploadImagesToAWS(req.files['image']);
+      const imageUploadRes = await uploadImagesToAWS(req.files['image']);
 
-    const verifyData = {
-      title,
-      location,
-      pictures: imageUploadRes,
-      description,
-      details,
-      price,
-      available,
-    };
-
-    for (const key in verifyData) {
-      if (verifyData.hasOwnProperty(key)) {
-        if (!verifyData[key]) {
-          return res.status(400).json({
-            error: `Entry for ${key} is invalid`,
-          });
-        };
+      const verifyData = {
+        title,
+        location,
+        pictures: imageUploadRes,
+        description,
+        details,
+        price,
+        available,
       };
-    };
 
-    const newListing = await new Listing({
-      title,
-      location,
-      pictures: imageUploadRes,
-      description,
-      details,
-      price,
-      available,
-      booked,
-      calendarURL,
-      amenities,
-      active: false,
-      userId: req.user._id,
-    }).save();
+      for (const key in verifyData) {
+        if (verifyData.hasOwnProperty(key)) {
+          if (!verifyData[key]) {
+            return res.status(400).json({
+              error: `Entry for ${key} is invalid`,
+            });
+          }
+        }
+      }
 
-    // Need to talk about return values, validation, etc.
-    res.status(201).json({
-      newListingId: newListing._id,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ['Error occurred while creating listing. Please try again!'],
-    });
+      const newListing = await new Listing({
+        title,
+        location,
+        pictures: imageUploadRes,
+        description,
+        details,
+        price,
+        available,
+        booked,
+        calendarURL,
+        amenities,
+        active: false,
+        userId: req.user._id,
+      }).save();
+
+      // index the listing to elastic search
+      await insertIndex(listingIndex, listingType, convertListing(newListing));
+
+      // Need to talk about return values, validation, etc.
+      res.status(201).json({
+        newListingId: newListing._id,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        errors: ['Error occurred while creating listing. Please try again!'],
+      });
+    }
   }
-});
+);
 
 // Change listing's active field to true
 router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
@@ -135,28 +151,32 @@ router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
 });
 
 // Change listing's active field to false
-router.put('/deactivateListing/:listingId', requireUserAuth, async (req, res) => {
-  try {
-    const listing = await Listing.findOneAndUpdate(
-      { _id: req.params.listingId },
-      { $set: { active: false } },
-      { returnNewDocument: true }
-    );
-    if (!listing) {
-      return res.status(400).json({
-        error: 'Listing does not exist. Please try again.',
+router.put(
+  '/deactivateListing/:listingId',
+  requireUserAuth,
+  async (req, res) => {
+    try {
+      const listing = await Listing.findOneAndUpdate(
+        { _id: req.params.listingId },
+        { $set: { active: false } },
+        { returnNewDocument: true }
+      );
+      if (!listing) {
+        return res.status(400).json({
+          error: 'Listing does not exist. Please try again.',
+        });
+      }
+      return res.status(200).json({
+        message: 'Successfully activated listing',
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: 'Error occurred while deactivating listing. Please try again!',
       });
     }
-    return res.status(200).json({
-      message: 'Successfully activated listing',
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: 'Error occurred while deactivating listing. Please try again!',
-    });
   }
-});
+);
 
 /* Update a listing */
 router.put('/editListing/:listingId', requireUserAuth, async (req, res) => {
@@ -243,15 +263,16 @@ router.get('/active', async (req, res) => {
 router.post('/filteredListings', async (req, res) => {
   try {
     var listings;
-    minRating = 0, startingPrice = 10000; minGuests = 0;
+    (minRating = 0), (startingPrice = 10000);
+    minGuests = 0;
     // if (minRatingClicked) {
     //   minRating = req.body.minRating
     // }
     if (req.body.startingPriceClicked) {
-      startingPrice = req.body.startingPrice
+      startingPrice = req.body.startingPrice;
     }
     if (req.body.minGuestsClicked) {
-      minGuests = req.body.minGuests
+      minGuests = req.body.minGuests;
     }
     listings = await Listing.find({
       // 'rating.user': { $gte: minRating },
@@ -277,26 +298,31 @@ router.post('/filteredListings', async (req, res) => {
 });
 
 /* Get all listings in a radius around lat and lng */
-router.get("/byRadius", async (req, res) => {
+router.get('/byRadius', async (req, res) => {
   try {
     await Listing.find({}, (err, listingDocs) => {
       if (err || !listingDocs) {
         res.status(404).json({
-          errors: ["There are currently no listings! Please try again later."],
+          errors: ['There are currently no listings! Please try again later.'],
         });
       } else {
         // Radius will be in kilometers
         const { lat, lng, radiusInKilometers } = req.query;
 
-        const listingsInRadius = listingDocs.filter(listing => {
-          if (!listing.coords.listingLat || !listing.coords.listingLng || !listing.active) return false;
+        const listingsInRadius = listingDocs.filter((listing) => {
+          if (
+            !listing.coords.listingLat ||
+            !listing.coords.listingLng ||
+            !listing.active
+          )
+            return false;
           else {
             const { listingLat, listingLng } = listing.coords;
             const listingLatConverted = parseFloat(listingLat, 10);
             const listingLngConverted = parseFloat(listingLng, 10);
 
             const ky = 40000 / 360;
-            const kx = Math.cos(Math.PI * lat / 180.0) * ky;
+            const kx = Math.cos((Math.PI * lat) / 180.0) * ky;
             const dx = Math.abs(lng - listingLngConverted) * kx;
             const dy = Math.abs(lat - listingLatConverted) * ky;
 
@@ -305,7 +331,7 @@ router.get("/byRadius", async (req, res) => {
             // console.log(Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers)
 
             return Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers;
-          };
+          }
         });
 
         res.status(200).json({
@@ -316,17 +342,15 @@ router.get("/byRadius", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ["Error occurred while getting listings. Please try again!"],
+      errors: ['Error occurred while getting listings. Please try again!'],
     });
   }
 });
 
 const getByUserIdFunc = async (userId) => {
-  return await Listing
-    .find({ userId: userId })
-    .catch((err) => {
-      return err;
-    });
+  return await Listing.find({ userId: userId }).catch((err) => {
+    return err;
+  });
 };
 
 /* Get all listings belonging to user in parameter */
@@ -626,14 +650,16 @@ router.put('/acceptListingTransfer', requireUserAuth, async (req, res) => {
             subject: `Your Transfer Was Successful!`,
             // we'll need to add in the new host's name here
             text: `
-                ${req.user.name
-              } has accepted your invitation! You will no longer have access to the following listing(s):
+                ${
+                  req.user.name
+                } has accepted your invitation! You will no longer have access to the following listing(s):
                   ${listingEmailBody.join('\n')}
               `,
             html: `
                 <p>
-                  ${req.user.name
-              } has accepted your invitation! You will no longer have access to the following listing(s):
+                  ${
+                    req.user.name
+                  } has accepted your invitation! You will no longer have access to the following listing(s):
                   ${listingEmailBody.join('\n')}
                 </p>
               `,
@@ -748,14 +774,16 @@ router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
             subject: `Your Transfer Was Rejected`,
             // we'll need to add in the new host's name here
             text: `
-                ${req.user.name
-              } has rejected your invitation. You will retain access to the following listing(s):
+                ${
+                  req.user.name
+                } has rejected your invitation. You will retain access to the following listing(s):
                   ${listingEmailBody.join('\n')}
               `,
             html: `
                 <p>
-                ${req.user.name
-              } has rejected your invitation. You will retain access to the following listing(s):
+                ${
+                  req.user.name
+                } has rejected your invitation. You will retain access to the following listing(s):
                   ${listingEmailBody.join('\n')}
                 </p>
               `,
@@ -949,49 +977,68 @@ router.get('/allPopularityListings', async (req, res) => {
 // });
 
 router.post('/exportListing', async (req, res) => {
-  const { userId, listingId, listingCalendar } = req.body
-  var curr = new Date;
+  const { userId, listingId, listingCalendar } = req.body;
+  var curr = new Date();
   var events = [
     {
       title: 'NomΛd Listing',
       description: 'UNAVAILABLE',
       url: `${baseURL}/listing/${listingId}`,
       start: [curr.getFullYear(), 1, 1],
-      end: [listingCalendar.available[0].substring(0, 4), listingCalendar.available[0].substring(5, 7), listingCalendar.available[0].substring(8)]
+      end: [
+        listingCalendar.available[0].substring(0, 4),
+        listingCalendar.available[0].substring(5, 7),
+        listingCalendar.available[0].substring(8),
+      ],
     },
     {
       title: 'NomΛd Listing',
       description: 'UNAVAILABLE',
       url: `${baseURL}/listing/${listingId}`,
-      start: [listingCalendar.available[1].substring(0, 4), listingCalendar.available[1].substring(5, 7), listingCalendar.available[1].substring(8)],
-      end: [curr.getFullYear() + 1, 12, 31]
+      start: [
+        listingCalendar.available[1].substring(0, 4),
+        listingCalendar.available[1].substring(5, 7),
+        listingCalendar.available[1].substring(8),
+      ],
+      end: [curr.getFullYear() + 1, 12, 31],
     },
-  ]
+  ];
   for (let i = 0; i < listingCalendar.booked.length; i++) {
     events.push({
       title: 'NomΛd Listing',
       description: 'UNAVAILABLE',
       url: `${baseURL}/listing/${listingId}`,
-      start: [listingCalendar.booked[i].start.substring(0, 4), listingCalendar.booked[i].start.substring(5, 7), listingCalendar.booked[i].start.substring(8)],
-      end: [listingCalendar.booked[i].end.substring(0, 4), listingCalendar.booked[i].end.substring(5, 7), listingCalendar.booked[i].end.substring(8)],
-    })
+      start: [
+        listingCalendar.booked[i].start.substring(0, 4),
+        listingCalendar.booked[i].start.substring(5, 7),
+        listingCalendar.booked[i].start.substring(8),
+      ],
+      end: [
+        listingCalendar.booked[i].end.substring(0, 4),
+        listingCalendar.booked[i].end.substring(5, 7),
+        listingCalendar.booked[i].end.substring(8),
+      ],
+    });
   }
   ics.createEvents(events, (error, value) => {
     if (error) {
-      console.log(error)
+      console.log(error);
     }
     fs.writeFile(
       `./exports/${userId}-${listingId}.ics`,
       value,
       { flag: 'w' },
       (err) => {
-        if (err) return res.status(400).json({
-          errors: "Unable to export file."
-        });
-        return res.status(200).json({ url: `${exportURL}/exports/${userId}-${listingId}.ics` })
+        if (err)
+          return res.status(400).json({
+            errors: 'Unable to export file.',
+          });
+        return res
+          .status(200)
+          .json({ url: `${exportURL}/exports/${userId}-${listingId}.ics` });
       }
-    )
-  })
+    );
+  });
 });
 
 module.exports = router;

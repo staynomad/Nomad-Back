@@ -43,7 +43,8 @@ app.use('/googleLogin', googleLoginRouter);
 app.use('/exports', exportsRouter);
 app.use('/adminVerify', adminVerifyRouter);
 
-const elasticsearch = require('./elastic-search/client');
+// get esClient setup and running
+require('./config/esClientSetup');
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
