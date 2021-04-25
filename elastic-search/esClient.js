@@ -113,7 +113,7 @@ const searchIndex = async function (indexName, type, payload) {
   //   {
   //     "query": {
   //         "multi_match" : {
-  //             "query" : "heursitic reserch",
+  //             "query" : itemToSearch,
   //             "fields": ["phrase","position"],
   //             "fuzziness": 2
   //         }
@@ -130,4 +130,5 @@ module.exports = {
   getIndex,
   bulkIndex,
   insertIndex,
+  searchIndex,
 };

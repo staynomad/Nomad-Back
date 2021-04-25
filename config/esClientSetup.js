@@ -6,10 +6,12 @@ const {
   getIndex,
   bulkIndex,
   insertDoc,
+  searchIndex,
 } = require('../elastic-search/esClient');
 const {
   listingType,
   listingIndex,
+  convertListing,
 } = require('../elastic-search/esClientconst');
 const ListingModel = require('../models/listing.model');
 
@@ -19,8 +21,10 @@ const listingMap = {
     street: { type: 'text' },
     city: { type: 'text' },
     state: { type: 'text' },
+    stateAbbrv: { type: 'text' },
     country: { type: 'text' },
     zipCode: { type: 'keyword' },
+    listingID: { enabled: false },
   },
 };
 const createListingIndex = async () => {
@@ -29,7 +33,7 @@ const createListingIndex = async () => {
     if (!isExist) {
       index = await createIndex(listingIndex, listingType, listingMap);
       const listings = await ListingModel.find({ active: true });
-      const data = listings.map((listing) => convertListing(l));
+      const data = listings.map((listing) => convertListing(listing));
       await bulkIndex(listingIndex, listingType, data);
     } else {
       index = await getIndex(listingIndex);
