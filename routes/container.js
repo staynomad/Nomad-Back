@@ -12,9 +12,7 @@ router.post('/',
   async (req, res) => {
     try {
       const { title, listings } = req.body
-      const existingContainer = await Container.find({
-        title: title,
-      })
+      const existingContainer = await Container.findOne({ title })
       if (existingContainer) {
         return res.status(400).json({
           error: `A container called '${title}' already exists.`
