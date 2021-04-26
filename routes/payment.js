@@ -4,6 +4,7 @@ const router = express.Router();
 const Listing = require('../models/listing.model');
 const Reservation = require('../models/reservation.model');
 const { baseURL } = require('../config/index');
+const User = require('../models/user.model');
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 // const stripePublicKey = process.env.STRIPE_PUBLIC_KEY
@@ -32,6 +33,19 @@ router.post('/create-session', async (req, res) => {
         'error': 'Reservation not Found',
       });
     };
+
+    const user = await User.findOne({
+      '_id': listingDetails.user,
+    })
+    if(!user) {
+      return res.status(404).json({
+        'error': 'Host not Found',
+      });
+    };
+
+    
+
+
     // address here isn't needed, will keep temporarily in case we revert back
     const address = `${listingDetails.location.street}, ${listingDetails.location.city}, ${listingDetails.location.state}, ${listingDetails.location.zipcode}`;
     const parseDateOne = new Date(Date.parse(dates[0]));
@@ -42,12 +56,14 @@ router.post('/create-session', async (req, res) => {
       month: parseDateOne.getUTCMonth() + 1,
       year: parseDateOne.getUTCFullYear(),
     };
+
     const dateTwo = {
       day: parseDateTwo.getUTCDate(),
       month: parseDateTwo.getUTCMonth() + 1,
       year: parseDateTwo.getUTCFullYear(),
     };
 
+    const stripeId = user.stripeId;
     const guestFee = reservationDetails.guestFee;
     const listingPrice = listingDetails.price;
 
@@ -68,7 +84,7 @@ router.post('/create-session', async (req, res) => {
             currency: 'usd',
             application_fee_amount: applicationFee,
             transfer_data: {
-              destination: '{{CONNECTED_ACCOUNT_ID}}',
+              destination: stripeId,
             },
             product_data: {
               name: `${listingDetails.title}`,

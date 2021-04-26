@@ -10,6 +10,7 @@ router.post('/payout', async(req, res) => {
 
   console.log("hi")
 
+  // TODO: Broken b/c connect api not connectd on stripe, go to https://stripe.com/docs/connect. 
     const account = await stripe.accounts.create({
         type: 'express',
         country: 'US',
