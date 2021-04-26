@@ -18,6 +18,7 @@ try:
     for i in range(len(lines)):
         if (lines[i].find('DATABASE_URI=') == 0):
             lines[i] = DEV_URI if (env_type == 'dev') else PROD_URI
+            print(f"Successfully switched to {env_type} database")
     dotenv_w = open('../.env', 'w')
     dotenv_w.write('\n'.join(lines))
 
