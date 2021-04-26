@@ -6,7 +6,7 @@ const Reservation = require('../models/reservation.model');
 const { baseURL } = require('../config/index');
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-const stripePublicKey = process.env.STRIPE_PUBLIC_KEY
+// const stripePublicKey = process.env.STRIPE_PUBLIC_KEY
 
 const stripe = require('stripe')(stripeSecretKey);
 
@@ -14,7 +14,7 @@ const stripe = require('stripe')(stripeSecretKey);
 router.post('/create-session', async (req, res) => {
   try {
     const { dates, days, listingId, reservationId } = req.body
-
+    console.log(listingId);  
     const listingDetails = await Listing.findOne({
       '_id': listingId
     })
@@ -48,34 +48,39 @@ router.post('/create-session', async (req, res) => {
       year: parseDateTwo.getUTCFullYear(),
     };
 
+    const guestFee = reservationDetails.guestFee;
+    const listingPrice = listingDetails.price;
+
+
+    // Total price of the listing including guest fee. Host fee + our profit is taken from this. 
+    const listingTotal = (listingPrice * days * 100) + (guestFee * 100);
+
+    // Price we make - Host Fee (1%) + Guest Fee (10%)
+    const applicationFee = (listingPrice * days * 100) * 0.01 + (guestFee * 100)
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
           description: `Reservation Dates: ${dateOne.month}/${dateOne.day}/${dateOne.year} - ${dateTwo.month}/${dateTwo.day}/${dateTwo.year} |
-                        Guest Fees: 10%, $${reservationDetails.guestFee}`,
+                        Guest Fees: 10%, $${guestFee}`,
           price_data: {
             currency: 'usd',
+            application_fee_amount: applicationFee,
+            transfer_data: {
+              destination: '{{CONNECTED_ACCOUNT_ID}}',
+            },
             product_data: {
               name: `${listingDetails.title}`,
               images: [listingDetails.pictures[0]],
             },
-            unit_amount: (listingDetails.price * days * 100) + (reservationDetails.guestFee * 100),
+            unit_amount: listingTotal,
           },
           quantity: 1,
         },
       ],
 
-      // // Allows transfer to connected account but need to make sure their account is connected first 
-      // payment_intent_data: {
-      //   application_fee_amount: 123,
-      //   transfer_data: {
-      //     destination: '{{CONNECTED_ACCOUNT_ID}}',
-      //   },
-      // },
-
-
-      mode: 'payment',
+        mode: 'payment',
       allow_promotion_codes: true,
       success_url: `${baseURL}/completeReservation/${listingId}/${reservationId}`,
       cancel_url: `${baseURL}/listing/${listingId}`,
