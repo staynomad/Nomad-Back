@@ -48,13 +48,15 @@ router.delete('/byTitle',
       const existingContainer = await Container.findOneAndRemove({
         title: title,
       }, (err) => {
-        return res.status(400).json({
-          error: "No containers exist with that title."
-        })
-        console.log(err)
+        if (err) {
+          return res.status(400).json({
+            error: "No containers exist with that title."
+          })
+          console.log(err)
+        }
       })
       return res.status(200).json({
-        message: `Successfully deleted ${req.params.title}`
+        message: `Successfully deleted ${title}`
       })
     }
     catch(error) {
@@ -112,7 +114,7 @@ router.get('/byTitle',
   async (req, res) => {
     try {
       const { title } = req.body;
-      const existingContainer = await Container.find({
+      const existingContainer = await Container.findOne({
         title: title,
       })
       if (!existingContainer) {
