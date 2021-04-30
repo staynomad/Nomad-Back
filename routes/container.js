@@ -39,13 +39,14 @@ router.post('/',
 
 /*
 INPUT:
-  title (param) - string name of container to delete
+  title (body) - string name of container to delete
 */
-router.delete('/byTitle/:title',
+router.delete('/byTitle',
   async (req, res) => {
     try {
+      const { title } = req.body
       const existingContainer = await Container.findOneAndRemove({
-        title: req.params.title,
+        title: title,
       }, (err) => {
         return res.status(400).json({
           error: "No containers exist with that title."
@@ -105,13 +106,14 @@ router.post('/addListing',
 
 /*
 INPUT:
-  title (param) - string name of container to delete
+  title (body) - string name of container to return
 */
-router.get('/byTitle/:title',
+router.get('/byTitle',
   async (req, res) => {
     try {
+      const { title } = req.body;
       const existingContainer = await Container.find({
-        title: req.params.title,
+        title: title,
       })
       if (!existingContainer) {
         return res.status(404).json({
