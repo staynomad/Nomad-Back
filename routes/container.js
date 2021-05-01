@@ -12,7 +12,7 @@ router.post('/',
   async (req, res) => {
     try {
       const { title, listings } = req.body
-      const existingContainer = await Container.find({
+      const existingContainer = await Container.findOne({
         title: title,
       })
       if (existingContainer) {
