@@ -144,18 +144,28 @@ router.delete('/deleteListing',
   async (req, res) => {
     try {
       const { title, listingId } = req.body
-      const update = { $pull: { listings: listingId } }
-      const existingContainer = await Container.findOneAndUpdate({
+      const existingContainer = await Container.findOne({
         title: title,
-        update
       })
       if (!existingContainer) {
         return res.status(404).json({
           error: `There is no container titled '${title}'`
         })
       }
-      return res.status(200).json({
-        message: `Successfully removed ${listingId} from '${title}'`
+      const idx = existingContainer.listings.indexOf(listingId)
+      if (idx !== -1) {
+        let updatedListings = existingContainer.listings
+        updatedListings.splice(idx, 1)
+        const updatedContainer = await Container.findOneAndUpdate({
+          title: title,
+          listings: updatedListings
+        })
+        return res.status(200).json({
+          message: `Successfully removed ${listingId} from '${title}'`
+        })
+      }
+      return res.status(404).json({
+        message: `${listingId} does not exist in '${title}'`
       })
     }
     catch(error) {
