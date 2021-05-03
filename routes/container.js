@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router()
 const Container = require('../models/container.model');
-
+const Listing = require('../models/listing.model')
 
 /*
 INPUT:
@@ -12,6 +12,16 @@ router.post('/',
   async (req, res) => {
     try {
       const { title, listings } = req.body
+      for (let i = 0; i < listings.length; i ++) {
+        const listing = await Listing.findOne({
+          _id: listings[i].repeat(12)
+        })
+        if (!listing) {
+          return res.status(400).json({
+            error: `${listings[i]} is not a valid listingId`
+          })
+        }
+      }
       const existingContainer = await Container.findOne({
         title: title,
       })
