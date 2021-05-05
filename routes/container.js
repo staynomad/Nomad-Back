@@ -12,9 +12,14 @@ router.post('/',
   async (req, res) => {
     try {
       const { title, listings } = req.body
-      for (let i = 0; i < listings.length; i ++) {
+      for (let i = 0; i < listings.length; i++) {
+        const len = listings[i].length
+        let temp = listings[i]
+        for (let j = len; j < 12; j++) {
+          temp += '0'
+        }
         const listing = await Listing.findOne({
-          _id: listings[i].repeat(12)
+          _id: temp
         })
         if (!listing) {
           return res.status(400).json({
