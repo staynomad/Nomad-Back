@@ -6,7 +6,7 @@ const { Array, Boolean, String } = Schema.Types;
 const ContainerSchema = new Schema({
     title: {
         type: String,
-        required: [true, 'Name cannot be blank'],
+        required: true,
     },
     listings: {
         type: Array,

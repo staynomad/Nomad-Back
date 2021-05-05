@@ -44,6 +44,9 @@ app.use('/exports', exportsRouter);
 app.use('/adminVerify', adminVerifyRouter);
 app.use('/container', containerRouter);
 
+// get esClient setup and running
+require('./config/esClientSetup');
+
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
   useFindAndModify: false, // flag needed to enable findOneAndUpdate
