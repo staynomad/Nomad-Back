@@ -45,7 +45,7 @@ app.use('/adminVerify', adminVerifyRouter);
 app.use('/container', containerRouter);
 
 // get esClient setup and running
-require('./config/esClientSetup');
+// require('./config/esClientSetup');
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,

@@ -7,12 +7,12 @@ const { requireUserAuth, getUserInfo } = require('../utils');
 const { multerUploads, uploadImagesToAWS } = require('./photos');
 // const { check, validationResult } = require("express-validator");
 const popularity = require('../models/popularity.model');
-const { insertIndex, searchIndex } = require('../elastic-search/esClient');
-const {
-  listingIndex,
-  listingType,
-  convertListing,
-} = require('../elastic-search/esClientconst');
+// const { insertIndex, searchIndex } = require('../elastic-search/esClient');
+// const {
+//   listingIndex,
+//   listingType,
+//   convertListing,
+// } = require('../elastic-search/esClientconst');
 
 const router = express.Router();
 
@@ -39,7 +39,7 @@ router.post(
       } = JSON.parse(req.files['listingData'][0].buffer.toString()).newListing;
 
       console.log(
-        JSON.parse(req.files['listingData'][0].buffer.toString()).newListing
+        JSON.parse(req.files['listingData'][0].buffer.toString()).newListing,
       );
 
       const imageUploadRes = await uploadImagesToAWS(req.files['image']);
@@ -80,7 +80,7 @@ router.post(
       }).save();
 
       // index the listing to elastic search
-      await insertIndex(listingIndex, listingType, convertListing(newListing));
+      // await insertIndex(listingIndex, listingType, convertListing(newListing));
 
       // Need to talk about return values, validation, etc.
       res.status(201).json({
@@ -92,7 +92,7 @@ router.post(
         errors: ['Error occurred while creating listing. Please try again!'],
       });
     }
-  }
+  },
 );
 
 // Change listing's active field to true
@@ -101,7 +101,7 @@ router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
     const listing = await Listing.findOneAndUpdate(
       { _id: req.params.listingId },
       { $set: { active: true } },
-      { returnNewDocument: true }
+      { returnNewDocument: true },
     );
     if (!listing) {
       return res.status(400).json({
@@ -135,7 +135,7 @@ router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
         console.log(error);
       } else {
         console.log(
-          `Create listing confirmation email sent to ${userInfo.email}`
+          `Create listing confirmation email sent to ${userInfo.email}`,
         );
       }
     });
@@ -159,7 +159,7 @@ router.put(
       const listing = await Listing.findOneAndUpdate(
         { _id: req.params.listingId },
         { $set: { active: false } },
-        { returnNewDocument: true }
+        { returnNewDocument: true },
       );
       if (!listing) {
         return res.status(400).json({
@@ -175,7 +175,7 @@ router.put(
         error: 'Error occurred while deactivating listing. Please try again!',
       });
     }
-  }
+  },
 );
 
 /* Update a listing */
@@ -397,44 +397,66 @@ router.get('/byId/:id', async (req, res) => {
 router.post('/search', async (req, res) => {
   const { itemToSearch } = req.body;
   try {
-    const decodedItemToSearch = decodeURI(itemToSearch);
+    // const decodedItemToSearch = decodeURI(itemToSearch);
     // decodedItemToSearch: string to search
 
-    const indexResult = await searchIndex(listingIndex, listingType, {
-      query: {
-        multi_match: {
-          query: decodedItemToSearch,
-          fields: [
-            'title',
-            'street',
-            'city',
-            'state',
-            'stateAbbrv',
-            'country',
-            'zipCode',
-          ],
-          fuzziness: 2,
-        },
-      },
-      size: 10, // the max size of result
+    // const indexResult = await searchIndex(listingIndex, listingType, {
+    //   query: {
+    //     multi_match: {
+    //       query: decodedItemToSearch,
+    //       fields: [
+    //         'title',
+    //         'street',
+    //         'city',
+    //         'state',
+    //         'stateAbbrv',
+    //         'country',
+    //         'zipCode',
+    //       ],
+    //       fuzziness: 2,
+    //     },
+    //   },
+    //   size: 10, // the max size of result
+    // });
+    // const indexListingResult = indexResult.hits.hits;
+    // const result = await Promise.all(
+    //   // Promise.all make sure the promises are resolve before moving on
+    //   indexListingResult.map(async (item) => {
+    //     const listingID = item._source.listingID;
+    //     const temp = await Listing.findById(listingID);
+    //     return temp;
+    //   }),
+    // );
+    // if (result.length === 0) {
+    //   return res.status(404).json({
+    //     errors: ['There were no listings found with the given search term.'],
+    //   });
+    // } else {
+    //   res.status(200).json({
+    //     numberOfListing: result.length,
+    //     filteredListings: result,
+    //   });
+    // }
+    let decodedItemToSearch = decodeURI(itemToSearch).toLowerCase();
+    const listings = await Listing.find({ active: true });
+    const filteredListings = listings.filter((listing) => {
+      const { street, city, zipcode, state } = listing.location;
+      if (
+        street.toLowerCase().includes(decodedItemToSearch) ||
+        city.toLowerCase().includes(decodedItemToSearch) ||
+        zipcode.includes(decodedItemToSearch) ||
+        state.toLowerCase().includes(decodedItemToSearch)
+      )
+        return true;
     });
-    const indexListingResult = indexResult.hits.hits;
-    const result = await Promise.all(
-      // Promise.all make sure the promises are resolve before moving on
-      indexListingResult.map(async (item) => {
-        const listingID = item._source.listingID;
-        const temp = await Listing.findById(listingID);
-        return temp;
-      })
-    );
-    if (result.length === 0) {
+
+    if (filteredListings.length === 0) {
       return res.status(404).json({
         errors: ['There were no listings found with the given search term.'],
       });
     } else {
       res.status(200).json({
-        numberOfListing: result.length,
-        filteredListings: result,
+        filteredListings,
       });
     }
   } catch (error) {
@@ -513,7 +535,7 @@ router.put('/syncListing/:listingId', async (req, res) => {
       };
       const listing = await Listing.findOneAndUpdate(
         { _id: req.params.listingId },
-        update
+        update,
       );
       if (!listing) {
         return res.status(400).json({
@@ -593,7 +615,7 @@ router.put('/sendListingTransfer', requireUserAuth, async (req, res) => {
     const transferEmail = { from: req.user.email, to: email };
     const listingToTransfer = await Listing.findOneAndUpdate(
       { _id: listingId },
-      { transferEmail }
+      { transferEmail },
     );
     if (!listingToTransfer) {
       return res.status(404).json({
@@ -910,7 +932,7 @@ router.put('/increment/:listingId', (req, res) => {
                   });
                 });
             }
-          }
+          },
         );
       } else if (err) {
         console.log(err);
@@ -922,7 +944,7 @@ router.put('/increment/:listingId', (req, res) => {
       } else {
         res.status(200).json({ success: true });
       }
-    }
+    },
   );
 });
 
@@ -1054,7 +1076,7 @@ router.post('/exportListing', async (req, res) => {
         return res
           .status(200)
           .json({ url: `${exportURL}/exports/${userId}-${listingId}.ics` });
-      }
+      },
     );
   });
 });
