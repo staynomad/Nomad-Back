@@ -3,6 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const https = require('https');
 
 const { DATABASE_URI, environment } = require('./config');
 const loginRouter = require('./routes/login');
@@ -21,7 +22,7 @@ const googleLoginRouter = require('./routes/googleLogin');
 const exportsRouter = require('./routes/exports.js');
 const adminVerifyRouter = require('./routes/adminVerification');
 const containerRouter = require('./routes/container')
-const https = require('https');
+const pingRouter = require('./routes/ping')
 
 const app = express();
 app.use(bodyParser.json());
@@ -44,6 +45,7 @@ app.use('/googleLogin', googleLoginRouter);
 app.use('/exports', exportsRouter);
 app.use('/adminVerify', adminVerifyRouter);
 app.use('/container', containerRouter);
+app.use('/ping', pingRouter);
 
 // get esClient setup and running
 // require('./config/esClientSetup');
@@ -65,7 +67,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.get('/', async (req, res) => {
-  res.status(200).json('Server is running!');
+  res.json('Server is running!');
 });
 
 // error handler\
