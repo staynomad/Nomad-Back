@@ -77,7 +77,7 @@ const serverStatus = () => {
 };
 
  // Plug into middleware.
-app.use('/ping', expressHealthcheck({
+app.get('/ping', expressHealthcheck({
   healthy: serverStatus
 }));
 
