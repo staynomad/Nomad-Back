@@ -3,7 +3,6 @@ const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-const expressHealthcheck = require('express-healthcheck')
 
 const { DATABASE_URI, environment } = require('./config');
 const loginRouter = require('./routes/login');
@@ -69,17 +68,13 @@ app.get('/', async (req, res) => {
   res.json('Server is running!');
 });
 
-const serverStatus = () => {
-  return {
-     state: 'up',
-     dbState: mongoose.STATES[mongoose.connection.readyState]
-  }
-};
-
  // Plug into middleware.
-app.use('/ping', expressHealthcheck({
-  healthy: serverStatus
-}));
+app.get('/ping', async (req, res) => {
+  res.json({
+    state: 'up',
+    dbState: mongoose.STATES[mongoose.connection.readyState]
+  })
+});
 
 // error handler\
 app.use((err, req, res, next) => {
