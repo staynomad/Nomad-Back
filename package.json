@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www.js",
-    "es-windows": "elastic-search\\elasticsearch-7.12.0-windows-x86_64\\elasticsearch-7.12.0\\bin\\elasticsearch.bat",
     "dev": "nodemon -r dotenv/config ./bin/www.js"
   },
   "dependencies": {
