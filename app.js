@@ -68,16 +68,17 @@ app.get('/', async (req, res) => {
   res.json('Server is running!');
 });
 
-// const serverStatus = () => {
-//   return {
-//      state: 'up',
-//      dbState: mongoose.STATES[mongoose.connection.readyState]
-//   }
-// };
-//  Plug into middleware.
-// app.use('/ping', expressHealthcheck({
-//   healthy: serverStatus
-// }));
+const serverStatus = () => {
+  return {
+     state: 'up',
+     dbState: mongoose.STATES[mongoose.connection.readyState]
+  }
+};
+
+ // Plug into middleware.
+app.use('/ping', expressHealthcheck({
+  healthy: serverStatus
+}));
 
 // error handler\
 app.use((err, req, res, next) => {
@@ -92,8 +93,8 @@ app.use((err, req, res, next) => {
 
 const cron = require('node-cron');
 const resetCount = require('./config/taskScheduler');
-// const healthCheck = require('./config/healthCheck')
+const pingHealthCheck = require('./config/healthCheck')
 cron.schedule('0 0 * * *', resetCount, { timezone: 'America/Los_Angeles' });
-// cron.schedule('0 8 * * * *', healthCheck, { timezone: 'America/Los_Angeles' });
+cron.schedule('0 8 * * * *', pingHealthCheck, { timezone: 'America/Los_Angeles' });
 
 module.exports = app;
