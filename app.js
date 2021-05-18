@@ -64,14 +64,10 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.get('/', async (req, res) => {
-  res.json('Server is running!');
-});
-
  // Plug into middleware.
-app.get('/ping', async (req, res) => {
+app.get('/', async (req, res) => {
   res.json({
-    state: 'up',
+    state: 'running',
     dbState: mongoose.STATES[mongoose.connection.readyState]
   })
 });
