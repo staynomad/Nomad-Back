@@ -93,8 +93,14 @@ app.use((err, req, res, next) => {
 
 const cron = require('node-cron');
 const resetCount = require('./config/taskScheduler');
+<<<<<<< HEAD
 const pingHealthCheck = require('./config/healthCheck')
 cron.schedule('0 0 * * *', resetCount, { timezone: 'America/Los_Angeles' });
 cron.schedule('0 8 * * * *', pingHealthCheck, { timezone: 'America/Los_Angeles' });
+=======
+const healthCheck = require('./config/healthCheck')
+cron.schedule('0 0 * * *', resetCount, { timezone: 'America/Los_Angeles' });
+cron.schedule('0 8 * * * *', healthCheck, { timezone: 'America/Los_Angeles' });
+>>>>>>> 45a898d42a092295a53f4841ff1b410b8ff96979
 
 module.exports = app;
