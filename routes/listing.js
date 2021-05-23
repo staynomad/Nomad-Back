@@ -18,6 +18,7 @@ const router = express.Router();
 
 const fs = require('fs');
 const ics = require('ics');
+const Housekeeping = require('../models/housekeeping.model');
 
 /* Add a listing */
 router.post(
@@ -139,6 +140,15 @@ router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
         );
       }
     });
+
+    // update the housekeeping collection that keeps track of the number of active listings
+    const curr = new Date();
+    const field = curr.getMonth() + 1 + '/' + curr.getDate();
+    await Housekeeping.findOneAndUpdate(
+      { name: 'activeListings' },
+      { $inc: { ['payload.' + field]: 1 } },
+    );
+
     return res.status(200).json({
       message: 'Successfully activated listing',
     });
