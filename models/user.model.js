@@ -23,14 +23,18 @@ const UserSchema = new Schema({
     isHost: {
         type: Boolean,
     },
+    isPublic: {
+        type: Boolean,
+        default: false
+    },
+    friends: {
+        type: Array,
+        default: []
+    },
     // Only required for hosts
     isVerified: {
         type: Boolean,
     },
-    isPublic: {
-        type: Boolean,
-        default: false
-    }
 });
 
 const User = mongoose.model("user", UserSchema);
