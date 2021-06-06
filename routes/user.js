@@ -111,4 +111,40 @@ router.post("/addFriend", async (req, res) => {
   }
 });
 
+router.delete('/removeFriend',
+  async (req, res) => {
+    try {
+      const { userId, friendId } = req.body
+      const user = await User.findOne({
+        _id: userId,
+      })
+      if (!user) {
+        return res.status(404).json({
+          error: 'User does not exist.'
+        })
+      }
+      const idx = user.friends.indexOf(friendId)
+      if (idx !== -1) {
+        let updatedFriends = user.friends
+        updatedFriends.splice(idx, 1)
+        const updatedUser = await User.findOneAndUpdate({
+          _id: userId,
+          friends: updatedFriends
+        })
+        return res.status(200).json({
+          message: `Successfully removed ${friendId} from ${userId}'s friends`
+        })
+      }
+      return res.status(404).json({
+        message: `${friendId} is not a friend of ${userId}`
+      })
+    }
+    catch(error) {
+      console.error(error);
+      res.status(500).json({
+        error: "Problem connecting with database. Please try again!"
+      });
+    }
+})
+
 module.exports = router;
