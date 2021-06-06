@@ -83,9 +83,30 @@ router.post("/setUserInfo/:userId", async (req, res) => {
       isHost: userFound.isHost,
     });
   } catch (e) {
-    console.log("there was an error in your post request...");
     res.status(500).json({
       error: "There was an error updating your info.",
+    });
+  }
+});
+
+router.post("/addFriend", async (req, res) => {
+  try {
+    const { userId, friendId } = req.body
+    const user = User.findOneAndUpdate(
+      { _id: userId },
+      { $push: {friends: friendId} }
+    )
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found. Please try again."
+      })
+    }
+    res.status(200).json({
+      message: `${friendId} added as a friend of ${userId}`
+    })
+  } catch (e) {
+    res.status(500).json({
+      error: "There was an error adding a friend.",
     });
   }
 });
