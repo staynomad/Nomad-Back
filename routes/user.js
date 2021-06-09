@@ -147,4 +147,21 @@ router.delete('/removeFriend',
     }
 })
 
+router.get("/getByEmail/:email", requireUserAuth, async (req, res) => {
+  try {
+    const userFound = await User.findOne({ email: req.params.email });
+    if (!userFound) {
+      return res.status(400).json({
+        error: "User not found. Please try again.",
+      });
+    }
+    return res.status(200).json(userFound)
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: "Error getting user. Please try again.",
+    });
+  }
+});
+
 module.exports = router;
