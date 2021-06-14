@@ -3,6 +3,7 @@ const router = express.Router();
 
 const User = require("../models/user.model");
 const { requireUserAuth } = require("../utils");
+const { multerUploads, uploadImagesToAWS } = require("./photos");
 
 router.get("/getUserInfo/:userId", async (req, res) => {
   try {
@@ -89,5 +90,35 @@ router.post("/setUserInfo/:userId", async (req, res) => {
     });
   }
 });
+
+router.post(
+  "/profileImage/:userId",
+  multerUploads,
+  requireUserAuth,
+  async (req, res) => {
+    try {
+      const imageUploadRes = await uploadImagesToAWS(
+        req.files["image"],
+        "profileImg"
+      );
+      const imgUrl = imageUploadRes[0];
+
+      const userToUpdate = await User.findOneAndUpdate(
+        { _id: req.params.userId },
+        { $set: { profileImg: imgUrl } },
+        {
+          new: true,
+        }
+      );
+
+      res.status(201).json({ imgUrl: userToUpdate.profileImg });
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({
+        error: "There was an error updating your info.",
+      });
+    }
+  }
+);
 
 module.exports = router;
