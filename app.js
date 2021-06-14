@@ -3,6 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const https = require('https');
 
 const { DATABASE_URI, environment } = require('./config');
 const loginRouter = require('./routes/login');
@@ -20,7 +21,9 @@ const contactRouter = require('./routes/contact');
 const googleLoginRouter = require('./routes/googleLogin');
 const exportsRouter = require('./routes/exports.js');
 const adminVerifyRouter = require('./routes/adminVerification');
-const containerRouter = require('./routes/container')
+const containerRouter = require('./routes/container');
+const pingRouter = require('./routes/ping');
+const housekeepingRouter = require('./routes/housekeeping');
 
 const app = express();
 app.use(bodyParser.json());
@@ -43,6 +46,11 @@ app.use('/googleLogin', googleLoginRouter);
 app.use('/exports', exportsRouter);
 app.use('/adminVerify', adminVerifyRouter);
 app.use('/container', containerRouter);
+app.use('/ping', pingRouter);
+app.use('/housekeeping', housekeepingRouter);
+
+// get esClient setup and running
+// require('./config/esClientSetup');
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
@@ -55,7 +63,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static('../client/build/'));
   app.get('*', (_, res) => {
     res.sendFile(
-      path.resolve(__dirname, '..', 'client', 'build', 'index.html')
+      path.resolve(__dirname, '..', 'client', 'build', 'index.html'),
     );
   });
 }
@@ -75,8 +83,21 @@ app.use((err, req, res, next) => {
   });
 });
 
+const pingHealthCheck = async () => {
+  await https
+    .get('https://hc-ping.com/aa5812c2-7b3f-4572-b7cb-5c2ee53bc3fa')
+    .on('error', (err) => {
+      console.log('Ping failed: ' + err);
+    });
+};
+
 const cron = require('node-cron');
-const resetCount = require('./config/taskScheduler');
-cron.schedule('0 0 * * *', resetCount, { timezone: 'America/Los_Angeles' });
+const { AppStream } = require('aws-sdk');
+cron.schedule('0 0 * * *', require('./config/taskScheduler'), {
+  timezone: 'America/Los_Angeles',
+});
+cron.schedule('0 8 * * * *', pingHealthCheck, {
+  timezone: 'America/Los_Angeles',
+});
 
 module.exports = app;
