@@ -1,4 +1,5 @@
 const express = require('express');
+const { rest } = require('lodash');
 const router = express.Router();
 
 const { baseURL } = require('../config/index');
@@ -25,6 +26,7 @@ router.post('/setup', async(req, res) => {
 
       return res.status(200).json({
         link: redirectURL,
+        id: account.id
       })
     } catch (e){
       console.log(e)
@@ -32,6 +34,24 @@ router.post('/setup', async(req, res) => {
         'error': 'Stripe accountLink failed'
       })
     } 
+}
+
+);
+
+router.get('/express', async(req, res) => {
+  try{
+    console.log(req.userId)
+    const link = await stripe.accounts.createLoginLink(req.userID);
+
+    return res.status(200).json({
+      link: link.url,
+    })
+  } catch (e){
+    console.log(e)
+    return res.status(500).json({
+      'error': 'Stripe express failed'
+    })
+  }
 }
 
 );
