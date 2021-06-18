@@ -38,13 +38,13 @@ router.post('/setup', async(req, res) => {
 
 );
 
-router.get('/express', async(req, res) => {
+router.post('/express', async(req, res) => {
   try{
-    console.log(req.userId)
-    const link = await stripe.accounts.createLoginLink(req.userID);
+    console.log(req.params)
+    const link = await stripe.accounts.createLoginLink(req.body.userId);
 
     return res.status(200).json({
-      link: link.url,
+      link: link, //.url,
     })
   } catch (e){
     console.log(e)
