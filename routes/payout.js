@@ -1,6 +1,7 @@
 const express = require('express');
 const { rest } = require('lodash');
 const router = express.Router();
+const User = require("../models/user.model");
 
 const { baseURL } = require('../config/index');
 
@@ -8,6 +9,8 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripe = require('stripe')(stripeSecretKey);
 
 router.post('/setup', async(req, res) => {
+
+  const { email } = req.body;
 
   try{
       const account = await stripe.accounts.create({
@@ -24,13 +27,17 @@ router.post('/setup', async(req, res) => {
 
       const redirectURL = accountLink['url'];
 
-      return res.status(200).json({
+      const user = await User.findOne({ email });
+      user.stripeId = account.id;
+      await user.save();
+
+      res.status(200).json({
         link: redirectURL,
         id: account.id
       })
     } catch (e){
       console.log(e)
-      return res.status(500).json({
+      res.status(500).json({
         'error': 'Stripe accountLink failed'
       })
     } 
@@ -40,11 +47,12 @@ router.post('/setup', async(req, res) => {
 
 router.post('/express', async(req, res) => {
   try{
-    console.log(req.params)
-    const link = await stripe.accounts.createLoginLink(req.body.userId);
+    const { email } = req.body
+    const user = await User.findOne({ email });
+    const link = await stripe.accounts.createLoginLink(user.stripeId);
 
     return res.status(200).json({
-      link: link, //.url,
+      link: link.url,
     })
   } catch (e){
     console.log(e)

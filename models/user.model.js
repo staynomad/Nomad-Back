@@ -47,6 +47,7 @@ const UserSchema = new Schema({
     
     stripeId: {
         type: String,
+        default: null
     }
 
 });
