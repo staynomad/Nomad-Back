@@ -1,5 +1,4 @@
 const express = require('express');
-const { rest } = require('lodash');
 const router = express.Router();
 const User = require("../models/user.model");
 
@@ -8,6 +7,7 @@ const { baseURL } = require('../config/index');
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripe = require('stripe')(stripeSecretKey);
 
+// Route to put user into Stripe connection flow
 router.post('/setup', async(req, res) => {
 
   const { email } = req.body;
@@ -45,6 +45,7 @@ router.post('/setup', async(req, res) => {
 
 );
 
+// Route to get link to the user's Stripe dashboard
 router.post('/express', async(req, res) => {
   try{
     const { email } = req.body
