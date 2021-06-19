@@ -65,12 +65,13 @@ router.post('/create-session', async (req, res) => {
     const guestFee = reservationDetails.guestFee;
     const listingPrice = listingDetails.price;
     const centsToDollars = 100; 
+    const hostFee = 0.01;
 
     // Total price of the listing including guest fee. Host fee + our profit is taken from this. 
     const listingTotal = (listingPrice * days * centsToDollars) + (guestFee * centsToDollars);
 
     // Price we make - Host Fee (1%) + Guest Fee (10%)
-    const applicationFee = (listingPrice * days * centsToDollars) * 0.01 + (guestFee * centsToDollars)
+    const applicationFee = (listingPrice * days * centsToDollars) * hostFee + (guestFee * centsToDollars)
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -101,7 +102,7 @@ router.post('/create-session', async (req, res) => {
     });
     res.status(201).json({
       id: session.id,
-      'output': listingDetails.price * days * 100
+      'output': listingDetails.price * days * centsToDollars
     });
   }
   catch (error) {
