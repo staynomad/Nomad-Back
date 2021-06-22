@@ -13,6 +13,7 @@ const listingRouter = require('./routes/listing');
 const questionnaireRouter = require('./routes/questionnaire');
 const reservationRouter = require('./routes/reservation');
 const paymentRouter = require('./routes/payment');
+const payoutsRouter = require('./routes/payout.js');
 const userRouter = require('./routes/user');
 const accountVerificationRouter = require('./routes/accountVerification');
 const reviewRouter = require('./routes/reviews');
@@ -37,6 +38,7 @@ app.use('/listings', listingRouter);
 app.use('/questionnaire', questionnaireRouter);
 app.use('/reservation', reservationRouter);
 app.use('/payment', paymentRouter);
+app.use('/payouts', payoutsRouter);
 app.use('/user', userRouter);
 app.use('/accountVerification', accountVerificationRouter);
 app.use('/reviews', reviewRouter);
@@ -51,6 +53,7 @@ app.use('/housekeeping', housekeepingRouter);
 
 // get esClient setup and running
 // require('./config/esClientSetup');
+
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,
