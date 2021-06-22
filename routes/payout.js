@@ -28,6 +28,13 @@ router.post('/setup', async(req, res) => {
       const redirectURL = accountLink['url'];
 
       const user = await User.findOne({ email });
+
+      if(!user){
+        return res.status(400).json({
+          'error': 'Email not found!'
+        })
+      }
+
       user.stripeId = account.id;
       await user.save();
 
@@ -50,6 +57,13 @@ router.post('/express', async(req, res) => {
   try{
     const { email } = req.body
     const user = await User.findOne({ email });
+
+    if(!user){
+      return res.status(400).json({
+        'error': 'Email not found!'
+      })
+    }
+
     const link = await stripe.accounts.createLoginLink(user.stripeId);
 
     return res.status(200).json({
