@@ -19,9 +19,9 @@ router.post(
         }
       })
       const userMailOptions = {
-        from: '"NomΛd" <reservations@visitnomad.com>',
+        from: '"Nomad" <reservations@visitnomad.com>',
         to: email,
-        subject: `NomΛd email verification needed`,
+        subject: `Nomad email verification needed`,
         text:
           `Please click the following link to verify your account
            ${baseURL}/accountVerification/${email}`,
