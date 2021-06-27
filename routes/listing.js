@@ -7,12 +7,6 @@ const { requireUserAuth, getUserInfo } = require('../utils');
 const { multerUploads, uploadImagesToAWS } = require('./photos');
 // const { check, validationResult } = require("express-validator");
 const popularity = require('../models/popularity.model');
-// const { insertIndex, searchIndex } = require('../elastic-search/esClient');
-// const {
-//   listingIndex,
-//   listingType,
-//   convertListing,
-// } = require('../elastic-search/esClientconst');
 
 const router = express.Router();
 
@@ -407,58 +401,21 @@ router.get('/byId/:id', async (req, res) => {
 router.post('/search', async (req, res) => {
   const { itemToSearch } = req.body;
   try {
-    // const decodedItemToSearch = decodeURI(itemToSearch);
-    // decodedItemToSearch: string to search
-
-    // const indexResult = await searchIndex(listingIndex, listingType, {
-    //   query: {
-    //     multi_match: {
-    //       query: decodedItemToSearch,
-    //       fields: [
-    //         'title',
-    //         'street',
-    //         'city',
-    //         'state',
-    //         'stateAbbrv',
-    //         'country',
-    //         'zipCode',
-    //       ],
-    //       fuzziness: 2,
-    //     },
-    //   },
-    //   size: 10, // the max size of result
-    // });
-    // const indexListingResult = indexResult.hits.hits;
-    // const result = await Promise.all(
-    //   // Promise.all make sure the promises are resolve before moving on
-    //   indexListingResult.map(async (item) => {
-    //     const listingID = item._source.listingID;
-    //     const temp = await Listing.findById(listingID);
-    //     return temp;
-    //   }),
-    // );
-    // if (result.length === 0) {
-    //   return res.status(404).json({
-    //     errors: ['There were no listings found with the given search term.'],
-    //   });
-    // } else {
-    //   res.status(200).json({
-    //     numberOfListing: result.length,
-    //     filteredListings: result,
-    //   });
-    // }
     let decodedItemToSearch = decodeURI(itemToSearch).toLowerCase();
-    const listings = await Listing.find({ active: true });
-    const filteredListings = listings.filter((listing) => {
-      const { street, city, zipcode, state } = listing.location;
-      if (
-        street.toLowerCase().includes(decodedItemToSearch) ||
-        city.toLowerCase().includes(decodedItemToSearch) ||
-        zipcode.includes(decodedItemToSearch) ||
-        state.toLowerCase().includes(decodedItemToSearch)
-      )
-        return true;
-    });
+    const filteredListings = await Listing.aggregate([
+      {
+        $search: {
+          index: 'listing-search-index',
+          text: {
+            query: decodedItemToSearch,
+            path: {
+              wildcard: '*',
+            },
+            fuzzy: {},
+          },
+        },
+      },
+    ]);
 
     if (filteredListings.length === 0) {
       return res.status(404).json({
