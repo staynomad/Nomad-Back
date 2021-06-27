@@ -415,6 +415,7 @@ router.post('/search', async (req, res) => {
           },
         },
       },
+      { $match: { active: true } },
     ]);
 
     if (filteredListings.length === 0) {
