@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www.js",
-    "dev": "nodemon -r dotenv/config ./bin/www.js"
+    "dev": "nodemon -r dotenv/config ./bin/www.js",
+    "prepare": "husky install",
+    "format": "prettier-eslint \"**/*.{js,json}\" --write"
   },
   "dependencies": {
     "aws-sdk": "^2.797.0",
@@ -28,9 +30,12 @@
     "node-cron": "^2.0.3",
     "nodemailer": "^6.4.16",
     "per-env": "^1.0.2",
+    "prettier": "^2.3.2",
+    "prettier-eslint-cli": "^5.0.1",
     "stripe": "^8.140.0"
   },
   "devDependencies": {
+    "husky": "^6.0.0",
     "nodemon": "^2.0.7"
   }
 }

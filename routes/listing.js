@@ -1,22 +1,22 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const nodemailer = require('nodemailer');
-const { baseURL, nodemailerPass } = require('../config/index');
-const Listing = require('../models/listing.model');
-const { requireUserAuth, getUserInfo } = require('../utils');
-const { multerUploads, uploadImagesToAWS } = require('./photos');
+const express = require("express");
+const mongoose = require("mongoose");
+const nodemailer = require("nodemailer");
+const { baseURL, nodemailerPass } = require("../config/index");
+const Listing = require("../models/listing.model");
+const { requireUserAuth, getUserInfo } = require("../utils");
+const { multerUploads, uploadImagesToAWS } = require("./photos");
 // const { check, validationResult } = require("express-validator");
-const popularity = require('../models/popularity.model');
+const popularity = require("../models/popularity.model");
 
 const router = express.Router();
 
-const fs = require('fs');
-const ics = require('ics');
-const Housekeeping = require('../models/housekeeping.model');
+const fs = require("fs");
+const ics = require("ics");
+const Housekeeping = require("../models/housekeeping.model");
 
 /* Add a listing */
 router.post(
-  '/createListing',
+  "/createListing",
   multerUploads,
   requireUserAuth,
   async (req, res) => {
@@ -31,13 +31,13 @@ router.post(
         booked,
         calendarURL,
         amenities,
-      } = JSON.parse(req.files['listingData'][0].buffer.toString()).newListing;
+      } = JSON.parse(req.files["listingData"][0].buffer.toString()).newListing;
 
       console.log(
-        JSON.parse(req.files['listingData'][0].buffer.toString()).newListing,
+        JSON.parse(req.files["listingData"][0].buffer.toString()).newListing
       );
 
-      const imageUploadRes = await uploadImagesToAWS(req.files['image']);
+      const imageUploadRes = await uploadImagesToAWS(req.files["image"]);
 
       const verifyData = {
         title,
@@ -84,32 +84,32 @@ router.post(
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        errors: ['Error occurred while creating listing. Please try again!'],
+        errors: ["Error occurred while creating listing. Please try again!"],
       });
     }
-  },
+  }
 );
 
 // Change listing's active field to true
-router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
+router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
   try {
     const listing = await Listing.findOneAndUpdate(
       { _id: req.params.listingId },
       { $set: { active: true } },
-      { returnNewDocument: true },
+      { returnNewDocument: true }
     );
     if (!listing) {
       return res.status(400).json({
-        error: 'Listing does not exist. Please try again.',
+        error: "Listing does not exist. Please try again.",
       });
     }
 
     const userInfo = await getUserInfo(req.user._id);
     // Send confirmation email to host
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        user: 'staynomadhomes@gmail.com',
+        user: "staynomadhomes@gmail.com",
         pass: nodemailerPass,
       },
     });
@@ -130,60 +130,60 @@ router.put('/activateListing/:listingId', requireUserAuth, async (req, res) => {
         console.log(error);
       } else {
         console.log(
-          `Create listing confirmation email sent to ${userInfo.email}`,
+          `Create listing confirmation email sent to ${userInfo.email}`
         );
       }
     });
 
     // update the housekeeping collection that keeps track of the number of active listings
     const curr = new Date();
-    const field = curr.getMonth() + 1 + '/' + curr.getDate();
+    const field = curr.getMonth() + 1 + "/" + curr.getDate();
     await Housekeeping.findOneAndUpdate(
-      { name: 'activeListings' },
-      { $inc: { ['payload.' + field]: 1 } },
+      { name: "activeListings" },
+      { $inc: { ["payload." + field]: 1 } }
     );
 
     return res.status(200).json({
-      message: 'Successfully activated listing',
+      message: "Successfully activated listing",
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      error: 'Error occurred while activating listing. Please try again!',
+      error: "Error occurred while activating listing. Please try again!",
     });
   }
 });
 
 // Change listing's active field to false
 router.put(
-  '/deactivateListing/:listingId',
+  "/deactivateListing/:listingId",
   requireUserAuth,
   async (req, res) => {
     try {
       const listing = await Listing.findOneAndUpdate(
         { _id: req.params.listingId },
         { $set: { active: false } },
-        { returnNewDocument: true },
+        { returnNewDocument: true }
       );
       if (!listing) {
         return res.status(400).json({
-          error: 'Listing does not exist. Please try again.',
+          error: "Listing does not exist. Please try again.",
         });
       }
       return res.status(200).json({
-        message: 'Successfully activated listing',
+        message: "Successfully activated listing",
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        error: 'Error occurred while deactivating listing. Please try again!',
+        error: "Error occurred while deactivating listing. Please try again!",
       });
     }
-  },
+  }
 );
 
 /* Update a listing */
-router.put('/editListing/:listingId', requireUserAuth, async (req, res) => {
+router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
   try {
     console.log(req.user);
     const listing = await Listing.findOne({
@@ -193,7 +193,7 @@ router.put('/editListing/:listingId', requireUserAuth, async (req, res) => {
 
     if (!listing) {
       res.status(404).json({
-        errors: ['Listing was not found. Please try again!'],
+        errors: ["Listing was not found. Please try again!"],
       });
     } else {
       const updatedKeys = Object.keys(req.body);
@@ -202,9 +202,9 @@ router.put('/editListing/:listingId', requireUserAuth, async (req, res) => {
           key &&
           key !== null &&
           listing[key] !== req.body[key] &&
-          key !== 'listingId'
+          key !== "listingId"
         ) {
-          console.log('changing ' + key);
+          console.log("changing " + key);
           listing[key] = req.body[key];
         }
       });
@@ -216,18 +216,18 @@ router.put('/editListing/:listingId', requireUserAuth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['Error occurred while creating listing. Please try again!'],
+      errors: ["Error occurred while creating listing. Please try again!"],
     });
   }
 });
 
 /* Get all listings */
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const listings = await Listing.find({});
     if (!listings) {
       res.status(404).json({
-        errors: ['There are currently no listings! Please try again later.'],
+        errors: ["There are currently no listings! Please try again later."],
       });
     } else {
       res.status(200).json({
@@ -237,18 +237,18 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['Error occurred while getting listings. Please try again!'],
+      errors: ["Error occurred while getting listings. Please try again!"],
     });
   }
 });
 
 /* Get all active listings */
-router.get('/active', async (req, res) => {
+router.get("/active", async (req, res) => {
   try {
     const listings = await Listing.find({ active: true });
     if (!listings) {
       res.status(404).json({
-        errors: ['There are currently no listings! Please try again later.'],
+        errors: ["There are currently no listings! Please try again later."],
       });
     } else {
       res.status(200).json({
@@ -258,13 +258,13 @@ router.get('/active', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['Error occurred while getting listings. Please try again!'],
+      errors: ["Error occurred while getting listings. Please try again!"],
     });
   }
 });
 
 /* Get all listings by filter */
-router.post('/filteredListings', async (req, res) => {
+router.post("/filteredListings", async (req, res) => {
   try {
     var listings;
     (minRating = 0), (startingPrice = 10000);
@@ -281,12 +281,12 @@ router.post('/filteredListings', async (req, res) => {
     listings = await Listing.find({
       // 'rating.user': { $gte: minRating },
       price: { $lte: startingPrice },
-      'details.maxpeople': { $gte: minGuests },
+      "details.maxpeople": { $gte: minGuests },
       active: true,
     });
     if (!listings) {
       res.status(404).json({
-        errors: ['There are currently no listings! Please try again later.'],
+        errors: ["There are currently no listings! Please try again later."],
       });
     } else {
       res.status(200).json({
@@ -296,18 +296,18 @@ router.post('/filteredListings', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['Error occurred while getting listings. Please try again!'],
+      errors: ["Error occurred while getting listings. Please try again!"],
     });
   }
 });
 
 /* Get all listings in a radius around lat and lng */
-router.get('/byRadius', async (req, res) => {
+router.get("/byRadius", async (req, res) => {
   try {
     await Listing.find({}, (err, listingDocs) => {
       if (err || !listingDocs) {
         res.status(404).json({
-          errors: ['There are currently no listings! Please try again later.'],
+          errors: ["There are currently no listings! Please try again later."],
         });
       } else {
         // Radius will be in kilometers
@@ -346,7 +346,7 @@ router.get('/byRadius', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['Error occurred while getting listings. Please try again!'],
+      errors: ["Error occurred while getting listings. Please try again!"],
     });
   }
 });
@@ -358,16 +358,16 @@ const getByUserIdFunc = async (userId) => {
 };
 
 /* Get all listings belonging to user in parameter */
-router.get('/byUserId/:userId', async (req, res) => {
+router.get("/byUserId/:userId", async (req, res) => {
   const userListings = await getByUserIdFunc(req.params.userId);
   if (userListings instanceof Error) {
     return res.status(500).json({
-      errors: 'Error occured while getting popular listings',
+      errors: "Error occured while getting popular listings",
     });
   }
   if (!userListings) {
     return res.status(404).json({
-      errors: ['There are currently no listings! Please try again later.'],
+      errors: ["There are currently no listings! Please try again later."],
     });
   } else {
     return res.status(200).json({
@@ -377,12 +377,12 @@ router.get('/byUserId/:userId', async (req, res) => {
 });
 
 /* Get listing by listingID (MongoDB Object ID) */
-router.get('/byId/:id', async (req, res) => {
+router.get("/byId/:id", async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
     if (!listing) {
       res.status(404).json({
-        errors: ['Listing does not exist.'],
+        errors: ["Listing does not exist."],
       });
     } else {
       res.status(200).json({
@@ -392,24 +392,24 @@ router.get('/byId/:id', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['Error occurred while getting listings. Please try again!'],
+      errors: ["Error occurred while getting listings. Please try again!"],
     });
   }
 });
 
 /* Get listing by search term */
-router.post('/search', async (req, res) => {
+router.post("/search", async (req, res) => {
   const { itemToSearch } = req.body;
   try {
     let decodedItemToSearch = decodeURI(itemToSearch).toLowerCase();
     const filteredListings = await Listing.aggregate([
       {
         $search: {
-          index: 'listing-search-index',
+          index: "listing-search-index",
           text: {
             query: decodedItemToSearch,
             path: {
-              wildcard: '*',
+              wildcard: "*",
             },
             fuzzy: {},
           },
@@ -420,7 +420,7 @@ router.post('/search', async (req, res) => {
 
     if (filteredListings.length === 0) {
       return res.status(404).json({
-        errors: ['There were no listings found with the given search term.'],
+        errors: ["There were no listings found with the given search term."],
       });
     } else {
       res.status(200).json({
@@ -431,14 +431,14 @@ router.post('/search', async (req, res) => {
     console.error(error);
     res.status(500).json({
       errors: [
-        'Error occurred while searching for listings. Please try again!',
+        "Error occurred while searching for listings. Please try again!",
       ],
     });
   }
 });
 
 /* Delete listing by id */
-router.delete('/delete/:listingId', requireUserAuth, async (req, res) => {
+router.delete("/delete/:listingId", requireUserAuth, async (req, res) => {
   try {
     const listing = await Listing.findOne({
       _id: req.params.listingId,
@@ -447,25 +447,25 @@ router.delete('/delete/:listingId', requireUserAuth, async (req, res) => {
 
     if (!listing) {
       res.status(500).json({
-        errors: ['Listing was not found. Please try again!'],
+        errors: ["Listing was not found. Please try again!"],
       });
     } else {
       listing.remove();
       res.status(200).json({
-        message: ['Listing was removed.'],
+        message: ["Listing was removed."],
       });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({
       errors: [
-        'Error occurred while attempting to remove listing. Please try again.',
+        "Error occurred while attempting to remove listing. Please try again.",
       ],
     });
   }
 });
 
-router.put('/syncListing/:listingId', async (req, res) => {
+router.put("/syncListing/:listingId", async (req, res) => {
   try {
     let { booked } = req.body;
     let prevListings = await Listing.findOne({ _id: req.params.listingId });
@@ -503,35 +503,35 @@ router.put('/syncListing/:listingId', async (req, res) => {
       };
       const listing = await Listing.findOneAndUpdate(
         { _id: req.params.listingId },
-        update,
+        update
       );
       if (!listing) {
         return res.status(400).json({
-          error: 'Listing does not exist. Please try again.',
+          error: "Listing does not exist. Please try again.",
         });
       }
     }
     return res.status(200).json({
-      message: 'Successfully updated listing availability',
+      message: "Successfully updated listing availability",
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       error:
-        'Error occurred while attempting to sync listing. Please try again.',
+        "Error occurred while attempting to sync listing. Please try again.",
     });
   }
 });
 
 // Get all transfer requests
-router.get('/byTransferEmail', requireUserAuth, async (req, res) => {
+router.get("/byTransferEmail", requireUserAuth, async (req, res) => {
   try {
     const listingsToTransfer = await Listing.find({
-      'transferEmail.to': req.user.email,
+      "transferEmail.to": req.user.email,
     });
     if (!listingsToTransfer) {
       res.status(404).json({
-        errors: ['No listing transfer request(s) found.'],
+        errors: ["No listing transfer request(s) found."],
       });
     } else {
       res.status(200).json({
@@ -541,19 +541,19 @@ router.get('/byTransferEmail', requireUserAuth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['An error occurred while searching for listing transfers.'],
+      errors: ["An error occurred while searching for listing transfers."],
     });
   }
 });
 
 // Send request to transfer listing
-router.put('/sendListingTransfer', requireUserAuth, async (req, res) => {
+router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { email, listingId } = req.body;
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        user: 'staynomadhomes@gmail.com',
+        user: "staynomadhomes@gmail.com",
         pass: nodemailerPass,
       },
     });
@@ -583,11 +583,11 @@ router.put('/sendListingTransfer', requireUserAuth, async (req, res) => {
     const transferEmail = { from: req.user.email, to: email };
     const listingToTransfer = await Listing.findOneAndUpdate(
       { _id: listingId },
-      { transferEmail },
+      { transferEmail }
     );
     if (!listingToTransfer) {
       return res.status(404).json({
-        errors: 'Listing could not be found.',
+        errors: "Listing could not be found.",
       });
     } else {
       transporter.sendMail(userMailOptions, (error, info) => {
@@ -604,31 +604,31 @@ router.put('/sendListingTransfer', requireUserAuth, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      errors: ['Error transferring listing. Please try again!'],
+      errors: ["Error transferring listing. Please try again!"],
     });
   }
 });
 
 // Accept request(s)
-router.put('/acceptListingTransfer', requireUserAuth, async (req, res) => {
+router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { acceptAll, listingId } = req.body;
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        user: 'staynomadhomes@gmail.com',
+        user: "staynomadhomes@gmail.com",
         pass: nodemailerPass,
       },
     });
 
     if (acceptAll) {
       const listingsToTransfer = await Listing.find({
-        'transferEmail.to': req.user.email,
+        "transferEmail.to": req.user.email,
       });
       if (!listingsToTransfer) {
         res.status(404).json({
-          errors: ['No listing transfer request(s) found.'],
+          errors: ["No listing transfer request(s) found."],
         });
       } else {
         let groupByEmail = {};
@@ -661,14 +661,14 @@ router.put('/acceptListingTransfer', requireUserAuth, async (req, res) => {
                 ${
                   req.user.name
                 } has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingEmailBody.join('\n')}
+                  ${listingEmailBody.join("\n")}
               `,
             html: `
                 <p>
                   ${
                     req.user.name
                   } has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingEmailBody.join('\n')}
+                  ${listingEmailBody.join("\n")}
                 </p>
               `,
           };
@@ -690,7 +690,7 @@ router.put('/acceptListingTransfer', requireUserAuth, async (req, res) => {
       const listingToTransfer = await Listing.findById(listingId);
       if (!listingToTransfer) {
         return res.status(404).json({
-          errors: 'Listing could not be found.',
+          errors: "Listing could not be found.",
         });
       } else {
         const emailToSendTo = listingToTransfer.transferEmail.from;
@@ -729,31 +729,31 @@ router.put('/acceptListingTransfer', requireUserAuth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['An error occurred while searching for listing transfers.'],
+      errors: ["An error occurred while searching for listing transfers."],
     });
   }
 });
 
 // Reject request(s)
-router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
+router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { rejectAll, listingId } = req.body;
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
-        user: 'staynomadhomes@gmail.com',
+        user: "staynomadhomes@gmail.com",
         pass: nodemailerPass,
       },
     });
 
     if (rejectAll) {
       const listingsToTransfer = await Listing.find({
-        'transferEmail.to': req.user.email,
+        "transferEmail.to": req.user.email,
       });
       if (!listingsToTransfer) {
         res.status(404).json({
-          errors: ['No listing transfer request(s) found.'],
+          errors: ["No listing transfer request(s) found."],
         });
       } else {
         let groupByEmail = {};
@@ -785,14 +785,14 @@ router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
                 ${
                   req.user.name
                 } has rejected your invitation. You will retain access to the following listing(s):
-                  ${listingEmailBody.join('\n')}
+                  ${listingEmailBody.join("\n")}
               `,
             html: `
                 <p>
                 ${
                   req.user.name
                 } has rejected your invitation. You will retain access to the following listing(s):
-                  ${listingEmailBody.join('\n')}
+                  ${listingEmailBody.join("\n")}
                 </p>
               `,
           };
@@ -814,7 +814,7 @@ router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
       const listingToTransfer = await Listing.findById(listingId);
       if (!listingToTransfer) {
         return res.status(404).json({
-          errors: 'Listing could not be found.',
+          errors: "Listing could not be found.",
         });
       } else {
         let emailToSendTo = listingToTransfer.transferEmail.from;
@@ -852,17 +852,17 @@ router.put('/rejectListingTransfer', requireUserAuth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      errors: ['An error occurred while searching for listing transfers.'],
+      errors: ["An error occurred while searching for listing transfers."],
     });
   }
 });
 
-router.put('/increment/:listingId', (req, res) => {
+router.put("/increment/:listingId", (req, res) => {
   currDay = new Date().getDay();
   popularity.findOneAndUpdate(
     { listingId: req.params.listingId },
     {
-      $inc: { visitCount: 1, ['visits.' + currDay]: 1 },
+      $inc: { visitCount: 1, ["visits." + currDay]: 1 },
       $set: { last_visited: new Date() },
     },
     (err, doc) => {
@@ -874,11 +874,11 @@ router.put('/increment/:listingId', (req, res) => {
           (nerr, ndoc) => {
             if (!ndoc) {
               res.status(404).json({
-                errors: ['Listing does not exist or listing is not active'],
+                errors: ["Listing does not exist or listing is not active"],
               });
             } else if (nerr) {
               res.status(500).json({
-                errors: ['Error occured while finding corresponding listing'],
+                errors: ["Error occured while finding corresponding listing"],
               });
             } else {
               visits = [0, 0, 0, 0, 0, 0, 0];
@@ -895,24 +895,24 @@ router.put('/increment/:listingId', (req, res) => {
                   console.log(terr);
                   res.status(500).json({
                     errors: [
-                      'Error occurred while creating new popularity field. Please try again!',
+                      "Error occurred while creating new popularity field. Please try again!",
                     ],
                   });
                 });
             }
-          },
+          }
         );
       } else if (err) {
         console.log(err);
         res.status(500).json({
           errors: [
-            'Error occurred while incrementing listings. Please try again!',
+            "Error occurred while incrementing listings. Please try again!",
           ],
         });
       } else {
         res.status(200).json({ success: true });
       }
-    },
+    }
   );
 });
 
@@ -924,7 +924,7 @@ const getPopularFunc = (numberOfListings) => {
     });
 };
 
-router.get('/popularlistings/:numberOfListing', async (req, res) => {
+router.get("/popularlistings/:numberOfListing", async (req, res) => {
   let numberOfListing = parseInt(req.params.numberOfListing);
   if (numberOfListing < 5) {
     numberOfListing = 5;
@@ -938,7 +938,7 @@ router.get('/popularlistings/:numberOfListing', async (req, res) => {
   if (isNaN(numberOfListing)) {
     res
       .status(400)
-      .json({ errors: 'Parameter argument provided should be integers' });
+      .json({ errors: "Parameter argument provided should be integers" });
     return;
   }
   try {
@@ -963,15 +963,15 @@ router.get('/popularlistings/:numberOfListing', async (req, res) => {
     console.error(err);
     res
       .status(500)
-      .json({ error: 'There was an error while getting the popular listings' });
+      .json({ error: "There was an error while getting the popular listings" });
   }
 });
 
-router.get('/allPopularityListings', async (req, res) => {
+router.get("/allPopularityListings", async (req, res) => {
   const listings = await getPopularFunc(0);
   if (listings instanceof Error) {
     res.status(500).json({
-      errors: 'Error occured while getting popular listings',
+      errors: "Error occured while getting popular listings",
     });
   } else {
     res.status(200).json({ listings });
@@ -984,13 +984,13 @@ router.get('/allPopularityListings', async (req, res) => {
 //   res.status(200).json({ success: true });
 // });
 
-router.post('/exportListing', async (req, res) => {
+router.post("/exportListing", async (req, res) => {
   const { userId, listingId, listingCalendar } = req.body;
   var curr = new Date();
   var events = [
     {
-      title: 'NomΛd Listing',
-      description: 'UNAVAILABLE',
+      title: "NomΛd Listing",
+      description: "UNAVAILABLE",
       url: `${baseURL}/listing/${listingId}`,
       start: [curr.getFullYear(), 1, 1],
       end: [
@@ -1000,8 +1000,8 @@ router.post('/exportListing', async (req, res) => {
       ],
     },
     {
-      title: 'NomΛd Listing',
-      description: 'UNAVAILABLE',
+      title: "NomΛd Listing",
+      description: "UNAVAILABLE",
       url: `${baseURL}/listing/${listingId}`,
       start: [
         listingCalendar.available[1].substring(0, 4),
@@ -1013,8 +1013,8 @@ router.post('/exportListing', async (req, res) => {
   ];
   for (let i = 0; i < listingCalendar.booked.length; i++) {
     events.push({
-      title: 'NomΛd Listing',
-      description: 'UNAVAILABLE',
+      title: "NomΛd Listing",
+      description: "UNAVAILABLE",
       url: `${baseURL}/listing/${listingId}`,
       start: [
         listingCalendar.booked[i].start.substring(0, 4),
@@ -1035,16 +1035,16 @@ router.post('/exportListing', async (req, res) => {
     fs.writeFile(
       `./exports/${userId}-${listingId}.ics`,
       value,
-      { flag: 'w' },
+      { flag: "w" },
       (err) => {
         if (err)
           return res.status(400).json({
-            errors: 'Unable to export file.',
+            errors: "Unable to export file.",
           });
         return res
           .status(200)
           .json({ url: `${exportURL}/exports/${userId}-${listingId}.ics` });
-      },
+      }
     );
   });
 });
