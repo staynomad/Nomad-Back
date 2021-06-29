@@ -78,8 +78,8 @@ const ListingSchema = new Schema({
       listingLat: null,
       listingLng: null,
     },
-    unique: true
-  }
+    unique: true,
+  },
 });
 
 ListingSchema.set('timestamps', true);
