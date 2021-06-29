@@ -115,12 +115,22 @@ router.put("/activateReservation", requireUserAuth, async (req, res) => {
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user);
 
+<<<<<<< HEAD
     // Send confirmation email to guest
     const userMailOptions = {
       from: '"NomΛd" <reservations@visitnomad.com>',
       to: guestInfo.email,
       subject: `Your Reservation has been Confirmed: ${bookedListing.title}`,
       text: `Thank you for booking with NomΛd! Here's your reservation information:
+=======
+      // Send confirmation email to guest
+      const userMailOptions = {
+        from: '"Nomad" <reservations@visitnomad.com>',
+        to: guestInfo.email,
+        subject: `Your Reservation has been Confirmed: ${bookedListing.title}`,
+        text:
+          `Thank you for booking with Nomad! Here's your reservation information:
+>>>>>>> master
 
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
@@ -129,6 +139,7 @@ router.put("/activateReservation", requireUserAuth, async (req, res) => {
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Host name: ${hostInfo.name}
 
+<<<<<<< HEAD
           When you arrive at the property, make sure to checkin via the NomΛd website in order to alert the host that you have arrived. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}. To cancel your reservation, please contact us at contact@visitnomad.com. Hope you enjoy your stay!`,
     };
     transporter.sendMail(userMailOptions, (error, info) => {
@@ -138,15 +149,28 @@ router.put("/activateReservation", requireUserAuth, async (req, res) => {
         console.log(
           `Reservation confirmation email sent to guest ${guestInfo.email}`
         );
+=======
+          When you arrive at the property, make sure to checkin via the Nomad website in order to alert the host that you have arrived. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}. To cancel your reservation, please contact us at contact@visitnomad.com. Hope you enjoy your stay!`
+>>>>>>> master
       }
     });
 
+<<<<<<< HEAD
     // Send confirmation email to host
     const hostMailOptions = {
       from: '"NomΛd" <reservations@visitnomad.com>',
       to: hostInfo.email,
       subject: `Your listing has been booked: ${bookedListing.title}`,
       text: `Thank you for listing on NomΛd! Here's the information regarding your listing reservation:
+=======
+      // Send confirmation email to host
+      const hostMailOptions = {
+        from: '"Nomad" <reservations@visitnomad.com>',
+        to: hostInfo.email,
+        subject: `Your listing has been booked: ${bookedListing.title}`,
+        text:
+          `Thank you for listing on Nomad! Here's the information regarding your listing reservation:
+>>>>>>> master
 
               ${bookedListing.title}
               Reservation number: ${reservationInfo._id}
@@ -159,6 +183,7 @@ router.put("/activateReservation", requireUserAuth, async (req, res) => {
               Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
               Guest name: ${guestInfo.name}
 
+<<<<<<< HEAD
           We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at ${
             guestInfo.email
           }. To cancel this reservation, please contact us at contact@visitnomad.com. Thank you for choosing NomΛd!`,
@@ -170,6 +195,9 @@ router.put("/activateReservation", requireUserAuth, async (req, res) => {
         console.log(
           `Reservation confirmation email sent to host ${hostInfo.email}`
         );
+=======
+          We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}. To cancel this reservation, please contact us at contact@visitnomad.com. Thank you for choosing Nomad!`
+>>>>>>> master
       }
     });
 
@@ -286,12 +314,22 @@ router.post("/deactivate/:reservationId", requireUserAuth, async (req, res) => {
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user._id);
 
+<<<<<<< HEAD
     // Send checkin confirmation email to guest
     const userMailOptions = {
       from: '"NomΛd" <reservations@visitnomad.com>',
       to: guestInfo.email,
       subject: `Thanks for checking out from ${bookedListing.title}!`,
       text: `You have successfully checked out from your stay! If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
+=======
+      // Send checkin confirmation email to guest
+      const userMailOptions = {
+        from: '"Nomad" <reservations@visitnomad.com>',
+        to: guestInfo.email,
+        subject: `Thanks for checking out from ${bookedListing.title}!`,
+        text:
+          `You have successfully checked out from your stay! If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
+>>>>>>> master
 
               ${bookedListing.title}
               Reservation number: ${reservation._id}
@@ -311,18 +349,29 @@ router.post("/deactivate/:reservationId", requireUserAuth, async (req, res) => {
       }
     });
 
+<<<<<<< HEAD
     // Send checkin confirmation email to host
     const hostMailOptions = {
       from: '"NomΛd" <reservations@visitnomad.com>',
       to: hostInfo.email,
       subject: `${guestInfo.name} has checked out from ${bookedListing.title}!`,
       text: `Your guest has just checked out! If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
+=======
+      // Send checkin confirmation email to host
+      const hostMailOptions = {
+        from: '"Nomad" <reservations@visitnomad.com>',
+        to: hostInfo.email,
+        subject: `${guestInfo.name} has checked out from ${bookedListing.title}!`,
+        text:
+          `Your guest has just checked out! If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
+>>>>>>> master
 
               ${bookedListing.title}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
               Days: ${reservation.days[0]} to ${reservation.days[1]}
               Guest name: ${guestInfo.name}
 
+<<<<<<< HEAD
           Thank you for choosing NomΛd!`,
     };
     transporter.sendMail(hostMailOptions, (error, info) => {
@@ -332,6 +381,9 @@ router.post("/deactivate/:reservationId", requireUserAuth, async (req, res) => {
         console.log(
           `Checkout confirmation email sent to host ${hostInfo.email}`
         );
+=======
+          Thank you for choosing Nomad!`
+>>>>>>> master
       }
     });
 
@@ -375,12 +427,22 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user._id);
 
+<<<<<<< HEAD
     // Send checkin confirmation email to guest
     const userMailOptions = {
       from: '"NomΛd" <reservations@visitnomad.com>',
       to: guestInfo.email,
       subject: `Thanks for checking in to ${bookedListing.title}!`,
       text: `You have successfully checked in to your stay! The host has been notified and will let you in soon. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
+=======
+      // Send checkin confirmation email to guest
+      const userMailOptions = {
+        from: '"Nomad" <reservations@visitnomad.com>',
+        to: guestInfo.email,
+        subject: `Thanks for checking in to ${bookedListing.title}!`,
+        text:
+          `You have successfully checked in to your stay! The host has been notified and will let you in soon. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
+>>>>>>> master
 
               ${bookedListing.title}
               Reservation number: ${reservation._id}
@@ -400,18 +462,29 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
       }
     });
 
+<<<<<<< HEAD
     // Send checkin confirmation email to host
     const hostMailOptions = {
       from: '"NomΛd" <reservations@visitnomad.com>',
       to: hostInfo.email,
       subject: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
       text: `Your guest has just checked in! Please provide them with the next steps to begin their stay. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
+=======
+      // Send checkin confirmation email to host
+      const hostMailOptions = {
+        from: '"Nomad" <reservations@visitnomad.com>',
+        to: hostInfo.email,
+        subject: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
+        text:
+          `Your guest has just checked in! Please provide them with the next steps to begin their stay. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
+>>>>>>> master
 
               ${bookedListing.title}
               Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
               Days: ${reservation.days[0]} to ${reservation.days[1]}
               Guest name: ${guestInfo.name}
 
+<<<<<<< HEAD
           Thank you for choosing NomΛd!`,
     };
     transporter.sendMail(hostMailOptions, (error, info) => {
@@ -421,6 +494,9 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
         console.log(
           `Checkin confirmation email sent to host ${hostInfo.email}`
         );
+=======
+          Thank you for choosing Nomad!`
+>>>>>>> master
       }
     });
 

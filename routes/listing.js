@@ -114,9 +114,9 @@ router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
       },
     });
     const userMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
+      from: '"Nomad" <reservations@visitnomad.com>',
       to: userInfo.email,
-      subject: `Thank you for listing on NomΛd!`,
+      subject: `Thank you for listing on Nomad!`,
       text: `Your listing is live! Click the following link to view your listing page.
 
          ${baseURL}/listing/${req.params.listingId}`,
@@ -558,13 +558,13 @@ router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
       },
     });
     const userMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
+      from: '"Nomad" <reservations@visitnomad.com>',
       to: email,
       subject: `You've Been Invited!`,
       // we want to include the original host's name here as well
       text: `
           ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to ${baseURL}/MyAccount. If you do not yet have a NomΛd account, please sign up for a host account first.
+              1. Go to ${baseURL}/MyAccount. If you do not yet have a Nomad account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
               4. You're all done! Click on "My Listings" in the side menu to view your new listing.
@@ -572,7 +572,7 @@ router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
       html: `
           <p>
           ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to <a href="${baseURL}/MyAccount">${baseURL}/MyAccount</a>. If you do not yet have a NomΛd account, please sign up for a host account first.
+              1. Go to <a href="${baseURL}/MyAccount">${baseURL}/MyAccount</a>. If you do not yet have a Nomad account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
               4. You're all done! Click on "My Listings" in the side menu to view your new listing.
@@ -653,7 +653,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
           }
 
           let userMailOptions = {
-            from: '"NomΛd" <reservations@visitnomad.com>',
+            from: '"Nomad" <reservations@visitnomad.com>',
             to: email,
             subject: `Your Transfer Was Successful!`,
             // we'll need to add in the new host's name here
@@ -699,7 +699,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
         await listingToTransfer.save();
 
         let userMailOptions = {
-          from: '"NomΛd" <reservations@visitnomad.com>',
+          from: '"Nomad" <reservations@visitnomad.com>',
           to: emailToSendTo,
           subject: `Your Transfer Was Successful!`,
           // we'll need to add in the new host's name here
@@ -777,7 +777,7 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
           }
 
           let userMailOptions = {
-            from: '"NomΛd" <reservations@visitnomad.com>',
+            from: '"Nomad" <reservations@visitnomad.com>',
             to: email,
             subject: `Your Transfer Was Rejected`,
             // we'll need to add in the new host's name here
@@ -822,7 +822,7 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
         await listingToTransfer.save();
 
         let userMailOptions = {
-          from: '"NomΛd" <reservations@visitnomad.com>',
+          from: '"Nomad" <reservations@visitnomad.com>',
           to: emailToSendTo,
           subject: `Your Transfer Was Rejected`,
           // we'll need to add in the new host's name here

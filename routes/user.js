@@ -5,6 +5,7 @@ const User = require("../models/user.model");
 const { requireUserAuth } = require("../utils");
 const { multerUploads, uploadImagesToAWS } = require("./photos");
 
+// Returns user object given a userId. If verbose = 1 is set, full friend objects are returned
 router.get("/getUserInfo/:userId", async (req, res) => {
   try {
     const userFound = await User.findOne({ _id: req.params.userId });
@@ -13,17 +14,19 @@ router.get("/getUserInfo/:userId", async (req, res) => {
         error: "User not found. Please try again.",
       });
     }
-    if (userFound["description"]) {
-      console.log("description identified: ", userFound.description);
-      res.status(200).json({
-        name: userFound.name,
-        email: userFound.email,
-        password: userFound.password,
-        description: userFound.description,
+    const verbose = req.query.verbose
+    if (verbose && verbose == 1) {
+      let fullFriends = []
+      for (let i = 0; i < userFound.friends.length; i++) {
+        const friend = await User.findOne({ _id: userFound.friends[i] })
+        if (friend) fullFriends.push(friend)
+      }
+      return res.status(200).json({
+        userFound,
+        fullFriends
       });
-    } else {
-      res.status(200).json(userFound);
     }
+    return res.status(200).json(userFound);
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -31,6 +34,37 @@ router.get("/getUserInfo/:userId", async (req, res) => {
     });
   }
 });
+
+// Returns user object given an email. If verbose = 1 is set, full friend objects are returned
+router.get("/getByEmail/:email", async (req, res) => {
+  try {
+    const userFound = await User.findOne({ email: req.params.email });
+    if (!userFound) {
+      return res.status(400).json({
+        error: "User not found. Please try again.",
+      });
+    }
+    const verbose = req.query.verbose
+    if (verbose && verbose == 1) {
+      let fullFriends = []
+      for (let i = 0; i < userFound.friends.length; i++) {
+        const friend = await User.findOne({ _id: userFound.friends[i] })
+        if (friend) fullFriends.push(friend)
+      }
+      return res.status(200).json({
+        userFound,
+        fullFriends
+      });
+    }
+    return res.status(200).json(userFound);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: "Error getting user. Please try again.",
+    });
+  }
+});
+
 
 // Updates isVerified to true and returns user information
 router.post("/verify/:userId", async (req, res) => {
@@ -123,11 +157,15 @@ router.post(
 router.post("/addFriend", async (req, res) => {
   try {
     const { userId, friendId } = req.body;
-    const user = User.findOneAndUpdate(
+    const user = await User.findOneAndUpdate(
       { _id: userId },
       { $push: { friends: friendId } }
     );
-    if (!user) {
+    const friend = await User.findOneAndUpdate(
+      { _id: friendId },
+      { $push: { friends: userId } }
+    );
+    if (!user || !friend) {
       return res.status(404).json({
         error: "User not found. Please try again.",
       });
@@ -145,50 +183,42 @@ router.post("/addFriend", async (req, res) => {
 router.delete("/removeFriend", async (req, res) => {
   try {
     const { userId, friendId } = req.body;
-    const user = await User.findOne({
-      _id: userId,
-    });
-    if (!user) {
+    const user = await User.findOne({ _id: userId });
+    const friend = await User.findOne({ _id: friendId })
+    if (!user || !friend) {
       return res.status(404).json({
         error: "User does not exist.",
       });
     }
     const idx = user.friends.indexOf(friendId);
-    if (idx !== -1) {
+    const idx2 = friend.friends.indexOf(userId);
+    if (idx !== -1 || idx2 !== -1) {
+      // Remove friendId from user's friends
       let updatedFriends = user.friends;
       updatedFriends.splice(idx, 1);
-      const updatedUser = await User.findOneAndUpdate({
-        _id: userId,
-        friends: updatedFriends,
-      });
+      let updatedUser = await User.findOneAndUpdate(
+        { _id: userId },
+        { friends: updatedFriends },
+      );
+      // Remove userId from friend's users
+      updatedFriends = friend.friends;
+      updatedFriends.splice(idx, 1);
+      updatedUser = await User.findOneAndUpdate(
+        { _id: friendId },
+        { friends: updatedFriends },
+      );
+
       return res.status(200).json({
         message: `Successfully removed ${friendId} from ${userId}'s friends`,
       });
     }
     return res.status(404).json({
-      message: `${friendId} is not a friend of ${userId}`,
+      message: `${friendId} and ${userId} are not friends`,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       error: "Problem connecting with database. Please try again!",
-    });
-  }
-});
-
-router.get("/getByEmail/:email", requireUserAuth, async (req, res) => {
-  try {
-    const userFound = await User.findOne({ email: req.params.email });
-    if (!userFound) {
-      return res.status(400).json({
-        error: "User not found. Please try again.",
-      });
-    }
-    return res.status(200).json(userFound);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      error: "Error getting user. Please try again.",
     });
   }
 });
