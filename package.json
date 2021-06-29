@@ -30,11 +30,11 @@
     "node-cron": "^2.0.3",
     "nodemailer": "^6.4.16",
     "per-env": "^1.0.2",
-    "prettier": "^2.3.2",
-    "prettier-eslint-cli": "^5.0.1",
     "stripe": "^8.140.0"
   },
   "devDependencies": {
+    "prettier": "^2.3.2",
+    "prettier-eslint-cli": "^5.0.1",
     "husky": "^6.0.0",
     "nodemon": "^2.0.7"
   }
