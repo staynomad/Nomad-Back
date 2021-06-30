@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const { Array, Mixed, Number, String, ObjectId } = Schema.Types;
@@ -6,7 +6,7 @@ const { Array, Mixed, Number, String, ObjectId } = Schema.Types;
 const PopularitySchema = new Schema({
   listingId: {
     type: ObjectId,
-    ref: 'Listing',
+    ref: "Listing",
     required: true,
     unique: true,
   },
@@ -24,5 +24,5 @@ const PopularitySchema = new Schema({
   },
 });
 
-const popularity = mongoose.model('popularity', PopularitySchema);
+const popularity = mongoose.model("popularity", PopularitySchema);
 module.exports = popularity;

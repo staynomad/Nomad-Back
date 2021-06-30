@@ -8,12 +8,12 @@ const { check, validationResult } = require("express-validator");
 /* User Login */
 router.post(
   "/",
-  [check("email").isEmail().withMessage('The email address is not valid')],
+  [check("email").isEmail().withMessage("The email address is not valid")],
   async (req, res, next) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        let invalidEmail = new Error({ name: 'Invalid email format' });
+        let invalidEmail = new Error({ name: "Invalid email format" });
         invalidEmail.status = 401;
         throw invalidEmail;
       }
@@ -24,10 +24,12 @@ router.post(
       // 401 - status code if the passwords do not match
       // 200 - if everything is ok
       if (!user) {
-        let missingUser = new Error("The user with this email address does not exist");
+        let missingUser = new Error(
+          "The user with this email address does not exist"
+        );
         missingUser.status = 404;
         throw missingUser;
-      };
+      }
 
       if (!validatePassword(password, user.password)) {
         let incorrectPassword = new Error("Incorrect password.");

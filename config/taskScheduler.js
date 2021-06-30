@@ -1,5 +1,5 @@
-const Popularity = require('../models/popularity.model');
-const Housekeeping = require('../models/housekeeping.model');
+const Popularity = require("../models/popularity.model");
+const Housekeeping = require("../models/housekeeping.model");
 
 const resetDayCount = async () => {
   await resetPopularityCount();
@@ -15,27 +15,27 @@ const resetPopularityCount = async () => {
       Popularity.findByIdAndUpdate(
         listing._id,
         {
-          $set: { ['visits.' + currDay]: 0 },
+          $set: { ["visits." + currDay]: 0 },
           $inc: { visitCount: decrease },
         },
         (err, doc) => {
           if (!doc) {
             console.log("doc doesn't exist");
           } else if (err) {
-            console.log('there was an error');
+            console.log("there was an error");
           } else {
             console.log(doc);
           }
-        },
+        }
       );
     });
   });
 
   await Popularity.deleteMany({ visitCount: 0 }, (err) => {
     if (err) {
-      console.log('There was an error while deleting');
+      console.log("There was an error while deleting");
     } else {
-      console.log('successfully deleted empty doc');
+      console.log("successfully deleted empty doc");
     }
   });
 };
@@ -46,13 +46,13 @@ const resetHousekeepingCount = async () => {
     const curr = new Date();
     const date = curr.getDate();
     const month = curr.getMonth() + 1; // to deal with javascript off by 1 for month
-    const field = month + '/' + date;
+    const field = month + "/" + date;
 
     const yesterday = new Date();
     yesterday.setDate(curr.getDate() - 1);
     const oldDate = yesterday.getDate();
     const oldMonth = yesterday.getMonth() + 1;
-    const oldField = oldMonth + '/' + oldDate;
+    const oldField = oldMonth + "/" + oldDate;
 
     const helperFunc = async (name) => {
       const oldResult = await Housekeeping.findOne({ name });
@@ -62,15 +62,15 @@ const resetHousekeepingCount = async () => {
       }
       await Housekeeping.findOneAndUpdate(
         { name },
-        { $set: { ['payload.' + field]: oldPayload } },
+        { $set: { ["payload." + field]: oldPayload } }
       );
     };
 
-    await helperFunc('users');
-    await helperFunc('activeListings');
+    await helperFunc("users");
+    await helperFunc("activeListings");
   } catch (err) {
     console.log(err);
-    console.log('There was an error logging housekeeping');
+    console.log("There was an error logging housekeeping");
   }
 };
 

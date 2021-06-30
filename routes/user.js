@@ -14,16 +14,16 @@ router.get("/getUserInfo/:userId", async (req, res) => {
         error: "User not found. Please try again.",
       });
     }
-    const verbose = req.query.verbose
+    const verbose = req.query.verbose;
     if (verbose && verbose == 1) {
-      let fullFriends = []
+      let fullFriends = [];
       for (let i = 0; i < userFound.friends.length; i++) {
-        const friend = await User.findOne({ _id: userFound.friends[i] })
-        if (friend) fullFriends.push(friend)
+        const friend = await User.findOne({ _id: userFound.friends[i] });
+        if (friend) fullFriends.push(friend);
       }
       return res.status(200).json({
         userFound,
-        fullFriends
+        fullFriends,
       });
     }
     return res.status(200).json(userFound);
@@ -44,16 +44,16 @@ router.get("/getByEmail/:email", async (req, res) => {
         error: "User not found. Please try again.",
       });
     }
-    const verbose = req.query.verbose
+    const verbose = req.query.verbose;
     if (verbose && verbose == 1) {
-      let fullFriends = []
+      let fullFriends = [];
       for (let i = 0; i < userFound.friends.length; i++) {
-        const friend = await User.findOne({ _id: userFound.friends[i] })
-        if (friend) fullFriends.push(friend)
+        const friend = await User.findOne({ _id: userFound.friends[i] });
+        if (friend) fullFriends.push(friend);
       }
       return res.status(200).json({
         userFound,
-        fullFriends
+        fullFriends,
       });
     }
     return res.status(200).json(userFound);
@@ -64,7 +64,6 @@ router.get("/getByEmail/:email", async (req, res) => {
     });
   }
 });
-
 
 // Updates isVerified to true and returns user information
 router.post("/verify/:userId", async (req, res) => {
@@ -184,7 +183,7 @@ router.delete("/removeFriend", async (req, res) => {
   try {
     const { userId, friendId } = req.body;
     const user = await User.findOne({ _id: userId });
-    const friend = await User.findOne({ _id: friendId })
+    const friend = await User.findOne({ _id: friendId });
     if (!user || !friend) {
       return res.status(404).json({
         error: "User does not exist.",
@@ -198,14 +197,14 @@ router.delete("/removeFriend", async (req, res) => {
       updatedFriends.splice(idx, 1);
       let updatedUser = await User.findOneAndUpdate(
         { _id: userId },
-        { friends: updatedFriends },
+        { friends: updatedFriends }
       );
       // Remove userId from friend's users
       updatedFriends = friend.friends;
       updatedFriends.splice(idx, 1);
       updatedUser = await User.findOneAndUpdate(
         { _id: friendId },
-        { friends: updatedFriends },
+        { friends: updatedFriends }
       );
 
       return res.status(200).json({
