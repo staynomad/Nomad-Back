@@ -7,7 +7,8 @@ const { getUserToken, passGenService } = require("../utils");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 router.post("/", async (req, res) => {
-  const { token } = req.body;
+  // isHost is undefined when call comes from login, otherwise has value
+  const { token, isHost } = req.body;
   // if user clicks out of google account selection popup
   if (!token) {
     return res.status(500).send("user clicked out of google account popup");
@@ -20,22 +21,25 @@ router.post("/", async (req, res) => {
   const payload = ticket.getPayload();
 
   // searching for user in database
-  console.log("searching");
   const searchQuery = { email: payload.email };
   let user = await User.findOne(searchQuery);
   if (!user) {
+    // If user cannot be found and call came from login
+    if (isHost === undefined) {
+      return res.status(400).json({
+        error: "Please sign up with Google first.",
+      });
+    }
     // user not already in dataabse, creating new document for user
-    console.log("creating document for user");
     const newUserData = {
       name: payload.name,
       email: payload.email,
       password: await passGenService(payload.sub),
-      isHost: false, // as of right now there's no way to make a google user a host
+      isHost: isHost,
     };
     user = new User(newUserData);
     await user.save();
   }
-  console.log("creating user token");
   const userToken = getUserToken(user);
   return res.status(200).json({
     token: userToken,
