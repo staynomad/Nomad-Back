@@ -82,7 +82,7 @@ router.post(
       if (isHost) {
         await axios
           .post(
-            `https://api.vhomesgroup.com/accountVerification/sendVerificationEmail`,
+            `https://api.visitnomad.com/accountVerification/sendVerificationEmail`,
             emailData,
             {
               headers: {
@@ -99,7 +99,7 @@ router.post(
         email: email,
       };
       await axios
-        .post("https://api.vhomesgroup.com/subscribe", subscriptionData)
+        .post("https://api.visitnomad.com/subscribe", subscriptionData)
         .catch((e) => console.log("Unable to add email to subscription list."));
       // we could send the 200 status code
       // but 201 indicates the resource is created
