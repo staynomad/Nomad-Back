@@ -67,7 +67,7 @@ router.post(
       const newUser = await new User(data).save();
       incHousekeepingUsers();
       if (isHost) {
-        sendVerificationEmail(newUserData.email, user._id);
+        sendVerificationEmail(data.email, newUser._id);
       }
 
       // now send the token
