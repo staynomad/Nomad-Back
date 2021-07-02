@@ -2,9 +2,11 @@ const express = require("express");
 const User = require("../models/user.model");
 const { getUserToken, passGenService } = require("../utils");
 const { check, body, validationResult } = require("express-validator");
-const axios = require("axios");
 const router = express.Router();
-const Housekeeping = require("../models/housekeeping.model");
+const {
+  incHousekeepingUsers,
+  sendVerificationEmail,
+} = require("../helpers/account.helper");
 
 /* POST users listing. */
 router.post(
@@ -63,44 +65,14 @@ router.post(
         data.isVerified = false;
       }
       const newUser = await new User(data).save();
-
-      // update the housekeeping collection that keeps track of the number of users
-      const curr = new Date();
-      const field = curr.getMonth() + 1 + "/" + curr.getDate();
-      await Housekeeping.findOneAndUpdate(
-        { name: "users" },
-        { $inc: { ["payload." + field]: 1 } }
-      );
+      incHousekeepingUsers();
+      if (isHost) {
+        sendVerificationEmail(newUserData.email, user._id);
+      }
 
       // now send the token
       const token = getUserToken({ id: newUser._id });
-      // Send account verification email if user is host
-      const emailData = {
-        email: email,
-        userId: newUser._id,
-      };
-      if (isHost) {
-        await axios
-          .post(
-            `https://api.vhomesgroup.com/accountVerification/sendVerificationEmail`,
-            emailData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          )
-          .catch((e) =>
-            console.log("Unable to send verification email to host.")
-          );
-      }
-      // Add signed up user to Mailchimp subscription list
-      const subscriptionData = {
-        email: email,
-      };
-      await axios
-        .post("https://api.vhomesgroup.com/subscribe", subscriptionData)
-        .catch((e) => console.log("Unable to add email to subscription list."));
+
       // we could send the 200 status code
       // but 201 indicates the resource is created
       res.status(201).json({

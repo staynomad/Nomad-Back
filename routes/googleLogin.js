@@ -3,11 +3,15 @@ const User = require("../models/user.model");
 const router = express.Router();
 const { OAuth2Client } = require("google-auth-library");
 const { getUserToken, passGenService } = require("../utils");
+const {
+  incHousekeepingUsers,
+  sendVerificationEmail,
+} = require("../helpers/account.helper");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 router.post("/", async (req, res) => {
-  // isHost is undefined when call comes from login, otherwise has value
+  // isHost is undefined when call comes from login, otherwise has boolean value
   const { token, isHost } = req.body;
   // if user clicks out of google account selection popup
   if (!token) {
@@ -37,8 +41,15 @@ router.post("/", async (req, res) => {
       password: await passGenService(payload.sub),
       isHost: isHost,
     };
-    user = new User(newUserData);
-    await user.save();
+    // Set isVerified to false only if user is a host
+    if (isHost) {
+      newUserData.isVerified = false;
+    }
+    user = await new User(newUserData).save();
+    incHousekeepingUsers();
+    if (isHost) {
+      sendVerificationEmail(newUserData.email, user._id);
+    }
   }
   const userToken = getUserToken(user);
   return res.status(200).json({
