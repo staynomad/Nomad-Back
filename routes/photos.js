@@ -54,7 +54,36 @@ const uploadImagesToAWS = async (images, type = "listing") => {
   return imageUploadRes;
 };
 
+/* Default Image Delete Function */
+const deleteImagesFromAWS = async (imageURLs) => {
+  if (!imageURLs || imageURLs.length === 0) return;
+  const BucketName = "vhomes-images-bucket";
+
+  let s3bucket = new AWS.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    Bucket: BucketName,
+  });
+
+  imageURLs.forEach((imageURL) => {
+    const imageKey = new URL(imageURL).pathname.slice(1, imageURL.length);
+
+    s3bucket.deleteObject(
+      {
+        Bucket: BucketName,
+        Key: imageKey,
+      },
+      (err, data) => {
+        if (err) {
+          console.error(err);
+        }
+      }
+    );
+  });
+};
+
 module.exports = {
+  deleteImagesFromAWS,
   multerUploads,
   uploadImagesToAWS,
 };
