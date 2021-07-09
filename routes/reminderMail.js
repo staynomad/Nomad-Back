@@ -17,16 +17,31 @@ const today = new Date();
 // sendReminder("nishantb1130@gmail.com", "name"); 
 
 
+// TESTING ****************************************************************************************************************
+
+// async function getListing () {
+//     const cursor = Listing.find({});
+//     console.log("async");
+//     for await (const doc of cursor) {
+//       console.log(doc);
+//     }
+// }
+
+// getListing()
+
+async function getListing () {
+  for await (const doc of Listing.find({})) {
+    console.log(doc); // Prints documents one at a time
+  }
+}
+
+getListing()
+
+
 // ****************************************************************************************************************
 
-// const user = User.findOne({ email: "tester@gmail.com" });
-// console.log(user.name); 
-
-// ****************************************************************************************************************
 
 
-// const listing = Listing.find({ });
-// console.log(listing); 
 
 // cron.schedule("0 8 * * *", () => {
 // var task = cron.schedule("* * * * *", () => {
