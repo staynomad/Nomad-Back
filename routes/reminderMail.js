@@ -44,7 +44,7 @@ async function findExpiringListings () {
           let email = user.email;
 
           // Send the reminder.
-          sendReminder('stanxy357@gmail.com', listing.title)
+          sendReminder(email, listing.title)
 
           // Mark reminder as sent.
           listing.reminder = true; 
