@@ -1,105 +1,67 @@
 const { sendReminder } = require("../helpers/reminder.helper");
 const Listing = require("../models/listing.model");
-const User = require("../models/user.model");
+const User = require("../models/user.model")
 const cron = require("node-cron");
+const mongoose = require("mongoose");
 const today = new Date(); 
 
+const DATABASE_URI  = 'mongodb://vhomesgroup:vhomes2019@cluster0-shard-00-00.rmikc.mongodb.net:27017,cluster0-shard-00-01.rmikc.mongodb.net:27017,cluster0-shard-00-02.rmikc.mongodb.net:27017/VHomes?ssl=true&replicaSet=atlas-1wcpgc-shard-0&authSource=admin&retryWrites=true&w=majority'
+mongoose.connect(DATABASE_URI, {
+  useCreateIndex: true,
+  useFindAndModify: false,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
+var task = cron.schedule("0 8 * * *", () => {
+  findExpiringListings();
+},{
+    scheduled: true,
+    timezone: "America/Los_Angeles"
+});
 
+task.start()
 
-// var task = cron.schedule("* * * * *", () => {
-//     console.log("hi");
-// },{
-//     scheduled: true,
-//     timezone: "America/Los_Angeles"
-// });
+async function findExpiringListings () {
+  try{
+    for await (const listing of Listing.find({})) {
+      if (listing.userId !== undefined && listing.reminder != true){
 
-// sendReminder("nishantb1130@gmail.com", "name"); 
+        const week = 7;
+        const convertMilli = 1000; 
+        const convertSecMin = 60; 
+        const convertHour = 24; 
+        
+        let listDate = new Date(listing.available[1]);
+        const diffTime = Math.abs(today - listDate);
+        const diffDays = Math.ceil(diffTime / (convertMilli * convertSecMin * convertSecMin * convertHour));
 
+        // Send reminder if within a week of expiration.
+        if(diffDays <= week){
 
-// TESTING ****************************************************************************************************************
+          // Find the associated user.
+          let user = User.findOne(listing.userId);
+          let email = user.email;
 
-// async function getListing () {
-//     const cursor = Listing.find({});
-//     console.log("async");
-//     for await (const doc of cursor) {
-//       console.log(doc);
-//     }
-// }
+          // Send the reminder.
+          sendReminder('stanxy357@gmail.com', listing.title)
 
-// getListing()
-
-async function getListing () {
-  for await (const doc of Listing.find({})) {
-    console.log(doc); // Prints documents one at a time
+          // Mark reminder as sent.
+          listing.reminder = true; 
+          listing.save()
+        }
+      }
+    }
+    
+  } catch(err){
+    console.log(err)
   }
 }
 
-getListing()
-
-
-// ****************************************************************************************************************
-
-
-
-
-// cron.schedule("0 8 * * *", () => {
-// var task = cron.schedule("* * * * *", () => {
-    // console.log("here"); 
-    // Listing.findOne({ title: "Beautiful apartment overlooking the park" }, (err, listings) => {
-
-    //     console.log(listing); 
-    //     // min number of days to send the email
-    //     const week = 7;
-    //     const convertMilli = 1000; 
-    //     const convertSecMin = 60; 
-    //     const convertHour = 24; 
-
-    //     console.log('CONSTANDOIAHOIAHIOFHDSOGI:SHD:GOSIGHD:SDGO')
-
-        // if(err){
-        //     console.log("error"); 
-        //     console.log(err); 
-        //     return err; 
-        // }
-        // listings.map(listing => {
-        //     console.log("urmum"); 
-        //     // Check if listing has a user associated with it 
-        //     if(listing.userId !== undefined){
-
-        //         // Get the difference between the dates
-        //         let listDate = new Date(listing.available[1]);
-        //         const diffTime = Math.abs(today - listDate);
-        //         const diffDays = Math.ceil(diffTime / (convertMilli * convertSecMin * convertSecMin * convertHour));
-
-        //         // Send reminder if within a week and a reminder hasn't been sent already. 
-        //         // if(diffDays <= week && listing.reminder != true){
-
-        //             // Find the associated user
-        //             let user = User.findOne(userId);
-        //             // let email = user.email;
-        //             let email = "nishantb1130@gmail.com"; 
-
-        //             // Send the reminder 
-        //             sendReminder(email, listing.title)
-
-        //             // Mark reminder as sent 
-        //             listing.reminder = true; 
-        //             listing.save()
-        //         // }
-        //     }
-        // })
-//     })
-// },{
-//     scheduled: true,
-//     timezone: "America/Los_Angeles"
-// })
-
-// task.start();
-// console.log("works");
-
-// if listing expires in a week, send an email
+// if listing expires in a week, send an email to host
 //   - go through all the listings
 //   - check if each listing that is a week away (only one for each listing) from expiration
 //   - send a mail to the user that corresponds to listing for each listing that is about to expire
 //   - repeat for each listing
+//   - listings that have already been sent a reminder about their expiration should not receive additional reminders
+// this process should repeat every day at 8:00 am PST

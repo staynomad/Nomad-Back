@@ -8,7 +8,8 @@ const sendReminder = async (email, listingName) => {
         subject: `Your Listing is Expiring Soon!`,
         text: `Please check your account, as your listing for ${listingName} expires next week.`,
         html: `<p>
-              Please go to 
+              Please check your account, as your listing for <b>${listingName}</b> expires next week.
+              Visit
               <a href="${baseURL}/myAccount">here</a>
               to update your listing.
              </p>`,
