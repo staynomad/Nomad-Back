@@ -83,8 +83,8 @@ const ListingSchema = new Schema({
   reminder: {
     type: Boolean,
     required: false,
-    default: false, 
-  }
+    default: false,
+  },
 });
 
 ListingSchema.set("timestamps", true);

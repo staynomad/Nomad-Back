@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const https = require("https");
+const { findExpiringListings } = require("./helpers/reminder.helper");
 
 const { DATABASE_URI, environment } = require("./config");
 const loginRouter = require("./routes/login");
@@ -96,6 +97,10 @@ cron.schedule("0 0 * * *", require("./config/taskScheduler"), {
   timezone: "America/Los_Angeles",
 });
 cron.schedule("0 8 * * * *", pingHealthCheck, {
+  timezone: "America/Los_Angeles",
+});
+cron.schedule("* * * * *", findExpiringListings, {
+  scheduled: true,
   timezone: "America/Los_Angeles",
 });
 
