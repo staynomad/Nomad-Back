@@ -99,7 +99,7 @@ cron.schedule("0 0 * * *", require("./config/taskScheduler"), {
 cron.schedule("0 8 * * * *", pingHealthCheck, {
   timezone: "America/Los_Angeles",
 });
-cron.schedule("* * * * *", findExpiringListings, {
+cron.schedule("0 8 * * *", findExpiringListings, {
   scheduled: true,
   timezone: "America/Los_Angeles",
 });

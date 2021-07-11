@@ -6,14 +6,15 @@ const today = new Date();
 
 const findExpiringListings = async function () {
   try {
-    for await (const listing of Listing.find({})) {
+    const listings = await Listing.find({})
+    for (const listing of listings) {
       if (listing.userId !== undefined && listing.reminder != true) {
         const week = 7;
         const convertMilli = 1000;
         const convertSecMin = 60;
         const convertHour = 24;
 
-        let listDate = new Date(listing.available[1]);
+        const listDate = new Date(listing.available[1]);
         const diffTime = Math.abs(today - listDate);
         const diffDays = Math.ceil(
           diffTime /
@@ -23,15 +24,15 @@ const findExpiringListings = async function () {
         // Send reminder if within a week of expiration.
         if (diffDays <= week) {
           // Find the associated user.
-          let user = User.findOne(listing.userId);
-          let email = user.email;
+          const user = User.findOne(listing.userId);
+          const email = user.email;
 
           // Send the reminder.
-          sendReminder("stanxy357@gmail.com", listing.title);
+          sendReminder(email, listing.title);
 
           // Mark reminder as sent.
-          // listing.reminder = true;
-          // listing.save()
+          listing.reminder = true;
+          listing.save()
         }
       }
     }
