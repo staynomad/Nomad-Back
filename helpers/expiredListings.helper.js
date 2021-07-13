@@ -2,14 +2,6 @@ const { sendEmail } = require("./nodemailer.helper");
 const { baseURL } = require("../config/index");
 const Listing = require("../models/listing.model");
 const User = require("../models/user.model");
-const mongoose = require("mongoose");
-const DATABASE_URI  = 'mongodb://vhomesgroup:vhomes2019@cluster0-shard-00-00.rmikc.mongodb.net:27017,cluster0-shard-00-01.rmikc.mongodb.net:27017,cluster0-shard-00-02.rmikc.mongodb.net:27017/VHomes?ssl=true&replicaSet=atlas-1wcpgc-shard-0&authSource=admin&retryWrites=true&w=majority'
-mongoose.connect(DATABASE_URI, {
-  useCreateIndex: true,
-  useFindAndModify: false,
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
 
 const findExpiringListings = async function () {
   try {
@@ -77,7 +69,6 @@ module.exports = {
   findExpiringListings,
 };
 
-findExpiringListings()
 
 // if listing expires in a week, send an email to host
 //   - go through all the listings
