@@ -37,7 +37,7 @@ const findExpiringListings = async function () {
 
 
       // Separate check to update listing status to inactive the day after expiration date
-      if (daysPastExpiration > 0 ){
+      if (listing.active = true && daysPastExpiration > 0 ){
         // mark listing as inactive
         listing.active = false;
         listing.save();
