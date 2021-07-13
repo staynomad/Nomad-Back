@@ -72,7 +72,7 @@ router.post(
 
       // now send the token
       const token = getUserToken({ id: newUser._id });
-      
+
       // we could send the 200 status code
       // but 201 indicates the resource is created
       res.status(201).json({
