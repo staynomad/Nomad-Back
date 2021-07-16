@@ -18,45 +18,51 @@ router.post("/", async (req, res) => {
     return res.status(500).send("user clicked out of google account popup");
   }
   // verifies googleToken came from google auth servers
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
-  const payload = ticket.getPayload();
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
 
-  // searching for user in database
-  const searchQuery = { email: payload.email };
-  let user = await User.findOne(searchQuery);
-  if (!user) {
-    // If user cannot be found and call came from login
-    if (isHost === undefined) {
-      return res.status(400).json({
-        error: "Please sign up with Google first.",
-      });
+    // searching for user in database
+    const searchQuery = { email: payload.email };
+    let user = await User.findOne(searchQuery);
+    if (!user) {
+      // If user cannot be found and call came from login
+      if (isHost === undefined) {
+        return res.status(400).json({
+          error: "Please sign up with Google first.",
+        });
+      }
+      // user not already in dataabse, creating new document for user
+      const newUserData = {
+        name: payload.name,
+        email: payload.email,
+        password: await passGenService(payload.sub),
+        isHost: isHost,
+      };
+      // Set isVerified to false only if user is a host
+      if (isHost) {
+        newUserData.isVerified = false;
+      }
+      user = await new User(newUserData).save();
+      incHousekeepingUsers();
+      if (isHost) {
+        sendVerificationEmail(newUserData.email, user._id);
+      }
     }
-    // user not already in dataabse, creating new document for user
-    const newUserData = {
-      name: payload.name,
-      email: payload.email,
-      password: await passGenService(payload.sub),
-      isHost: isHost,
-    };
-    // Set isVerified to false only if user is a host
-    if (isHost) {
-      newUserData.isVerified = false;
-    }
-    user = await new User(newUserData).save();
-    incHousekeepingUsers();
-    if (isHost) {
-      sendVerificationEmail(newUserData.email, user._id);
-    }
+    const userToken = getUserToken(user);
+    return res.status(200).json({
+      token: userToken,
+      userId: user.id,
+      isHost: user.isHost,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: "Google client ID is invalid",
+    });
   }
-  const userToken = getUserToken(user);
-  return res.status(200).json({
-    token: userToken,
-    userId: user.id,
-    isHost: user.isHost,
-  });
 });
 
 module.exports = router;
