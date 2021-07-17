@@ -153,13 +153,45 @@ router.post(
   }
 );
 
-router.post("/addFriend", async (req, res) => {
+// Sends friend request
+router.post("/sendFriendRequest", requireUserAuth, async (req, res) => {
   try {
-    const { userId, friendId } = req.body;
+    const userId = req.user._id;
+    const { friendId } = req.body;
+    // Add friendId to user's outgoing friend requests
     const user = await User.findOneAndUpdate(
       { _id: userId },
-      { $push: { friends: friendId } }
+      { $push: { outgoingFriendRequests: friendId } }
     );
+    // Add userId to friend's incoming friend requests
+    const friend = await User.findOneAndUpdate(
+      { _id: friendId },
+      { $push: { incomingFriendRequests: userId } }
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "There was an error sending your friend request."
+    })
+  }
+})
+
+// Accepts friend request
+router.post("/acceptFriendRequest", requireUserAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { friendId } = req.body;
+    // Remove friendId from incoming friend requests and add to friends array
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { incomingFriendRequests: friendId } }
+    ).then(async () => {
+      await User.findOneAndUpdate(
+        { _id: userId },
+        { $push: { friends: friendId } }
+      );
+    })
+    // Add userId to friend's friends array
     const friend = await User.findOneAndUpdate(
       { _id: friendId },
       { $push: { friends: userId } }
@@ -179,9 +211,36 @@ router.post("/addFriend", async (req, res) => {
   }
 });
 
-router.delete("/removeFriend", async (req, res) => {
+// Rejects friend request
+router.post("/rejectFriendRequest", requireUserAuth, async (req, res) => {
   try {
-    const { userId, friendId } = req.body;
+    const userId = req.user._id;
+    const { friendId } = req.body;
+    // Remove friendId from incoming friend requests and add to friends array
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { incomingFriendRequests: friendId } }
+    )
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found. Please try again.",
+      });
+    }
+    res.status(200).json({
+      message: `Rejected ${friendId}'s friend request`,
+    });
+  } catch (e) {
+    res.status(500).json({
+      error: "There was an error rejecting the friend request.",
+    });
+  }
+});
+
+// Removes userId from friends array
+router.delete("/removeFriend", requireUserAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { friendId } = req.body;
     const user = await User.findOne({ _id: userId });
     const friend = await User.findOne({ _id: friendId });
     if (!user || !friend) {
