@@ -193,6 +193,35 @@ router.post("/sendFriendRequest", requireUserAuth, async (req, res) => {
   }
 });
 
+// Cancels friend request
+router.post("/cancelFriendRequest", requireUserAuth, async (req, res) => {
+  try {
+    const userId = mongoose.Types.ObjectId(req.user._id);
+    const friendId = mongoose.Types.ObjectId(req.body.friendId);
+    // Remove friendId from incoming/outgoing friend requests
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { outgoingFriendRequests: friendId } }
+    );
+    const friend = await User.findOneAndUpdate(
+      { _id: friendId },
+      { $pull: { incomingFriendRequests: userId } }
+    );
+    if (!user) {
+      return res.status(404).json({
+        error: "Friend request not found. Please try again.",
+      });
+    }
+    res.status(200).json({
+      message: `Cancelled friend request to ${friendId}`,
+    });
+  } catch (e) {
+    res.status(500).json({
+      error: "There was an error cancelling the friend request.",
+    });
+  }
+});
+
 // Accepts friend request
 router.post("/acceptFriendRequest", requireUserAuth, async (req, res) => {
   try {
@@ -220,7 +249,7 @@ router.post("/acceptFriendRequest", requireUserAuth, async (req, res) => {
     });
   } catch (e) {
     res.status(500).json({
-      error: "There was an error adding a friend.",
+      error: "There was an error accepting the friend request.",
     });
   }
 });
@@ -241,7 +270,7 @@ router.post("/rejectFriendRequest", requireUserAuth, async (req, res) => {
     );
     if (!user) {
       return res.status(404).json({
-        error: "User not found. Please try again.",
+        error: "Friend request not found. Please try again.",
       });
     }
     res.status(200).json({
