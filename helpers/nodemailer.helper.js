@@ -26,7 +26,8 @@ const getHTML = (HTMLOptions) => {
   HTMLOptions.action;
   HTMLOptions.description;
   HTMLOptions.buttonText;
-  return `<div>
+  return(
+     `<div>
       <div style=
           "background-color: #545454;
           border-radius: 10px 10px 0px 0px;
@@ -112,7 +113,8 @@ const getHTML = (HTMLOptions) => {
           href="${baseURL}/myAccount">${baseURL}/myAccount</a>
       </div>
       </div>
-  </div>`;
+  </div>`
+  );
 };
 
 module.exports = {
