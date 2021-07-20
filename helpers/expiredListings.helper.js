@@ -1,4 +1,4 @@
-const { sendEmail, getHTML } = require("./nodemailer.helper");
+const { sendEmail, getHTML, getAttachments } = require("./nodemailer.helper");
 const Listing = require("../models/listing.model");
 const User = require("../models/user.model");
 
@@ -61,6 +61,7 @@ const sendReminder = async (name, email, listingName) => {
     buttonText: "Take me There!",
   };
   const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
 
   const userMailOptions = {
     from: '"NomΛd" <reservations@visitnomad.com>',
@@ -68,13 +69,7 @@ const sendReminder = async (name, email, listingName) => {
     subject: `Your Listing is Expiring Soon!`,
     text: `Please check your account, as your listing for ${listingName} expires next week.`,
     html: html,
-    attachments: [
-      {
-        filename: "logo.png",
-        path: "./emailassets/logo.png",
-        cid: "nomadlogo",
-      },
-    ],
+    attachments: attachments,
   };
   sendEmail(userMailOptions);
 };
