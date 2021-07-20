@@ -99,7 +99,7 @@ router.post("/setUserInfo/:userId", async (req, res) => {
     let userFound = await User.findOne({ _id: req.params.userId });
 
     if (req.body.email && User.findOne(req.body.email)) {
-      if (userFound.email !== req.body.email) {
+      if (userFound.email === req.body.email) {
         return res.status(400).json({
           error: "Email already taken. Please try again.", // assure that it is not the same email
         });
@@ -108,13 +108,10 @@ router.post("/setUserInfo/:userId", async (req, res) => {
     userFound = await User.findOneAndUpdate(
       { _id: req.params.userId },
       { $set: req.body },
-      { strict: false }
+      { strict: false, new: true }
     );
     res.status(200).json({
-      name: userFound.name,
-      email: userFound.email,
-      description: userFound.description,
-      isHost: userFound.isHost,
+      userFound,
     });
   } catch (e) {
     res.status(500).json({
