@@ -53,14 +53,13 @@ const findExpiringListings = async function () {
 };
 
 const sendReminder = async (name, email, listingName) => {
-
   const HTMLOptions = {
-    greeting:`Dear ${name},`, 
-    alert:"YOUR LISTING IS EXPIRING SOON!", 
-    action:"Update your listing now!", 
-    description:`Please check your account, as your listing for <b>${listingName}</b> expires next week.`, 
-    buttonText:"Take me There!",
-  }
+    greeting: `Dear ${name},`,
+    alert: "YOUR LISTING IS EXPIRING SOON!",
+    action: "Update your listing now!",
+    description: `Please check your account, as your listing for <b>${listingName}</b> expires next week.`,
+    buttonText: "Take me There!",
+  };
   const html = getHTML(HTMLOptions);
 
   const userMailOptions = {
