@@ -1,4 +1,5 @@
 const { sendEmail, getHTML, getAttachments } = require("./nodemailer.helper");
+const { baseURL } = require("../config/index");
 const Listing = require("../models/listing.model");
 const User = require("../models/user.model");
 

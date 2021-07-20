@@ -34,8 +34,7 @@ const getHTML = (HTMLOptions) => {
           margin: auto;
           padding: 2rem;
           text-align: center;
-          width: 40%;
-          z-index: 9;"
+          width: 75%;"
       >
           <img src="cid:nomadlogo" style="width: 40%;" ></img>
           <div style=
@@ -97,7 +96,7 @@ const getHTML = (HTMLOptions) => {
           padding: 2rem;
           position:relative;
           text-align: center;
-          width: 40%;"
+          width: 75%;"
       >
       <div style=
           "color: white;
