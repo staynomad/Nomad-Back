@@ -115,7 +115,20 @@ const getHTML = (HTMLOptions) => {
   </div>`;
 };
 
+const getAttachments = () => {
+  return (
+    [
+      {
+        filename: "logo.png",
+        path: "./emailassets/logo.png",
+        cid: "nomadlogo",
+      },
+    ]
+  );
+}
+
 module.exports = {
   sendEmail,
   getHTML,
+  getAttachments,
 };
