@@ -57,8 +57,10 @@ const sendReminder = async (name, email, listingName) => {
     greeting: `Dear ${name},`,
     alert: "YOUR LISTING IS EXPIRING SOON!",
     action: "Update your listing now!",
-    description: `Please check your account, as your listing for <b>${listingName}</b> expires next week.`,
+    description: `Please check your account, as your listing for
+     <b style="color:white">${listingName}</b> expires next week.`,
     buttonText: "Take me There!",
+    buttonURL: `${baseURL}/myAccount`,
   };
   const html = getHTML(HTMLOptions);
   const attachments = getAttachments();
@@ -67,7 +69,6 @@ const sendReminder = async (name, email, listingName) => {
     from: '"NomΛd" <reservations@visitnomad.com>',
     to: email,
     subject: `Your Listing is Expiring Soon!`,
-    text: `Please check your account, as your listing for ${listingName} expires next week.`,
     html: html,
     attachments: attachments,
   };
