@@ -79,7 +79,7 @@ const getHTML = (HTMLOptions) => {
               padding: 15px 25px;"
           >
           <a 
-              href="${baseURL}/myAccount"
+              href=${HTMLOptions.buttonLink}
               style=
               "color: white;
               text-decoration:none;
@@ -109,7 +109,7 @@ const getHTML = (HTMLOptions) => {
           font-family: 'Open Sans', sans-serif;
           text-decoration:none;
           " 
-          href="${baseURL}/myAccount">${baseURL}/myAccount</a>
+          href="${baseURL}">${baseURL}</a>
       </div>
       </div>
   </div>`;
