@@ -28,7 +28,38 @@ const sendConfirmationEmail = (name, email, listingID) => {
 
   sendEmail(userMailOptions);
 };
+const sendTransferEmailConfirmation = (
+  mailTo,
+  sendUserName,
+  receiveUserName,
+  listings
+) => {
+  const HTMLOptions = {
+    greeting: `Dear ${sendUserName}`,
+    alert: "Your Transfer was Successful!",
+    action: "",
+    description: `${receiveUserName} has accepted your invitation! You will no longer have access to the following listing(s):
+        <br />
+        ${listings.join("\n")}`,
+    buttonText: "",
+    buttonURL: "",
+  };
+
+  const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
+
+  const userMailOptions = {
+    from: '"Nomad" <reservations@visitnomad.com>',
+    to: mailTo,
+    subject: `Your Transfer was Successful!`,
+    html: html,
+    attachments: attachments,
+  };
+
+  sendEmail(userMailOptions);
+};
 
 module.exports = {
   sendConfirmationEmail,
+  sendTransferEmailConfirmation,
 };
