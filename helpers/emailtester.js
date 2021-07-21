@@ -16,8 +16,8 @@ const listings = ["12345", "54321"];
 const userId = "test";
 
 // Email functions to test
-// sendReminder(name, email, listing);
-// sendVerificationEmail(name, email, userId);
-// sendConfirmationEmail(name, email, listingID);
-// sendTransferEmailConfirmation(name, email, "John", listings);
-// sendTransferInvite(name, email, "John");
+sendReminder(name, email, listing);
+sendVerificationEmail(name, email, userId);
+sendConfirmationEmail(name, email, listingID);
+sendTransferEmailConfirmation(name, email, "John", listings);
+sendTransferInvite(name, email, "John");
