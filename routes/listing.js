@@ -41,6 +41,7 @@ router.post(
         booked,
         calendarURL,
         amenities,
+        coordinates,
       } = JSON.parse(req.files["listingData"][0].buffer.toString()).newListing;
 
       const imageUploadRes = await uploadImagesToAWS(req.files["image"]);
@@ -65,7 +66,7 @@ router.post(
         }
       }
 
-      const newListing = await new Listing({
+      const newListingData = {
         title,
         location,
         pictures: imageUploadRes,
@@ -78,7 +79,17 @@ router.post(
         amenities,
         active: false,
         userId: req.user._id,
-      }).save();
+      };
+
+      if (
+        coordinates &&
+        coordinates !== null &&
+        coordinates.lng !== null &&
+        coordinates.lat !== null
+      )
+        newListingData.coords = coordinates;
+      else delete newListingData.coords;
+      const newListing = await new Listing(newListingData).save();
 
       // index the listing to elastic search
       // await insertIndex(listingIndex, listingType, convertListing(newListing));
