@@ -1,36 +1,31 @@
-/* mySeedScript.js */
+
 const DataBase
-// require the necessary libraries
+
 const faker = require("faker");
-const MongoClient = require("mongodb").MongoClient;
+const mongoose = require("mongoose");
 
 
-function randomIntFromInterval(min, max) { // min and max included
+function randomIntFromInterval(min, max) { 
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function randomBool() { 
+function randomBool() {
     return randomIntFromInterval(0,1) === 1;
 }
 
-async function seedDB() {
-    // Connection URL
-    const uri = "YOUR MONGODB ATLAS URI";
-
-    const client = new MongoClient(uri, {
-        useNewUrlParser: true,
-        // useUnifiedTopology: true,
-    });
-
+mongoose.connect(DATABASE_URI, {
+  useCreateIndex: true,
+  useFindAndModify: false,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}
     try {
         await client.connect();
         console.log("Connected correctly to server");
 
-        const collection = client.db(DataBase).collection("Users");
+        const user = require("../models/user.model");
 
-        // The drop() command destroys all data from a collection.
-        // Make sure you run it against proper database and collection.
-        collection.drop();
+        user.drop();
 
         for(let i = 0; i<10; i++)
         {
@@ -46,12 +41,10 @@ async function seedDB() {
             user.stripeId = null
             collection.insert(user);
         }
-        
+
         console.log("Database seeded! :)");
         client.close();
     } catch (err) {
         console.log(err.stack);
     }
 }
-
-seedDB();
