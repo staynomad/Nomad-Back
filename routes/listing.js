@@ -1,7 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const { baseURL, nodemailerPass } = require("../config/index");
-const { sendConfirmationEmail } = require("../helpers/emails.helper");
+const {
+  sendConfirmationEmail,
+  sendTransferEmailConfirmation,
+} = require("../helpers/emails.helper");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
 const { multerUploads, uploadImagesToAWS } = require("./photos");
@@ -13,6 +16,7 @@ const router = express.Router();
 const fs = require("fs");
 const ics = require("ics");
 const Housekeeping = require("../models/housekeeping.model");
+const User = require("../models/user.model");
 
 /* Add a listing */
 router.post(
@@ -523,6 +527,11 @@ router.get("/byTransferEmail", requireUserAuth, async (req, res) => {
 router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { email, listingId } = req.body;
+
+    const user = await User.findOne({ email: email });
+
+    sendTransferInvite(email, req.user.name, user.name);
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -624,36 +633,14 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
             currentListing.userId = mongoose.Types.ObjectId(req.user._id);
             await currentListing.save();
           }
+          const sendUser = await User.findOne({ email: email });
 
-          sendTransferEmailConfirmation(email, req.user.name, listingEmailBody);
-          // let userMailOptions = {
-          //   from: '"Nomad" <reservations@visitnomad.com>',
-          //   to: email,
-          //   subject: `Your Transfer Was Successful!`,
-          //   // we'll need to add in the new host's name here
-          //   text: `
-          //       ${
-          //         req.user.name
-          //       } has accepted your invitation! You will no longer have access to the following listing(s):
-          //         ${listingEmailBody.join("\n")}
-          //     `,
-          //   html: `
-          //       <p>
-          //         ${
-          //           req.user.name
-          //         } has accepted your invitation! You will no longer have access to the following listing(s):
-          //         ${listingEmailBody.join("\n")}
-          //       </p>
-          //     `,
-          // };
-
-          // transporter.sendMail(userMailOptions, (error, info) => {
-          //   if (error) {
-          //     console.log(error);
-          //   } else {
-          //     console.log(`All transfers successful`);
-          //   }
-          // });
+          sendTransferEmailConfirmation(
+            sendUser.name,
+            email,
+            req.user.name,
+            listingEmailBody
+          );
         });
 
         res.status(200).json({
@@ -671,30 +658,18 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
         listingToTransfer.userId = mongoose.Types.ObjectId(req.user._id);
         listingToTransfer.transferEmail = {};
         await listingToTransfer.save();
+        const sendUser = await User.findOne({ email: emailToSendTo });
 
-        let userMailOptions = {
-          from: '"Nomad" <reservations@visitnomad.com>',
-          to: emailToSendTo,
-          subject: `Your Transfer Was Successful!`,
-          // we'll need to add in the new host's name here
-          text: `
-              ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
-                ${listingToTransfer._id}
-            `,
-          html: `
-              <p>
-                ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingToTransfer._id}
-              </p>
-            `,
-        };
-        transporter.sendMail(userMailOptions, (error, info) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log(`Transfer successful`);
-          }
-        });
+        let listings = [];
+        listings.push(listingToTransfer);
+
+        sendTransferEmailConfirmation(
+          sendUser.name,
+          emailToSendTo,
+          req.user.name,
+          listings
+        );
+
         res.status(200).json({
           listingToTransfer,
         });
