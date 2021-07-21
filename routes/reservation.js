@@ -32,11 +32,6 @@ router.post("/createReservation", requireUserAuth, async (req, res) => {
     // const reservationStart = new Date(days[0]);
     // const reservationEnd = new Date(days[1]);
 
-    console.log("listing available: " + listingInfo.available);
-    console.log("parsed available: " + availableStart + " | " + availableEnd);
-    console.log(
-      "reservation dates: " + reservationStart + " | " + reservationEnd
-    );
     // Verify that the booked dates and available dates do not conflict with reservation
     if (reservationStart < availableStart || reservationEnd > availableEnd) {
       return res.status(400).json({
@@ -57,6 +52,9 @@ router.post("/createReservation", requireUserAuth, async (req, res) => {
         });
       }
     }
+
+    console.log(days);
+
     // Create a new object in reservations collection and update 'booked' field in listing
     const newReservation = await new Reservation({
       user: req.user._id,
