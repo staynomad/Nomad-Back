@@ -4,7 +4,6 @@ const nodemailer = require("nodemailer");
 const { baseURL, nodemailerPass } = require("../config/index");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
-<<<<<<< HEAD
 const {
   deleteImagesFromAWS,
   multerUploads,
@@ -18,11 +17,6 @@ const popularity = require("../models/popularity.model");
 //   listingType,
 //   convertListing,
 // } = require('../elastic-search/esClientconst');
-=======
-const { multerUploads, uploadImagesToAWS } = require("./photos");
-// const { check, validationResult } = require("express-validator");
-const popularity = require("../models/popularity.model");
->>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
 
 const router = express.Router();
 
@@ -48,13 +42,6 @@ router.post(
         calendarURL,
         amenities,
       } = JSON.parse(req.files["listingData"][0].buffer.toString()).newListing;
-<<<<<<< HEAD
-=======
-
-      console.log(
-        JSON.parse(req.files["listingData"][0].buffer.toString()).newListing
-      );
->>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
 
       const imageUploadRes = await uploadImagesToAWS(req.files["image"]);
 
@@ -202,7 +189,6 @@ router.put(
 );
 
 /* Update a listing */
-<<<<<<< HEAD
 router.put(
   "/editListing/:listingId",
   multerUploads,
@@ -263,32 +249,6 @@ router.put(
       const listing = await Listing.findOne({
         _id: req.params.listingId,
         userId: req.user._id,
-=======
-router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
-  try {
-    console.log(req.user);
-    const listing = await Listing.findOne({
-      _id: req.params.listingId,
-      userId: req.user._id,
-    });
-
-    if (!listing) {
-      res.status(404).json({
-        errors: ["Listing was not found. Please try again!"],
-      });
-    } else {
-      const updatedKeys = Object.keys(req.body);
-      updatedKeys.forEach(async (key) => {
-        if (
-          key &&
-          key !== null &&
-          listing[key] !== req.body[key] &&
-          key !== "listingId"
-        ) {
-          console.log("changing " + key);
-          listing[key] = req.body[key];
-        }
->>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
       });
 
       if (!listing) {
@@ -325,14 +285,6 @@ router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
         ],
       });
     }
-<<<<<<< HEAD
-=======
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while creating listing. Please try again!"],
-    });
->>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
   }
 );
 
