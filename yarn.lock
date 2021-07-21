@@ -1950,7 +1950,7 @@
   "resolved" "https://registry.npmjs.org/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz"
   "version" "1.0.2"
 
-"mongoose@^5.10.13":
+"mongoose@*", "mongoose@^5.10.13":
   "integrity" "sha512-frsSR9yeldaRpSUeTegXCSB0Tu5UGq8sHuHBuEV31Jk3COyxlKFQPL7UsdMhxPUCmk74FpOYSmNwxhWBEqgzQg=="
   "resolved" "https://registry.npmjs.org/mongoose/-/mongoose-5.12.3.tgz"
   "version" "5.12.3"
