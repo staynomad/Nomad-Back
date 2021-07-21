@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const nodemailer = require("nodemailer");
 const { baseURL, nodemailerPass } = require("../config/index");
+const { sendConfirmationEmail } = require("../helpers/emails.helper");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
 const { multerUploads, uploadImagesToAWS } = require("./photos");
@@ -105,35 +105,8 @@ router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
     }
 
     const userInfo = await getUserInfo(req.user._id);
-    // Send confirmation email to host
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "staynomadhomes@gmail.com",
-        pass: nodemailerPass,
-      },
-    });
-    const userMailOptions = {
-      from: '"Nomad" <reservations@visitnomad.com>',
-      to: userInfo.email,
-      subject: `Thank you for listing on Nomad!`,
-      text: `Your listing is live! Click the following link to view your listing page.
 
-         ${baseURL}/listing/${req.params.listingId}`,
-      html: `<p>
-          Your listing is live! Click the following link to view your listing page. <br>
-          <a href="${baseURL}/listing/${req.params.listingId}">${baseURL}/listing/${req.params.listingId}</a>
-         </p>`,
-    };
-    transporter.sendMail(userMailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(
-          `Create listing confirmation email sent to ${userInfo.email}`
-        );
-      }
-    });
+    sendConfirmationEmail(userInfo.name, userInfo.email, req.params.listingId);
 
     // update the housekeeping collection that keeps track of the number of active listings
     const curr = new Date();
@@ -652,34 +625,35 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
             await currentListing.save();
           }
 
-          let userMailOptions = {
-            from: '"Nomad" <reservations@visitnomad.com>',
-            to: email,
-            subject: `Your Transfer Was Successful!`,
-            // we'll need to add in the new host's name here
-            text: `
-                ${
-                  req.user.name
-                } has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingEmailBody.join("\n")}
-              `,
-            html: `
-                <p>
-                  ${
-                    req.user.name
-                  } has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingEmailBody.join("\n")}
-                </p>
-              `,
-          };
+          sendTransferEmailConfirmation(email, req.user.name, listingEmailBody);
+          // let userMailOptions = {
+          //   from: '"Nomad" <reservations@visitnomad.com>',
+          //   to: email,
+          //   subject: `Your Transfer Was Successful!`,
+          //   // we'll need to add in the new host's name here
+          //   text: `
+          //       ${
+          //         req.user.name
+          //       } has accepted your invitation! You will no longer have access to the following listing(s):
+          //         ${listingEmailBody.join("\n")}
+          //     `,
+          //   html: `
+          //       <p>
+          //         ${
+          //           req.user.name
+          //         } has accepted your invitation! You will no longer have access to the following listing(s):
+          //         ${listingEmailBody.join("\n")}
+          //       </p>
+          //     `,
+          // };
 
-          transporter.sendMail(userMailOptions, (error, info) => {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log(`All transfers successful`);
-            }
-          });
+          // transporter.sendMail(userMailOptions, (error, info) => {
+          //   if (error) {
+          //     console.log(error);
+          //   } else {
+          //     console.log(`All transfers successful`);
+          //   }
+          // });
         });
 
         res.status(200).json({

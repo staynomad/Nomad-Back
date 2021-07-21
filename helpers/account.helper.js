@@ -22,7 +22,10 @@ const sendVerificationEmail = async (name, email, userId) => {
     alert: "We're excited to have you!",
     action: "Activate your account now",
     description: `Click the button below or go to the following link to verify your acccount: 
-    <br /> <a style="text-decoration:none;color:white;" href="${baseURL}/accountVerification/${userId}">${baseURL}/accountVerification/${userId}</a>`,
+    <br /> 
+    <a style="text-decoration:none;color:white;" href="${baseURL}/accountVerification/${userId}">
+      ${baseURL}/accountVerification/${userId}
+    </a>`,
     buttonText: "Activate Account",
     buttonURL: `${baseURL}/accountVerification/${userId}`,
   };
