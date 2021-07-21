@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const User = require('./user.model');
+const mongoose = require("mongoose");
+const User = require("./user.model");
 const Schema = mongoose.Schema;
 
 const { Array, Mixed, Number, String, ObjectId } = Schema.Types;
@@ -78,11 +78,16 @@ const ListingSchema = new Schema({
       listingLat: null,
       listingLng: null,
     },
-    unique: true
-  }
+    unique: true,
+  },
+  reminder: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 });
 
-ListingSchema.set('timestamps', true);
+ListingSchema.set("timestamps", true);
 
-const Listing = mongoose.model('listing', ListingSchema);
+const Listing = mongoose.model("listing", ListingSchema);
 module.exports = Listing;

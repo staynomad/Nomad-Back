@@ -1,4 +1,4 @@
-const { Document, model, Schema } = require('mongoose');
+const { Document, model, Schema } = require("mongoose");
 
 const HousekeepingSchema = new Schema({
   name: {
@@ -12,5 +12,5 @@ const HousekeepingSchema = new Schema({
   },
 });
 
-const Housekeeping = model('housekeeping', HousekeepingSchema);
+const Housekeeping = model("housekeeping", HousekeepingSchema);
 module.exports = Housekeeping;

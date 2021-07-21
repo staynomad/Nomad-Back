@@ -1,35 +1,37 @@
-const express = require('express');
-const User = require('../models/user.model');
-const { getUserToken, passGenService } = require('../utils');
-const { check, body, validationResult } = require('express-validator');
-const axios = require('axios');
+const express = require("express");
+const User = require("../models/user.model");
+const { getUserToken, passGenService } = require("../utils");
+const { check, body, validationResult } = require("express-validator");
 const router = express.Router();
-const Housekeeping = require('../models/housekeeping.model');
+const {
+  incHousekeepingUsers,
+  sendVerificationEmail,
+} = require("../helpers/account.helper");
 
 /* POST users listing. */
 router.post(
-  '/',
+  "/",
   [
-    check('email', 'Invalid email address').isEmail(),
-    check('name', 'Name cannot be empty').isLength({ min: 1 }),
-    body('check').custom((value, { req }) => {
+    check("email", "Invalid email address").isEmail(),
+    check("name", "Name cannot be empty").isLength({ min: 1 }),
+    body("check").custom((value, { req }) => {
       if (value !== req.body.password) {
-        throw new Error('Passwords do not match');
+        throw new Error("Passwords do not match");
       } else {
         return true;
       }
     }),
-    check('password')
+    check("password")
       .isLength({ min: 8 })
-      .withMessage('Password must contain at least 8 characters')
+      .withMessage("Password must contain at least 8 characters")
       .matches(/\d/)
-      .withMessage('Password must contain a number')
+      .withMessage("Password must contain a number")
       .matches(/[A-Z]/)
-      .withMessage('Password must contain an uppercase character')
+      .withMessage("Password must contain an uppercase character")
       .matches(/[a-z]/)
-      .withMessage('Password must contain a lowercase character')
+      .withMessage("Password must contain a lowercase character")
       .matches(/[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]/)
-      .withMessage('Password must contain one special character'),
+      .withMessage("Password must contain one special character"),
   ],
   async (req, res) => {
     try {
@@ -42,8 +44,8 @@ router.post(
         const emailError = {
           value: email,
           msg: `User already exists with email ${email}`,
-          param: 'email',
-          location: 'body',
+          param: "email",
+          location: "body",
         };
         errors.push(emailError);
       }
@@ -63,44 +65,14 @@ router.post(
         data.isVerified = false;
       }
       const newUser = await new User(data).save();
-
-      // update the housekeeping collection that keeps track of the number of users
-      const curr = new Date();
-      const field = curr.getMonth() + 1 + '/' + curr.getDate();
-      await Housekeeping.findOneAndUpdate(
-        { name: 'users' },
-        { $inc: { ['payload.' + field]: 1 } },
-      );
+      incHousekeepingUsers();
+      if (isHost) {
+        sendVerificationEmail(data.email, newUser._id);
+      }
 
       // now send the token
       const token = getUserToken({ id: newUser._id });
-      // Send account verification email if user is host
-      const emailData = {
-        email: email,
-        userId: newUser._id,
-      };
-      if (isHost) {
-        await axios
-          .post(
-            `https://api.vhomesgroup.com/accountVerification/sendVerificationEmail`,
-            emailData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          )
-          .catch((e) =>
-            console.log('Unable to send verification email to host.'),
-          );
-      }
-      // Add signed up user to Mailchimp subscription list
-      const subscriptionData = {
-        email: email,
-      };
-      await axios
-        .post('https://api.vhomesgroup.com/subscribe', subscriptionData)
-        .catch((e) => console.log('Unable to add email to subscription list.'));
+
       // we could send the 200 status code
       // but 201 indicates the resource is created
       res.status(201).json({
@@ -111,10 +83,10 @@ router.post(
       // explicit error catching
       console.error(error);
       res.status(500).json({
-        errors: ['Error signing up user. Please try again!'],
+        errors: ["Error signing up user. Please try again!"],
       });
     }
-  },
+  }
 );
 
 module.exports = router;

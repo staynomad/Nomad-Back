@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 const { baseURL, nodemailerPass } = require("../config/index");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
+<<<<<<< HEAD
 const {
   deleteImagesFromAWS,
   multerUploads,
@@ -17,6 +18,11 @@ const popularity = require("../models/popularity.model");
 //   listingType,
 //   convertListing,
 // } = require('../elastic-search/esClientconst');
+=======
+const { multerUploads, uploadImagesToAWS } = require("./photos");
+// const { check, validationResult } = require("express-validator");
+const popularity = require("../models/popularity.model");
+>>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
 
 const router = express.Router();
 
@@ -42,6 +48,13 @@ router.post(
         calendarURL,
         amenities,
       } = JSON.parse(req.files["listingData"][0].buffer.toString()).newListing;
+<<<<<<< HEAD
+=======
+
+      console.log(
+        JSON.parse(req.files["listingData"][0].buffer.toString()).newListing
+      );
+>>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
 
       const imageUploadRes = await uploadImagesToAWS(req.files["image"]);
 
@@ -120,9 +133,9 @@ router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
       },
     });
     const userMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
+      from: '"Nomad" <reservations@visitnomad.com>',
       to: userInfo.email,
-      subject: `Thank you for listing on NomΛd!`,
+      subject: `Thank you for listing on Nomad!`,
       text: `Your listing is live! Click the following link to view your listing page.
 
          ${baseURL}/listing/${req.params.listingId}`,
@@ -189,6 +202,7 @@ router.put(
 );
 
 /* Update a listing */
+<<<<<<< HEAD
 router.put(
   "/editListing/:listingId",
   multerUploads,
@@ -249,6 +263,32 @@ router.put(
       const listing = await Listing.findOne({
         _id: req.params.listingId,
         userId: req.user._id,
+=======
+router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
+  try {
+    console.log(req.user);
+    const listing = await Listing.findOne({
+      _id: req.params.listingId,
+      userId: req.user._id,
+    });
+
+    if (!listing) {
+      res.status(404).json({
+        errors: ["Listing was not found. Please try again!"],
+      });
+    } else {
+      const updatedKeys = Object.keys(req.body);
+      updatedKeys.forEach(async (key) => {
+        if (
+          key &&
+          key !== null &&
+          listing[key] !== req.body[key] &&
+          key !== "listingId"
+        ) {
+          console.log("changing " + key);
+          listing[key] = req.body[key];
+        }
+>>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
       });
 
       if (!listing) {
@@ -285,6 +325,14 @@ router.put(
         ],
       });
     }
+<<<<<<< HEAD
+=======
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      errors: ["Error occurred while creating listing. Please try again!"],
+    });
+>>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
   }
 );
 
@@ -468,58 +516,22 @@ router.get("/byId/:id", async (req, res) => {
 router.post("/search", async (req, res) => {
   const { itemToSearch } = req.body;
   try {
-    // const decodedItemToSearch = decodeURI(itemToSearch);
-    // decodedItemToSearch: string to search
-
-    // const indexResult = await searchIndex(listingIndex, listingType, {
-    //   query: {
-    //     multi_match: {
-    //       query: decodedItemToSearch,
-    //       fields: [
-    //         'title',
-    //         'street',
-    //         'city',
-    //         'state',
-    //         'stateAbbrv',
-    //         'country',
-    //         'zipCode',
-    //       ],
-    //       fuzziness: 2,
-    //     },
-    //   },
-    //   size: 10, // the max size of result
-    // });
-    // const indexListingResult = indexResult.hits.hits;
-    // const result = await Promise.all(
-    //   // Promise.all make sure the promises are resolve before moving on
-    //   indexListingResult.map(async (item) => {
-    //     const listingID = item._source.listingID;
-    //     const temp = await Listing.findById(listingID);
-    //     return temp;
-    //   }),
-    // );
-    // if (result.length === 0) {
-    //   return res.status(404).json({
-    //     errors: ['There were no listings found with the given search term.'],
-    //   });
-    // } else {
-    //   res.status(200).json({
-    //     numberOfListing: result.length,
-    //     filteredListings: result,
-    //   });
-    // }
     let decodedItemToSearch = decodeURI(itemToSearch).toLowerCase();
-    const listings = await Listing.find({ active: true });
-    const filteredListings = listings.filter((listing) => {
-      const { street, city, zipcode, state } = listing.location;
-      if (
-        street.toLowerCase().includes(decodedItemToSearch) ||
-        city.toLowerCase().includes(decodedItemToSearch) ||
-        zipcode.includes(decodedItemToSearch) ||
-        state.toLowerCase().includes(decodedItemToSearch)
-      )
-        return true;
-    });
+    const filteredListings = await Listing.aggregate([
+      {
+        $search: {
+          index: "listing-search-index",
+          text: {
+            query: decodedItemToSearch,
+            path: {
+              wildcard: "*",
+            },
+            fuzzy: {},
+          },
+        },
+      },
+      { $match: { active: true } },
+    ]);
 
     if (filteredListings.length === 0) {
       return res.status(404).json({
@@ -661,13 +673,13 @@ router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
       },
     });
     const userMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
+      from: '"Nomad" <reservations@visitnomad.com>',
       to: email,
       subject: `You've Been Invited!`,
       // we want to include the original host's name here as well
       text: `
           ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to ${baseURL}/MyAccount. If you do not yet have a NomΛd account, please sign up for a host account first.
+              1. Go to ${baseURL}/MyAccount. If you do not yet have a Nomad account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
               4. You're all done! Click on "My Listings" in the side menu to view your new listing.
@@ -675,7 +687,7 @@ router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
       html: `
           <p>
           ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to <a href="${baseURL}/MyAccount">${baseURL}/MyAccount</a>. If you do not yet have a NomΛd account, please sign up for a host account first.
+              1. Go to <a href="${baseURL}/MyAccount">${baseURL}/MyAccount</a>. If you do not yet have a Nomad account, please sign up for a host account first.
               2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
               3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
               4. You're all done! Click on "My Listings" in the side menu to view your new listing.
@@ -756,7 +768,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
           }
 
           let userMailOptions = {
-            from: '"NomΛd" <reservations@visitnomad.com>',
+            from: '"Nomad" <reservations@visitnomad.com>',
             to: email,
             subject: `Your Transfer Was Successful!`,
             // we'll need to add in the new host's name here
@@ -802,7 +814,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
         await listingToTransfer.save();
 
         let userMailOptions = {
-          from: '"NomΛd" <reservations@visitnomad.com>',
+          from: '"Nomad" <reservations@visitnomad.com>',
           to: emailToSendTo,
           subject: `Your Transfer Was Successful!`,
           // we'll need to add in the new host's name here
@@ -880,7 +892,7 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
           }
 
           let userMailOptions = {
-            from: '"NomΛd" <reservations@visitnomad.com>',
+            from: '"Nomad" <reservations@visitnomad.com>',
             to: email,
             subject: `Your Transfer Was Rejected`,
             // we'll need to add in the new host's name here
@@ -925,7 +937,7 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
         await listingToTransfer.save();
 
         let userMailOptions = {
-          from: '"NomΛd" <reservations@visitnomad.com>',
+          from: '"Nomad" <reservations@visitnomad.com>',
           to: emailToSendTo,
           subject: `Your Transfer Was Rejected`,
           // we'll need to add in the new host's name here
