@@ -393,6 +393,7 @@ router.get("/byRadius", async (req, res) => {
 
         const listingsInRadius = listingDocs.filter((listing) => {
           if (
+            !listing.coords ||
             !listing.coords.listingLat ||
             !listing.coords.listingLng ||
             !listing.active
