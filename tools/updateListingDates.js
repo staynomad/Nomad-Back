@@ -90,7 +90,7 @@ prompt.get(property, function (err, { confirm }) {
             );
           })();
 
-          /* Convert all listing dates to UTC timestamps */
+          /* Convert all listing dates to UTC timestamps and remove coords from location object */
           await (async () => {
             console.log("\x1b[33m%s\x1b[0m", "Updating listing dates...");
             const listings = await Listing.find();
@@ -111,12 +111,17 @@ prompt.get(property, function (err, { confirm }) {
                 };
               });
 
+              const updatedLocation = listingDoc.location;
+              delete updatedLocation.coords;
+              delete updatedLocation.coordinates;
+
               await Listing.updateOne(
                 { _id: listingDoc._id },
                 {
                   $set: {
                     available: updatedAvailability,
                     booked: updatedBooked,
+                    location: updatedLocation,
                   },
                 },
                 (err) => {
