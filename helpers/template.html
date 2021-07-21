@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <div style=
+            "background-color: #545454;
+            border-radius: 10px 10px 0px 0px;
+            font-family:'Open Sans',sans-serif;
+            margin: auto;
+            padding: 2rem;
+            text-align: center;
+            width: 40%;
+            z-index: 9;"
+        >
+            <img 
+                src="./emailassets/logo.png" 
+                style="width: 40%;"
+                alt="logo"
+            >
+            </img>
+            <div style=
+                "color:white;
+                font-size:14px;
+                padding: 10px;"
+            >
+                Dear ${name},
+            </div>
+            <div style=
+                "color: #02b188;
+                font-size:22px;
+                font-weight: bold;
+                padding: 10px;"
+            >
+                YOUR LISTING IS EXPIRING SOON!
+            </div>
+            <div style=
+                "color:white;
+                font-size:30px;
+                font-weight:bold;
+                padding: 10px;"
+            >
+                Update your listing now!
+            </div>
+            <div style=
+                "color: #02b188;
+                padding: 10px;"
+            >
+                Please check your account, as your listing for <b>${listingName}</b> expires next week.
+            </div>
+            <button
+                style=
+                "background-color:#02b188;
+                border:none;
+                border-radius:0.5rem;
+                box-shadow:0rem 0.2rem 0rem 0rem #0cc99d;
+                color: white;
+                display: block;
+                margin: auto;
+                padding: 15px 25px;"
+            >
+            <a 
+                href="${baseURL}/myAccount"
+                style=
+                "color: white;
+                text-decoration:none;
+                text-align:center;"
+            >
+                Take me There!
+            </a>
+            </button>
+        </div>
+        <div style=
+            "background-color: #02b188;
+            border-radius: 0px 0px 10px 10px;
+            font-family:'Open Sans',sans-serif;
+            margin: auto;
+            padding: 2rem;
+            position:relative;
+            text-align: center;
+            width: 40%;"
+        >
+        <div style=
+            "color: white;
+            font-family: 'Open Sans', sans-serif;"
+        >
+            Visit us at 
+            <a style=
+            "color: white;
+            font-family: 'Open Sans', sans-serif;
+            text-decoration:none;
+            " 
+            href="${baseURL}/myAccount">${baseURL}/myAccount</a>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

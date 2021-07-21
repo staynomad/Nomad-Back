@@ -1,4 +1,4 @@
-const { sendEmail } = require("./nodemailer.helper");
+const { sendEmail, getHTML, getAttachments } = require("./nodemailer.helper");
 const { baseURL } = require("../config/index");
 const Listing = require("../models/listing.model");
 const User = require("../models/user.model");
@@ -31,9 +31,10 @@ const findExpiringListings = async function () {
         // Find the associated user.
         const user = User.findOne(listing.userId);
         const email = user.email;
+        const name = user.name;
 
         // Send the reminder.
-        sendReminder(email, listing.title);
+        sendReminder(name, email, listing.title);
 
         // Mark reminder as sent.
         listing.reminder = true;
@@ -52,29 +53,30 @@ const findExpiringListings = async function () {
   }
 };
 
-const sendReminder = async (email, listingName) => {
+const sendReminder = async (name, email, listingName) => {
+  const HTMLOptions = {
+    greeting: `Dear ${name},`,
+    alert: "YOUR LISTING IS EXPIRING SOON!",
+    action: "Update your listing now!",
+    description: `Please check your account, as your listing for
+     <b style="color:white">${listingName}</b> expires next week.`,
+    buttonText: "Take me There!",
+    buttonURL: `${baseURL}/myAccount`,
+  };
+  const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
+
   const userMailOptions = {
     from: '"NomΛd" <reservations@visitnomad.com>',
     to: email,
     subject: `Your Listing is Expiring Soon!`,
-    text: `Please check your account, as your listing for ${listingName} expires next week.`,
-    html: `<p>
-              Please check your account, as your listing for <b>${listingName}</b> expires next week.
-              Visit
-              <a href="${baseURL}/myAccount">here</a>
-              to update your listing.
-             </p>`,
+    html: html,
+    attachments: attachments,
   };
   sendEmail(userMailOptions);
 };
 
 module.exports = {
   findExpiringListings,
+  sendReminder,
 };
-
-// if listing expires in a week, send an email to host
-//   - go through all the listings
-//   - check if each listing that is a week away (only one for each listing) from expiration
-//   - send a mail to the user that corresponds to listing for each listing that is about to expire
-//   - repeat for each listing
-//   - listings that have already been sent a reminder about their expiration should not receive additional reminders
