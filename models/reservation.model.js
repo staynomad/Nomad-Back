@@ -9,11 +9,7 @@ const ReservationSchema = new Schema(
       type: ObjectId,
       required: true,
     },
-<<<<<<< HEAD
     listingId: {
-=======
-    listing: {
->>>>>>> c880b74e8c94feb5f4ced70eb7d46be68f6fe08b
       type: ObjectId,
       required: true,
     },
