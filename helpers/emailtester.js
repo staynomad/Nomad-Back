@@ -8,5 +8,6 @@ const name = "YOUR_NAME";
 const listing = "house";
 const userId = "test";
 
+// Email functions to test
 sendReminder(name, email, listing);
 sendVerificationEmail(name, email, userId);
