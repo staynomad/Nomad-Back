@@ -277,7 +277,12 @@ const sendReservationConfirmationHost = (
   sendEmail(userMailOptions);
 };
 
-const sendCheckinGuest = (guestInfo, hostInfo, bookedListing, reservationInfo) => {
+const sendCheckinGuest = (
+  guestInfo,
+  hostInfo,
+  bookedListing,
+  reservationInfo
+) => {
   const HTMLOptions = {
     greeting: `Dear ${guestInfo.name}`,
     alert: `Thanks for checking in to ${bookedListing.title}!`,
@@ -317,7 +322,12 @@ const sendCheckinGuest = (guestInfo, hostInfo, bookedListing, reservationInfo) =
   sendEmail(userMailOptions);
 };
 
-const sendCheckinHost = (hostInfo, guestInfo, bookedListing, reservationInfo) => {
+const sendCheckinHost = (
+  hostInfo,
+  guestInfo,
+  bookedListing,
+  reservationInfo
+) => {
   const HTMLOptions = {
     greeting: `Dear ${hostInfo.name}`,
     alert: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
@@ -355,7 +365,12 @@ const sendCheckinHost = (hostInfo, guestInfo, bookedListing, reservationInfo) =>
   sendEmail(userMailOptions);
 };
 
-const sendCheckoutGuest = (guestInfo, hostInfo, bookedListing, reservationInfo) => {
+const sendCheckoutGuest = (
+  guestInfo,
+  hostInfo,
+  bookedListing,
+  reservationInfo
+) => {
   const HTMLOptions = {
     greeting: `Dear ${guestInfo.name}`,
     alert: `Thanks for checking out from ${bookedListing.title}!`,
@@ -394,7 +409,12 @@ const sendCheckoutGuest = (guestInfo, hostInfo, bookedListing, reservationInfo) 
   sendEmail(userMailOptions);
 };
 
-const sendCheckoutHost = (hostInfo, guestInfo, bookedListing, reservationInfo) => {
+const sendCheckoutHost = (
+  hostInfo,
+  guestInfo,
+  bookedListing,
+  reservationInfo
+) => {
   const HTMLOptions = {
     greeting: `Dear ${hostInfo.name}`,
     alert: `${guestInfo.name} has checked out from ${bookedListing.title}!`,

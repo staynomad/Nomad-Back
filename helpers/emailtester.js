@@ -25,12 +25,12 @@ const userId = "test";
 const guestInfo = {
   name: name,
   email: email,
-}
+};
 
 const hostInfo = {
   name: name,
   email: email,
-}
+};
 
 const bookedListing = {
   title: "House",
@@ -39,15 +39,15 @@ const bookedListing = {
     city: "Anytown",
     state: "AnyState",
     zip: "12345",
-  }
-}
+  },
+};
 
 const reservationInfo = {
   _id: "12345",
-  days: [ "10/10", "10/11"],
+  days: ["10/10", "10/11"],
   totalPrice: "100",
   hostFee: "10",
-}
+};
 
 // Email functions to test
 sendExpirationReminder(name, email, listing);
@@ -56,8 +56,18 @@ sendConfirmationEmail(name, email, listingID);
 sendTransferInvite(name, email, "John");
 sendTransferAccept(name, email, "John", listings);
 sendTransferRejection(name, email, "John", listings);
-sendReservationConfirmationGuest(guestInfo, hostInfo, bookedListing, reservationInfo);
-sendReservationConfirmationHost(hostInfo, guestInfo, bookedListing, reservationInfo);
+sendReservationConfirmationGuest(
+  guestInfo,
+  hostInfo,
+  bookedListing,
+  reservationInfo
+);
+sendReservationConfirmationHost(
+  hostInfo,
+  guestInfo,
+  bookedListing,
+  reservationInfo
+);
 sendCheckinGuest(guestInfo, hostInfo, bookedListing, reservationInfo);
 sendCheckinHost(hostInfo, guestInfo, bookedListing, reservationInfo);
 sendCheckoutGuest(guestInfo, hostInfo, bookedListing, reservationInfo);
