@@ -1,4 +1,4 @@
-const { sendReminder } = require("./emails.helper");
+const { sendExpirationReminder } = require("./emails.helper");
 const Listing = require("../models/listing.model");
 const User = require("../models/user.model");
 
@@ -33,7 +33,7 @@ const findExpiringListings = async function () {
         const name = user.name;
 
         // Send the reminder.
-        sendReminder(name, email, listing.title);
+        sendExpirationReminder(name, email, listing.title);
 
         // Mark reminder as sent.
         listing.reminder = true;

@@ -1,7 +1,7 @@
 const { sendEmail, getHTML, getAttachments } = require("./nodemailer.helper");
 const { baseURL } = require("../config/index");
 
-const sendReminder = async (name, email, listingName) => {
+const sendExpirationReminder = async (name, email, listingName) => {
   const HTMLOptions = {
     greeting: `Dear ${name},`,
     alert: "YOUR LISTING IS EXPIRING SOON!",
@@ -18,6 +18,32 @@ const sendReminder = async (name, email, listingName) => {
     from: '"NomΛd" <reservations@visitnomad.com>',
     to: email,
     subject: `Your Listing is Expiring Soon!`,
+    html: html,
+    attachments: attachments,
+  };
+  sendEmail(userMailOptions);
+};
+
+const sendVerificationEmail = async (name, email, userId) => {
+  const HTMLOptions = {
+    greeting: `Welcome, ${name}!`,
+    alert: "We're excited to have you!",
+    action: "Activate your account now",
+    description: `Click the button below or go to the following link to verify your acccount: 
+    <br /> 
+    <a style="text-decoration:none;color:white;" href="${baseURL}/accountVerification/${userId}">
+      ${baseURL}/accountVerification/${userId}
+    </a>`,
+    buttonText: "Activate Account",
+    buttonURL: `${baseURL}/accountVerification/${userId}`,
+  };
+  const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
+
+  const userMailOptions = {
+    from: '"NomΛd" <reservations@visitnomad.com>',
+    to: email,
+    subject: `Verify your NomΛd Account`,
     html: html,
     attachments: attachments,
   };
@@ -154,7 +180,8 @@ const sendTransferRejection = (
 const sendReservationConfirmationGuest = (
   guestInfo,
   hostInfo,
-  bookedListing
+  bookedListing,
+  reservationInfo
 ) => {
   const HTMLOptions = {
     greeting: `Dear ${guestInfo.name}`,
@@ -175,7 +202,10 @@ const sendReservationConfirmationGuest = (
     Host name: ${hostInfo.name}
     <br />
     When you arrive at the property, make sure to checkin via the NomΛd website in order to alert the host that you have arrived. If you have any 
-    questions or concerns, please reach out to the host at ${hostInfo.email}. To cancel your reservation, please contact us at contact@visitnomad.com. 
+    questions or concerns, please reach out to the host at 
+    <a style="text-decoration:none;color:white;" href="${hostInfo.email}">
+    ${hostInfo.email}
+    </a>. To cancel your reservation, please contact us at contact@visitnomad.com. 
     Hope you enjoy your stay!`,
     buttonText: "See your Reservations",
     buttonURL: `${baseURL}/MyAccount`,
@@ -198,7 +228,8 @@ const sendReservationConfirmationGuest = (
 const sendReservationConfirmationHost = (
   hostInfo,
   guestInfo,
-  bookedListing
+  bookedListing,
+  reservationInfo
 ) => {
   const HTMLOptions = {
     greeting: `Dear ${hostInfo.name}`,
@@ -220,10 +251,14 @@ const sendReservationConfirmationHost = (
     <br />
     Guest name: ${guestInfo.name}
     <br />
-    We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at ${
-      guestInfo.email
-    }. 
-    To cancel this reservation, please contact us at contact@visitnomad.com. Thank you for choosing NomΛd!`,
+    We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at 
+    <a style="text-decoration:none;color:white;" href="${guestInfo.email}">
+    ${guestInfo.email}
+    </a>. 
+    To cancel this reservation, please contact us at 
+    <a style="text-decoration:none;color:white;" href="contact@visitnomad.com">
+    contact@visitnomad.com
+    </a>. Thank you for choosing NomΛd!`,
     buttonText: "See your Listings",
     buttonURL: `${baseURL}/MyAccount`,
   };
@@ -242,20 +277,24 @@ const sendReservationConfirmationHost = (
   sendEmail(userMailOptions);
 };
 
-const sendCheckinGuest = (guestInfo, hostInfo, bookedListing) => {
+const sendCheckinGuest = (guestInfo, hostInfo, bookedListing, reservationInfo) => {
   const HTMLOptions = {
     greeting: `Dear ${guestInfo.name}`,
     alert: `Thanks for checking in to ${bookedListing.title}!`,
     action: "Review your Details!",
-    description: `You have successfully checked in to your stay! The host has been notified and will let you in soon. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
+    description: `You have successfully checked in to your stay! The host has been notified and will let you in soon. If you have any questions or concerns, 
+    please reach out to the host at 
+    <a style="text-decoration:none;color:white;" href="${hostInfo.email}">
+    ${hostInfo.email}
+    </a>.
     <br />
     ${bookedListing.title}
     <br />
-    Reservation number: ${reservation._id}
+    Reservation number: ${reservationInfo._id}
     <br />
     Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
     <br />
-    Days: ${reservation.days[0]} to ${reservation.days[1]}
+    Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
     <br />
     Host name: ${hostInfo.name}
     <br />
@@ -278,18 +317,22 @@ const sendCheckinGuest = (guestInfo, hostInfo, bookedListing) => {
   sendEmail(userMailOptions);
 };
 
-const sendCheckinHost = (hostInfo, guestInfo, bookedListing) => {
+const sendCheckinHost = (hostInfo, guestInfo, bookedListing, reservationInfo) => {
   const HTMLOptions = {
     greeting: `Dear ${hostInfo.name}`,
     alert: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
     action: "Review your Details!",
-    description: `Your guest has just checked in! Please provide them with the next steps to begin their stay. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
+    description: `Your guest has just checked in! Please provide them with the next steps to begin their stay. 
+    If you have any questions or concerns, please reach out to the guest at 
+    <a style="text-decoration:none;color:white;" href="${guestInfo.email}">
+    ${guestInfo.email}
+    </a>.
     <br />
     ${bookedListing.title}
     <br />
     Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
     <br />
-    Days: ${reservation.days[0]} to ${reservation.days[1]}
+    Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
     <br />
     Guest name: ${guestInfo.name}
     <br />
@@ -312,20 +355,23 @@ const sendCheckinHost = (hostInfo, guestInfo, bookedListing) => {
   sendEmail(userMailOptions);
 };
 
-const sendCheckoutGuest = (guestInfo, hostInfo, bookedListing) => {
+const sendCheckoutGuest = (guestInfo, hostInfo, bookedListing, reservationInfo) => {
   const HTMLOptions = {
     greeting: `Dear ${guestInfo.name}`,
     alert: `Thanks for checking out from ${bookedListing.title}!`,
     action: "Review your Details!",
-    description: `You have successfully checked out from your stay! If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
+    description: `You have successfully checked out from your stay! If you have any questions or concerns, please reach out to the host at 
+    <a style="text-decoration:none;color:white;" href="${hostInfo.email}">
+    ${hostInfo.email}
+    </a>.
     <br />
     ${bookedListing.title}
     <br />
-    Reservation number: ${reservation._id}
+    Reservation number: ${reservationInfo._id}
     <br />
     Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
     <br />
-    Days: ${reservation.days[0]} to ${reservation.days[1]}
+    Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
     <br />
     Host name: ${hostInfo.name}
     <br />
@@ -348,18 +394,21 @@ const sendCheckoutGuest = (guestInfo, hostInfo, bookedListing) => {
   sendEmail(userMailOptions);
 };
 
-const sendCheckoutHost = (hostInfo, guestInfo, bookedListing) => {
+const sendCheckoutHost = (hostInfo, guestInfo, bookedListing, reservationInfo) => {
   const HTMLOptions = {
     greeting: `Dear ${hostInfo.name}`,
     alert: `${guestInfo.name} has checked out from ${bookedListing.title}!`,
     action: "Review your Details!",
-    description: `Your guest has just checked out! If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
+    description: `Your guest has just checked out! If you have any questions or concerns, please reach out to the guest at 
+    <a style="text-decoration:none;color:white;" href="${guestInfo.email}">
+    ${guestInfo.email}
+    </a>.
     <br />
     ${bookedListing.title}
     <br />
     Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
     <br />
-    Days: ${reservation.days[0]} to ${reservation.days[1]}
+    Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
     <br />
     Guest name: ${guestInfo.name}
     <br />
@@ -383,7 +432,8 @@ const sendCheckoutHost = (hostInfo, guestInfo, bookedListing) => {
 };
 
 module.exports = {
-  sendReminder,
+  sendExpirationReminder,
+  sendVerificationEmail,
   sendConfirmationEmail,
   sendTransferInvite,
   sendTransferAccept,
