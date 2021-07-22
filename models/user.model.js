@@ -31,11 +31,17 @@ const UserSchema = new Schema({
     type: Array,
     default: [],
   },
-
+  incomingFriendRequests: {
+    type: Array,
+    default: [],
+  },
+  outgoingFriendRequests: {
+    type: Array,
+    default: [],
+  },
   profileImg: {
     type: String,
   },
-
   // Only required for hosts
   isVerified: {
     type: Boolean,
@@ -44,7 +50,6 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
-
   stripeId: {
     type: String,
     default: null,
