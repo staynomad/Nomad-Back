@@ -158,6 +158,12 @@ router.post("/sendFriendRequest", requireUserAuth, async (req, res) => {
   try {
     const userId = mongoose.Types.ObjectId(req.user._id);
     const friendId = mongoose.Types.ObjectId(req.body.friendId);
+    if (String(userId) === String(friendId)) {
+      return res.status(400).json({
+        error: `You can't send yourself a friend request`,
+      });
+    }
+
     let user = await User.findOne({ _id: userId });
     // Return error if repeated friend request
     for (let i = 0; i < user.outgoingFriendRequests.length; i++) {
@@ -167,6 +173,14 @@ router.post("/sendFriendRequest", requireUserAuth, async (req, res) => {
         });
       }
     }
+    for (let i = 0; i < user.incomingFriendRequests.length; i++) {
+      if (String(user.incomingFriendRequests[i]) === String(friendId)) {
+        return res.status(400).json({
+          error: `${friendId} has already sent you a friend request`,
+        });
+      }
+    }
+
     // Return error if users are already friends
     for (let j = 0; j < user.friends.length; j++) {
       if (String(user.friends[j]) === String(friendId)) {
