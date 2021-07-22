@@ -112,8 +112,18 @@ router.put("/activateReservation", requireUserAuth, async (req, res) => {
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user);
 
-    sendReservationConfirmationGuest(guestInfo, hostInfo, bookedListing);
-    sendReservationConfirmationHost(hostInfo, guestInfo, bookedListing);
+    sendReservationConfirmationGuest(
+      guestInfo,
+      hostInfo,
+      bookedListing,
+      reservationInfo
+    );
+    sendReservationConfirmationHost(
+      hostInfo,
+      guestInfo,
+      bookedListing,
+      reservationInfo
+    );
 
     res.status(200).json({});
   } catch (error) {
@@ -219,8 +229,8 @@ router.post("/deactivate/:reservationId", requireUserAuth, async (req, res) => {
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user._id);
 
-    sendCheckoutGuest(guestInfo, hostInfo, bookedListing);
-    sendCheckoutHost(hostInfo, guestInfo, bookedListing);
+    sendCheckoutGuest(guestInfo, hostInfo, bookedListing, reservation);
+    sendCheckoutHost(hostInfo, guestInfo, bookedListing, reservation);
 
     res.status(200).json({
       message: `Deactivated ${req.params.reservationId}`,
@@ -254,8 +264,8 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user._id);
 
-    sendCheckinGuest(guestInfo, hostInfo, bookedListing);
-    sendCheckinHost(hostInfo, guestInfo, bookedListing);
+    sendCheckinGuest(guestInfo, hostInfo, bookedListing, reservation);
+    sendCheckinHost(hostInfo, guestInfo, bookedListing, reservation);
 
     res.status(200).json({
       message: `Activated ${req.params.reservationId}`,
