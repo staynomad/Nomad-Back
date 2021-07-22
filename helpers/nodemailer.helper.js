@@ -110,6 +110,18 @@ const getHTML = (HTMLOptions) => {
           " 
           href="${baseURL}">${baseURL}</a>
       </div>
+      <div style=
+          "color: white;
+          font-family: 'Open Sans', sans-serif;"
+      >
+          Contact us at 
+          <a style=
+          "color: white;
+          font-family: 'Open Sans', sans-serif;
+          text-decoration:none;
+          " 
+          href="contact@visitnomad.com">contact@visitnomad.com</a>
+      </div>
       </div>
   </div>`;
 };

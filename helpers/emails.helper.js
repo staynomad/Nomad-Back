@@ -205,7 +205,10 @@ const sendReservationConfirmationGuest = (
     questions or concerns, please reach out to the host at 
     <a style="text-decoration:none;color:white;" href="${hostInfo.email}">
     ${hostInfo.email}
-    </a>. To cancel your reservation, please contact us at contact@visitnomad.com. 
+    </a>. To cancel your reservation, please contact us at 
+    <a style="text-decoration:none;color:white;" href="contact@visitnomad.com">
+    contact@visitnomad.com
+    </a>. 
     Hope you enjoy your stay!`,
     buttonText: "See your Reservations",
     buttonURL: `${baseURL}/MyAccount`,
