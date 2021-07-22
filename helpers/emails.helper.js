@@ -89,7 +89,7 @@ const sendTransferInvite = (receiveName, email, sentName) => {
   sendEmail(userMailOptions);
 };
 
-const sendTransferEmailConfirmation = (
+const sendTransferAccept = (
   sentUserName,
   mailTo,
   receiveUserName,
@@ -130,7 +130,7 @@ const sendTransferRejection = (
     greeting: `Dear ${sentUserName}`,
     alert: "Your Transfer Was Rejected",
     action: "Your listings have not been moved!",
-    description: `${receiveUserName} has rejected your invitation. You will retain access to the following listing(s)::
+    description: `${receiveUserName} has rejected your invitation. You will retain access to the following listing(s):
         <br />
         ${listings.join("<br />")}`,
     buttonText: "See your Listings",
@@ -151,10 +151,95 @@ const sendTransferRejection = (
   sendEmail(userMailOptions);
 };
 
+const sendReservationConfirmation = (guestInfo, hostInfo, bookedListing) => {
+  const HTMLOptions = {
+    greeting: `Dear ${guestInfo.name}`,
+    alert: `Your Reservation has been Confirmed: ${bookedListing.title}`,
+    action: "Review your Details!",
+    description: `Thank you for booking with NomΛd! Here's your reservation information:
+    <br />
+    ${bookedListing.title}
+    <br />
+    Reservation number: ${reservationInfo._id}
+    <br />
+    Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
+    <br />
+    Total cost: $${reservationInfo.totalPrice}
+    <br />
+    Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
+    <br />
+    Host name: ${hostInfo.name}
+    <br />
+    When you arrive at the property, make sure to checkin via the NomΛd website in order to alert the host that you have arrived. If you have any 
+    questions or concerns, please reach out to the host at ${hostInfo.email}. To cancel your reservation, please contact us at contact@visitnomad.com. 
+    Hope you enjoy your stay!`,
+    buttonText: "See your Reservations",
+    buttonURL: `${baseURL}/MyAccount`,
+  };
+
+  const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
+
+  const userMailOptions = {
+    from: '"Nomad" <reservations@visitnomad.com>',
+    to: guestInfo.email,
+    subject: `Your Reservation has been Confirmed: ${bookedListing.title}`,
+    html: html,
+    attachments: attachments,
+  };
+
+  sendEmail(userMailOptions);
+};
+
+const sendBookingConfirmation = (hostInfo, guestInfo, bookedListing) => {
+  const HTMLOptions = {
+    greeting: `Dear ${hostInfo.name}`,
+    alert: `Your listing has been booked: ${bookedListing.title}`,
+    action: "Review your Details!",
+    description: `Thank you for listing on NomΛd! Here's the information regarding your listing reservation:
+    <br />
+    ${bookedListing.title}
+    <br />
+    Reservation number: ${reservationInfo._id}
+    <br />
+    Address: ${bookedListing.location.street}, ${
+      bookedListing.location.city
+    }, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
+    <br />
+    Total Payout: $${reservationInfo.totalPrice - reservationInfo.hostFee}
+    <br />
+    Days: ${reservationInfo.days[0]} to ${reservationInfo.days[1]}
+    <br />
+    Guest name: ${guestInfo.name}
+    <br />
+    We'll send you another email once the guest has checked in. If you have any questions or concerns, please reach out to the guest at ${
+      guestInfo.email
+    }. 
+    To cancel this reservation, please contact us at contact@visitnomad.com. Thank you for choosing NomΛd!`,
+    buttonText: "See your Listings",
+    buttonURL: `${baseURL}/MyAccount`,
+  };
+
+  const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
+
+  const userMailOptions = {
+    from: '"Nomad" <reservations@visitnomad.com>',
+    to: guestInfo.email,
+    subject: `Your listing has been booked: ${bookedListing.title}`,
+    html: html,
+    attachments: attachments,
+  };
+
+  sendEmail(userMailOptions);
+};
+
 module.exports = {
   sendReminder,
   sendConfirmationEmail,
   sendTransferInvite,
-  sendTransferEmailConfirmation,
+  sendTransferAccept,
   sendTransferRejection,
+  sendReservationConfirmation,
+  sendBookingConfirmation,
 };

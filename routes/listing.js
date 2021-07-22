@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const { baseURL, nodemailerPass } = require("../config/index");
 const {
   sendConfirmationEmail,
-  sendTransferEmailConfirmation,
+  sendTransferAccept,
+  sendTransferRejection,
 } = require("../helpers/emails.helper");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
@@ -586,7 +587,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
           }
           const sendUser = await User.findOne({ email: email });
 
-          sendTransferEmailConfirmation(
+          sendTransferAccept(
             sendUser.name,
             email,
             req.user.name,
@@ -614,7 +615,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
         let listings = [];
         listings.push(listingToTransfer);
 
-        sendTransferEmailConfirmation(
+        sendTransferAccept(
           sendUser.name,
           emailToSendTo,
           req.user.name,
