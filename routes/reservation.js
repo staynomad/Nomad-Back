@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const { nodemailerPass } = require("../config");
 const {
   sendReservationConfirmationGuest,
   sendReservationConfirmationHost,
@@ -12,7 +11,6 @@ const {
 const Reservation = require("../models/reservation.model");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
-const nodemailer = require("nodemailer");
 
 // Create a reservation
 router.post("/createReservation", requireUserAuth, async (req, res) => {
@@ -252,15 +250,6 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
         errors: ["Reservation does not exist"],
       });
     }
-
-    // // Crete nodemailer transport to send emails from
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     user: "staynomadhomes@gmail.com",
-    //     pass: "yowguokryuzjmbhj",
-    //   },
-    // });
 
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user._id);

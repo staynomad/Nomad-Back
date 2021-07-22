@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const { baseURL, nodemailerPass } = require("../config/index");
+const { baseURL } = require("../config/index");
 const {
   sendConfirmationEmail,
   sendTransferAccept,
@@ -9,7 +9,6 @@ const {
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
 const { multerUploads, uploadImagesToAWS } = require("./photos");
-// const { check, validationResult } = require("express-validator");
 const popularity = require("../models/popularity.model");
 
 const router = express.Router();
@@ -307,10 +306,6 @@ router.get("/byRadius", async (req, res) => {
             const kx = Math.cos((Math.PI * lat) / 180.0) * ky;
             const dx = Math.abs(lng - listingLngConverted) * kx;
             const dy = Math.abs(lat - listingLatConverted) * ky;
-
-            // console.log(Math.sqrt(dx ** 2 + dy ** 2))
-            // console.log(radiusInKilometers)
-            // console.log(Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers)
 
             return Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers;
           }
@@ -640,14 +635,6 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { rejectAll, listingId } = req.body;
 
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     user: "staynomadhomes@gmail.com",
-    //     pass: nodemailerPass,
-    //   },
-    // });
-
     if (rejectAll) {
       const listingsToTransfer = await Listing.find({
         "transferEmail.to": req.user.email,
@@ -843,12 +830,6 @@ router.get("/allPopularityListings", async (req, res) => {
     res.status(200).json({ listings });
   }
 });
-
-// router.put('/resetCount', (req, res) => {
-//   const temp = require('../config/taskScheduler');
-//   temp();
-//   res.status(200).json({ success: true });
-// });
 
 router.post("/exportListing", async (req, res) => {
   const { userId, listingId, listingCalendar } = req.body;
