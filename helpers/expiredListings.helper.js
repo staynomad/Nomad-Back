@@ -1,5 +1,4 @@
-const { sendEmail, getHTML, getAttachments } = require("./nodemailer.helper");
-const { baseURL } = require("../config/index");
+const { sendReminder } = require("./emails.helper");
 const Listing = require("../models/listing.model");
 const User = require("../models/user.model");
 
@@ -53,30 +52,6 @@ const findExpiringListings = async function () {
   }
 };
 
-const sendReminder = async (name, email, listingName) => {
-  const HTMLOptions = {
-    greeting: `Dear ${name},`,
-    alert: "YOUR LISTING IS EXPIRING SOON!",
-    action: "Update your listing now!",
-    description: `Please check your account, as your listing for
-     <b style="color:white">${listingName}</b> expires next week.`,
-    buttonText: "Take me There!",
-    buttonURL: `${baseURL}/myAccount`,
-  };
-  const html = getHTML(HTMLOptions);
-  const attachments = getAttachments();
-
-  const userMailOptions = {
-    from: '"NomΛd" <reservations@visitnomad.com>',
-    to: email,
-    subject: `Your Listing is Expiring Soon!`,
-    html: html,
-    attachments: attachments,
-  };
-  sendEmail(userMailOptions);
-};
-
 module.exports = {
   findExpiringListings,
-  sendReminder,
 };
