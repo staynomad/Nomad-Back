@@ -2,8 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { nodemailerPass } = require("../config");
 const {
-  sendReservationConfirmation,
-  sendBookingConfirmation,
+  sendReservationConfirmationGuest,
+  sendReservationConfirmationHost,
+  sendCheckoutGuest,
+  sendCheckoutHost,
 } = require("../helpers/emails.helper");
 const Reservation = require("../models/reservation.model");
 const Listing = require("../models/listing.model");
@@ -110,8 +112,8 @@ router.put("/activateReservation", requireUserAuth, async (req, res) => {
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user);
 
-    sendReservationConfirmation(guestInfo, hostInfo, bookedListing);
-    sendBookingConfirmation(hostInfo, guestInfo, bookedListing);
+    sendReservationConfirmationGuest(guestInfo, hostInfo, bookedListing);
+    sendReservationConfirmationHost(hostInfo, guestInfo, bookedListing);
 
     res.status(200).json({});
   } catch (error) {
@@ -214,66 +216,11 @@ router.post("/deactivate/:reservationId", requireUserAuth, async (req, res) => {
       });
     }
 
-    // Crete nodemailer transport to send emails from
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "staynomadhomes@gmail.com",
-        pass: nodemailerPass,
-      },
-    });
-
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user._id);
 
-    // Send checkout confirmation email to guest
-    const userMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
-      to: guestInfo.email,
-      subject: `Thanks for checking out from ${bookedListing.title}!`,
-      text: `You have successfully checked out from your stay! If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
-
-              ${bookedListing.title}
-              Reservation number: ${reservation._id}
-              Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Days: ${reservation.days[0]} to ${reservation.days[1]}
-              Host name: ${hostInfo.name}
-
-          Hope you enjoy your stay!`,
-    };
-    transporter.sendMail(userMailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(
-          `Checkout confirmation email sent to guest ${guestInfo.email}`
-        );
-      }
-    });
-
-    // Send checkin confirmation email to host
-    const hostMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
-      to: hostInfo.email,
-      subject: `${guestInfo.name} has checked out from ${bookedListing.title}!`,
-      text: `Your guest has just checked out! If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
-
-              ${bookedListing.title}
-              Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Days: ${reservation.days[0]} to ${reservation.days[1]}
-              Guest name: ${guestInfo.name}
-
-          Thank you for choosing NomΛd!`,
-    };
-    transporter.sendMail(hostMailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(
-          `Checkout confirmation email sent to host ${hostInfo.email}`
-        );
-      }
-    });
+    sendCheckoutGuest(guestInfo, hostInfo, bookedListing);
+    sendCheckoutHost(hostInfo, guestInfo, bookedListing);
 
     res.status(200).json({
       message: `Deactivated ${req.params.reservationId}`,
