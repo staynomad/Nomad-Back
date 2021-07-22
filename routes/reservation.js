@@ -4,6 +4,8 @@ const { nodemailerPass } = require("../config");
 const {
   sendReservationConfirmationGuest,
   sendReservationConfirmationHost,
+  sendCheckinGuest,
+  sendCheckinHost,
   sendCheckoutGuest,
   sendCheckoutHost,
 } = require("../helpers/emails.helper");
@@ -250,66 +252,21 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
         errors: ["Reservation does not exist"],
       });
     }
-    // Crete nodemailer transport to send emails from
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "staynomadhomes@gmail.com",
-        pass: "yowguokryuzjmbhj",
-      },
-    });
+
+    // // Crete nodemailer transport to send emails from
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: "staynomadhomes@gmail.com",
+    //     pass: "yowguokryuzjmbhj",
+    //   },
+    // });
 
     const hostInfo = await getUserInfo(bookedListing.userId);
     const guestInfo = await getUserInfo(req.user._id);
 
-    // Send checkin confirmation email to guest
-    const userMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
-      to: guestInfo.email,
-      subject: `Thanks for checking in to ${bookedListing.title}!`,
-      text: `You have successfully checked in to your stay! The host has been notified and will let you in soon. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
-
-              ${bookedListing.title}
-              Reservation number: ${reservation._id}
-              Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Days: ${reservation.days[0]} to ${reservation.days[1]}
-              Host name: ${hostInfo.name}
-
-          Hope you enjoy your stay!`,
-    };
-    transporter.sendMail(userMailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(
-          `Checkin confirmation email sent to guest ${guestInfo.email}`
-        );
-      }
-    });
-
-    // Send checkin confirmation email to host
-    const hostMailOptions = {
-      from: '"NomΛd" <reservations@visitnomad.com>',
-      to: hostInfo.email,
-      subject: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
-      text: `Your guest has just checked in! Please provide them with the next steps to begin their stay. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
-
-              ${bookedListing.title}
-              Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
-              Days: ${reservation.days[0]} to ${reservation.days[1]}
-              Guest name: ${guestInfo.name}
-
-          Thank you for choosing NomΛd!`,
-    };
-    transporter.sendMail(hostMailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(
-          `Checkin confirmation email sent to host ${hostInfo.email}`
-        );
-      }
-    });
+    sendCheckinGuest(guestInfo, hostInfo, bookedListing);
+    sendCheckinHost(hostInfo, guestInfo, bookedListing);
 
     res.status(200).json({
       message: `Activated ${req.params.reservationId}`,

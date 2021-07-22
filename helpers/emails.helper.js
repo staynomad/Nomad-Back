@@ -242,6 +242,76 @@ const sendReservationConfirmationHost = (
   sendEmail(userMailOptions);
 };
 
+const sendCheckinGuest = (guestInfo, hostInfo, bookedListing) => {
+  const HTMLOptions = {
+    greeting: `Dear ${guestInfo.name}`,
+    alert: `Thanks for checking in to ${bookedListing.title}!`,
+    action: "Review your Details!",
+    description: `You have successfully checked in to your stay! The host has been notified and will let you in soon. If you have any questions or concerns, please reach out to the host at ${hostInfo.email}.
+    <br />
+    ${bookedListing.title}
+    <br />
+    Reservation number: ${reservation._id}
+    <br />
+    Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
+    <br />
+    Days: ${reservation.days[0]} to ${reservation.days[1]}
+    <br />
+    Host name: ${hostInfo.name}
+    <br />
+    Hope you enjoy your stay!`,
+    buttonText: "View Your Account",
+    buttonURL: `${baseURL}/MyAccount`,
+  };
+
+  const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
+
+  const userMailOptions = {
+    from: '"Nomad" <reservations@visitnomad.com>',
+    to: guestInfo.email,
+    subject: `Thanks for checking in to ${bookedListing.title}!`,
+    html: html,
+    attachments: attachments,
+  };
+
+  sendEmail(userMailOptions);
+};
+
+const sendCheckinHost = (hostInfo, guestInfo, bookedListing) => {
+  const HTMLOptions = {
+    greeting: `Dear ${hostInfo.name}`,
+    alert: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
+    action: "Review your Details!",
+    description: `Your guest has just checked in! Please provide them with the next steps to begin their stay. If you have any questions or concerns, please reach out to the guest at ${guestInfo.email}.
+    <br />
+    ${bookedListing.title}
+    <br />
+    Address: ${bookedListing.location.street}, ${bookedListing.location.city}, ${bookedListing.location.state}, ${bookedListing.location.zipcode}
+    <br />
+    Days: ${reservation.days[0]} to ${reservation.days[1]}
+    <br />
+    Guest name: ${guestInfo.name}
+    <br />
+    Thank you for choosing NomΛd!`,
+    buttonText: "View Your Listings",
+    buttonURL: `${baseURL}/MyAccount`,
+  };
+
+  const html = getHTML(HTMLOptions);
+  const attachments = getAttachments();
+
+  const userMailOptions = {
+    from: '"Nomad" <reservations@visitnomad.com>',
+    to: hostInfo.email,
+    subject: `${guestInfo.name} has checked in to ${bookedListing.title}!`,
+    html: html,
+    attachments: attachments,
+  };
+
+  sendEmail(userMailOptions);
+};
+
 const sendCheckoutGuest = (guestInfo, hostInfo, bookedListing) => {
   const HTMLOptions = {
     greeting: `Dear ${guestInfo.name}`,
@@ -320,6 +390,8 @@ module.exports = {
   sendTransferRejection,
   sendReservationConfirmationGuest,
   sendReservationConfirmationHost,
+  sendCheckinGuest,
+  sendCheckinHost,
   sendCheckoutGuest,
   sendCheckoutHost,
 };
