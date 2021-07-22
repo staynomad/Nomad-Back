@@ -158,7 +158,7 @@ router.post("/sendFriendRequest", requireUserAuth, async (req, res) => {
   try {
     const userId = mongoose.Types.ObjectId(req.user._id);
     const friendId = mongoose.Types.ObjectId(req.body.friendId);
-    const user = await User.findOne({ _id: userId });
+    let user = await User.findOne({ _id: userId });
     // Return error if repeated friend request
     for (let i = 0; i < user.outgoingFriendRequests.length; i++) {
       if (String(user.outgoingFriendRequests[i]) === String(friendId)) {
@@ -176,12 +176,21 @@ router.post("/sendFriendRequest", requireUserAuth, async (req, res) => {
       }
     }
     // Add friendId to user's outgoing friend requests
-    user.outgoingFriendRequests.push = friendId;
+    user = await User.findOneAndUpdate(
+      { _id: userId },
+      { $push: { outgoingFriendRequests: friendId } }
+    );
     // Add userId to friend's incoming friend requests
     const friend = await User.findOneAndUpdate(
       { _id: friendId },
       { $push: { incomingFriendRequests: userId } }
     );
+
+    if (!user || !friend) {
+      return res.status(500).json({
+        error: "There was an error sending your friend request.",
+      });
+    }
     res.status(200).json({
       message: `Sent friend request to ${friendId}`,
     });
@@ -207,7 +216,10 @@ router.post("/cancelFriendRequest", requireUserAuth, async (req, res) => {
       { _id: friendId },
       { $pull: { incomingFriendRequests: userId } }
     );
-    if (!user) {
+
+    /* TODO: this doesn't really verify if friend request was or was not found
+       Need to iterate through friend requests to verify that id's are not present */
+    if (!user || !friend) {
       return res.status(404).json({
         error: "Friend request not found. Please try again.",
       });
@@ -227,18 +239,35 @@ router.post("/acceptFriendRequest", requireUserAuth, async (req, res) => {
   try {
     const userId = mongoose.Types.ObjectId(req.user._id);
     const friendId = mongoose.Types.ObjectId(req.body.friendId);
-    // Move friendId from incomingFriendREquests to friends
-    const user = await User.findOneAndUpdate(
+    let user = await User.findOne({ _id: userId });
+    // Return error if users are already friends
+    for (let j = 0; j < user.friends.length; j++) {
+      if (String(user.friends[j]) === String(friendId)) {
+        return res.status(400).json({
+          error: `You are already friends with ${friendId}`,
+        });
+      }
+    }
+
+    // Move friendId from incomingFriendRequests to friends
+    user = await User.findOneAndUpdate(
       { _id: userId },
       { $pull: { incomingFriendRequests: friendId } }
     );
-    user.friends.push = friendId;
-    // Add userId to friend's friends array
-    const friend = await User.findOneAndUpdate(
+    user = await User.findOneAndUpdate(
+      { _id: userId },
+      { $push: { friends: friendId } }
+    );
+    // Move userId from outgoingFriendRequests to friends
+    let friend = await User.findOneAndUpdate(
+      { _id: friendId },
+      { $pull: { outgoingFriendRequests: userId } }
+    );
+    friend = await User.findOneAndUpdate(
       { _id: friendId },
       { $push: { friends: userId } }
     );
-    friend.outgoingFriendRequests.pull = userId;
+
     if (!user || !friend) {
       return res.status(404).json({
         error: "Friend request not found. Please try again.",
@@ -268,7 +297,7 @@ router.post("/rejectFriendRequest", requireUserAuth, async (req, res) => {
       { _id: friendId },
       { $pull: { outgoingFriendRequests: userId } }
     );
-    if (!user) {
+    if (!user || !friend) {
       return res.status(404).json({
         error: "Friend request not found. Please try again.",
       });
