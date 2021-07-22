@@ -23,23 +23,23 @@ mongoose.connect(DATABASE_URI, {
         await client.connect();
         console.log("Connected correctly to server");
 
-        const user = require("../models/user.model");
+        const User = require("../models/user.model");
 
-        user.drop();
+        await mongoose.connection.collection('users').drop()
 
         for(let i = 0; i<10; i++)
         {
-            const user = {}
-            user.name = faker.name.findName();
-            user.email = faker.internet.email();
-            user.password = "$2a$10$F5XvrA99hPKWs11YZmsZ4.C7KFXcP.B1W0h9T4ACTg14Eyq/IXg4K" //this corresponds to Password123!
-            user.isHost = randomBool()
-            user.friends = []
-            user.profileImg = faker.image.imageUrl();
-            user.isVerified = user.isHost ? randomBool() : null;
-            user.isPublic = user.isHost ? randomBool() : false;
-            user.stripeId = null
-            collection.insert(user);
+            const _user = {}
+            _user.name = faker.name.findName();
+            _user.email = faker.internet.email();
+            _user.password = "$2a$10$F5XvrA99hPKWs11YZmsZ4.C7KFXcP.B1W0h9T4ACTg14Eyq/IXg4K" //this corresponds to Password123!
+            _user.isHost = randomBool()
+            _user.friends = []
+            _user.profileImg = faker.image.imageUrl();
+            _user.isVerified = user.isHost ? randomBool() : null;
+            _user.isPublic = user.isHost ? randomBool() : false;
+            _user.stripeId = null
+            User.insert(_user);
         }
 
         console.log("Database seeded! :)");
