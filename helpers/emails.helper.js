@@ -147,9 +147,9 @@ const sendTransferAccept = (
   sendEmail(userMailOptions);
 
   HTMLOptions = {
-    reeting: `Dear ${receiveUserName}`,
-    alert: "Your Transfer was Successful!",
-    action: "Your listings have been moved!",
+    greeting: `Dear ${receiveUserName}`,
+    alert: "Transfer Request Accepted!",
+    action: "Your have new listings!",
     description: `You have accepted ${sentUserName}'s transfer invitation! You will now have access to the following listing(s):
         <br />
         ${listings.join("<br />")}`,
@@ -157,12 +157,12 @@ const sendTransferAccept = (
     buttonURL: `${baseURL}/MyAccount`,
   };
 
-  const html = getHTML(HTMLOptions);
+  html = getHTML(HTMLOptions);
 
-  let userMailOptions = {
+  userMailOptions = {
     from: '"Nomad" <reservations@visitnomad.com>',
     to: receiveMailTo,
-    subject: `Your Transfer was Successful!`,
+    subject: `Transfer Request Accepted!`,
     html: html,
     attachments: attachments,
   };
@@ -179,7 +179,7 @@ const sendTransferRejection = (
 ) => {
   let HTMLOptions = {
     greeting: `Dear ${sentUserName}`,
-    alert: "Your Transfer Was Rejected",
+    alert: "Your Transfer Was Rejected!",
     action: "Your listings have not been moved!",
     description: `${receiveUserName} has rejected your invitation. You will retain access to the following listing(s):
         <br />
@@ -202,7 +202,7 @@ const sendTransferRejection = (
   sendEmail(userMailOptions);
 
   HTMLOptions = {
-    reeting: `Dear ${receiveUserName}`,
+    greeting: `Dear ${receiveUserName}`,
     alert: "Transfer Request Rejected!",
     action: "Your listings have not changed!",
     description: `You have rejected ${sentUserName}'s transfer invitation! You will not have access to the following listing(s):
@@ -212,9 +212,9 @@ const sendTransferRejection = (
     buttonURL: `${baseURL}/MyAccount`,
   };
 
-  const html = getHTML(HTMLOptions);
+  html = getHTML(HTMLOptions);
 
-  let userMailOptions = {
+  userMailOptions = {
     from: '"Nomad" <reservations@visitnomad.com>',
     to: receiveMailTo,
     subject: `Transfer Request Rejected!`,
