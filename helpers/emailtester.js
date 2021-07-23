@@ -54,8 +54,8 @@ sendExpirationReminder(name, email, listing);
 sendVerificationEmail(name, email, userId);
 sendConfirmationEmail(name, email, listingID);
 sendTransferInvite(name, email, "John");
-sendTransferAccept(name, email, "John", listings);
-sendTransferRejection(name, email, "John", listings);
+sendTransferAccept(name, email, "John", email, listings);
+sendTransferRejection(name, email, "John", email, listings);
 sendReservationConfirmationGuest(
   guestInfo,
   hostInfo,
