@@ -15,7 +15,7 @@ const {
 
 // Replace this with your own email address and name
 
-const email = "YOUR_EMAIL";
+const email = "nishantbalaji30@gmail.com";
 const name = "YOUR_NAME";
 const listing = "house";
 const listingID = "12345";
@@ -50,25 +50,33 @@ const reservationInfo = {
 };
 
 // Email functions to test
-sendExpirationReminder(name, email, listing);
-sendVerificationEmail(name, email, userId);
-sendConfirmationEmail(name, email, listingID);
-sendTransferInvite(name, email, "John");
-sendTransferAccept(name, email, "John", email, listings);
-sendTransferRejection(name, email, "John", email, listings);
-sendReservationConfirmationGuest(
-  guestInfo,
-  hostInfo,
-  bookedListing,
-  reservationInfo
-);
-sendReservationConfirmationHost(
-  hostInfo,
-  guestInfo,
-  bookedListing,
-  reservationInfo
-);
-sendCheckinGuest(guestInfo, hostInfo, bookedListing, reservationInfo);
-sendCheckinHost(hostInfo, guestInfo, bookedListing, reservationInfo);
-sendCheckoutGuest(guestInfo, hostInfo, bookedListing, reservationInfo);
-sendCheckoutHost(hostInfo, guestInfo, bookedListing, reservationInfo);
+
+// Gmail blocks when theres more than 12 emails being sent at once, so comment out the
+// last two because sendTransferAccept() and sendTransferRejection() both send 2 emails each
+// send these two separately
+const sendEmails = async () => {
+  sendExpirationReminder(name, email, listing);
+  sendVerificationEmail(name, email, userId);
+  sendConfirmationEmail(name, email, listingID);
+  sendTransferInvite(name, email, "John");
+  sendTransferAccept(name, email, "John", email, listings);
+  sendTransferRejection(name, email, "John", email, listings);
+  sendReservationConfirmationGuest(
+    guestInfo,
+    hostInfo,
+    bookedListing,
+    reservationInfo
+  );
+  sendReservationConfirmationHost(
+    hostInfo,
+    guestInfo,
+    bookedListing,
+    reservationInfo
+  );
+  sendCheckinGuest(guestInfo, hostInfo, bookedListing, reservationInfo);
+  sendCheckinHost(hostInfo, guestInfo, bookedListing, reservationInfo);
+  sendCheckoutGuest(guestInfo, hostInfo, bookedListing, reservationInfo);
+  sendCheckoutHost(hostInfo, guestInfo, bookedListing, reservationInfo);
+};
+
+sendEmails();
