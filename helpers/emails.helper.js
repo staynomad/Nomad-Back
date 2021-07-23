@@ -155,7 +155,7 @@ const sendTransferAccept = (
         ${listings.join("<br />")}`,
     buttonText: "See your Listings",
     buttonURL: `${baseURL}/MyAccount`,
-  }
+  };
 
   const html = getHTML(HTMLOptions);
 
@@ -210,7 +210,7 @@ const sendTransferRejection = (
         ${listings.join("<br />")}`,
     buttonText: "See your Listings",
     buttonURL: `${baseURL}/MyAccount`,
-  }
+  };
 
   const html = getHTML(HTMLOptions);
 
