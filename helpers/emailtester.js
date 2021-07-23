@@ -15,7 +15,7 @@ const {
 
 // Replace this with your own email address and name
 
-const email = "nishantbalaji30@gmail.com";
+const email = "YOUR_EMAIL";
 const name = "YOUR_NAME";
 const listing = "house";
 const listingID = "12345";
