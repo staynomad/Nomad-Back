@@ -117,11 +117,12 @@ const sendTransferInvite = (receiveName, email, sentName) => {
 
 const sendTransferAccept = (
   sentUserName,
-  mailTo,
+  sentMailTo,
   receiveUserName,
+  receiveMailTo,
   listings
 ) => {
-  const HTMLOptions = {
+  let HTMLOptions = {
     greeting: `Dear ${sentUserName}`,
     alert: "Your Transfer was Successful!",
     action: "Your listings have been moved!",
@@ -132,12 +133,35 @@ const sendTransferAccept = (
     buttonURL: `${baseURL}/MyAccount`,
   };
 
-  const html = getHTML(HTMLOptions);
+  let html = getHTML(HTMLOptions);
   const attachments = getAttachments();
 
-  const userMailOptions = {
+  let userMailOptions = {
     from: '"Nomad" <reservations@visitnomad.com>',
-    to: mailTo,
+    to: sentMailTo,
+    subject: `Your Transfer was Successful!`,
+    html: html,
+    attachments: attachments,
+  };
+
+  sendEmail(userMailOptions);
+
+  HTMLOptions = {
+    reeting: `Dear ${receiveUserName}`,
+    alert: "Your Transfer was Successful!",
+    action: "Your listings have been moved!",
+    description: `You have accepted ${sentUserName}'s transfer invitation! You will now have access to the following listing(s):
+        <br />
+        ${listings.join("<br />")}`,
+    buttonText: "See your Listings",
+    buttonURL: `${baseURL}/MyAccount`,
+  }
+
+  const html = getHTML(HTMLOptions);
+
+  let userMailOptions = {
+    from: '"Nomad" <reservations@visitnomad.com>',
+    to: receiveMailTo,
     subject: `Your Transfer was Successful!`,
     html: html,
     attachments: attachments,
@@ -148,11 +172,12 @@ const sendTransferAccept = (
 
 const sendTransferRejection = (
   sentUserName,
-  mailTo,
+  sentMailTo,
   receiveUserName,
+  receiveMailTo,
   listings
 ) => {
-  const HTMLOptions = {
+  let HTMLOptions = {
     greeting: `Dear ${sentUserName}`,
     alert: "Your Transfer Was Rejected",
     action: "Your listings have not been moved!",
@@ -163,13 +188,36 @@ const sendTransferRejection = (
     buttonURL: `${baseURL}/MyAccount`,
   };
 
-  const html = getHTML(HTMLOptions);
+  let html = getHTML(HTMLOptions);
   const attachments = getAttachments();
 
-  const userMailOptions = {
+  let userMailOptions = {
     from: '"Nomad" <reservations@visitnomad.com>',
-    to: mailTo,
+    to: sentMailTo,
     subject: `Your Transfer was Rejected!`,
+    html: html,
+    attachments: attachments,
+  };
+
+  sendEmail(userMailOptions);
+
+  HTMLOptions = {
+    reeting: `Dear ${receiveUserName}`,
+    alert: "Transfer Request Rejected!",
+    action: "Your listings have not changed!",
+    description: `You have rejected ${sentUserName}'s transfer invitation! You will not have access to the following listing(s):
+        <br />
+        ${listings.join("<br />")}`,
+    buttonText: "See your Listings",
+    buttonURL: `${baseURL}/MyAccount`,
+  }
+
+  const html = getHTML(HTMLOptions);
+
+  let userMailOptions = {
+    from: '"Nomad" <reservations@visitnomad.com>',
+    to: receiveMailTo,
+    subject: `Transfer Request Rejected!`,
     html: html,
     attachments: attachments,
   };

@@ -586,6 +586,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
             sendUser.name,
             email,
             req.user.name,
+            req.user.email,
             listingEmailBody
           );
         });
@@ -614,6 +615,7 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
           sendUser.name,
           emailToSendTo,
           req.user.name,
+          req.user.email,
           listings
         );
 
@@ -670,6 +672,7 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
             sendUser.name,
             email,
             req.user.name,
+            req.user.email,
             listingEmailBody
           );
         });
@@ -698,6 +701,7 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
           sendUser.name,
           emailToSendTo,
           req.user.name,
+          req.user.email,
           listings
         );
       }
