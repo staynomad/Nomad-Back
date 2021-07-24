@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const { requireUserAuth } = require("../utils");
 const { multerUploads, uploadImagesToAWS } = require("./photos");
+const {sendVerificationEmail} = require('../helpers/account.helper')
 
 // Returns user object given a userId. If verbose = 1 is set, full friend objects are returned
 router.get("/getUserInfo/:userId", async (req, res) => {
@@ -110,6 +111,9 @@ router.post("/setUserInfo/:userId", async (req, res) => {
       { $set: req.body },
       { strict: false, new: true }
     );
+    if (userFound.isHost === true && userFound.isVerified !== true){
+      sendVerificationEmail(userFound.email, req.params.userId);
+    }
     res.status(200).json({
       userFound,
     });
@@ -223,6 +227,8 @@ router.post("/cancelFriendRequest", requireUserAuth, async (req, res) => {
       { _id: userId },
       { $pull: { outgoingFriendRequests: friendId } }
     );
+    user.friends.push = friendId;
+    // Add userId to friend's friends array
     const friend = await User.findOneAndUpdate(
       { _id: friendId },
       { $pull: { incomingFriendRequests: userId } }
@@ -278,7 +284,6 @@ router.post("/acceptFriendRequest", requireUserAuth, async (req, res) => {
       { _id: friendId },
       { $push: { friends: userId } }
     );
-
     if (!user || !friend) {
       return res.status(404).json({
         error: "Friend request not found. Please try again.",
