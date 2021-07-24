@@ -284,7 +284,6 @@ router.post("/acceptFriendRequest", requireUserAuth, async (req, res) => {
       { _id: friendId },
       { $push: { friends: userId } }
     );
-    friend.outgoingFriendRequests.pull = userId;
     if (!user || !friend) {
       return res.status(404).json({
         error: "Friend request not found. Please try again.",
