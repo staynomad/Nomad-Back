@@ -4,7 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cron = require("node-cron");
-const {allCronJobs} = require('./helpers/cronJobs.helper')
+const { allCronJobs } = require("./helpers/cronJobs.helper");
 
 const { DATABASE_URI, environment } = require("./config");
 const loginRouter = require("./routes/login");

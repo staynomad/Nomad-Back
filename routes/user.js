@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const { requireUserAuth } = require("../utils");
 const { multerUploads, uploadImagesToAWS } = require("./photos");
-const {sendVerificationEmail} = require('../helpers/account.helper')
+const { sendVerificationEmail } = require("../helpers/account.helper");
 
 // Returns user object given a userId. If verbose = 1 is set, full friend objects are returned
 router.get("/getUserInfo/:userId", async (req, res) => {
@@ -111,7 +111,7 @@ router.post("/setUserInfo/:userId", async (req, res) => {
       { $set: req.body },
       { strict: false, new: true }
     );
-    if (userFound.isHost === true && userFound.isVerified !== true){
+    if (userFound.isHost === true && userFound.isVerified !== true) {
       sendVerificationEmail(userFound.email, req.params.userId);
     }
     res.status(200).json({
