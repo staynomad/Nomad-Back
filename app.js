@@ -83,7 +83,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-cron.schedule("* * * * *", allCronJobs, {
+cron.schedule("0 8 * * *", allCronJobs, {
   timezone: "America/Los_Angeles",
 });
 
