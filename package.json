@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node ./bin/www.js",
     "dev": "nodemon -r dotenv/config ./bin/www.js",
+    "build-staging": "git fetch origin && git checkout staging && git pull && node ./bin/www.js",
     "prepare": "husky install",
     "format": "prettier-eslint \"**/*.{js,json}\" --write"
   },
