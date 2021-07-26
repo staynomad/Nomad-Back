@@ -14,10 +14,18 @@ jobs:
       with: 
         ref: staging
 
-    - name: Deploy staging on Elastic Beanstalk
+    - name: Initialize EB application
       uses: hmanzur/actions-aws-eb@v1.0.0
       with:
         command: 'init VHomes-Back'
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: "us-west-2"
+
+    - name: Deploy staging on Elastic Beanstalk
+      uses: hmanzur/actions-aws-eb@v1.0.0
+      with:
         command: 'deploy Nomad-Back-Dev'
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
