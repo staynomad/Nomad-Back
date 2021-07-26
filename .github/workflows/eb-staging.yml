@@ -1,0 +1,41 @@
+name: Deploy staging to Elastic Beanstalk
+on:
+  push:
+    branches:
+    - eb-ci
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout source code - staging branch
+      uses: actions/checkout@v2
+      with: 
+        ref: staging
+
+    - name: Deploy staging on Elastic Beanstalk
+        uses: hmanzur/actions-aws-eb@v1.0.0
+        with:
+          command: 'init VHomes-Back'
+          command: 'deploy Nomad-Back-Dev'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "us-west-2"
+
+    # - name: Generate deployment package
+    #   run: zip -r deploy.zip . -x '*.git*'
+
+    # - name: Deploy staging to EB
+    #   uses: einaregilsson/beanstalk-deploy@v16
+    #   with:
+    #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     application_name: VHomes-Back
+    #     environment_name: Nomad-Back-Dev
+    #     version_label: 12345
+    #     region: us-west-2
+    #     deployment_package: deploy.zip
+
+
