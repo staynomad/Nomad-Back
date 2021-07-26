@@ -12,7 +12,7 @@ jobs:
     - name: Checkout source code - staging branch
       uses: actions/checkout@v2
       with: 
-        ref: staging
+        ref: eb-ci
 
     - name: Initialize EB application
       uses: hmanzur/actions-aws-eb@v1.0.0
