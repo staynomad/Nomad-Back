@@ -23,10 +23,6 @@ const UserSchema = new Schema({
   isHost: {
     type: Boolean,
   },
-  isPublic: {
-    type: Boolean,
-    default: false,
-  },
   friends: {
     type: Array,
     default: [],
