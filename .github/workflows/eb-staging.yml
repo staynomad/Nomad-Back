@@ -16,10 +16,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Checkout source code - staging branch
+    - name: Checkout source code
       uses: actions/checkout@v2
       with: 
         ref: eb-ci
+
+    - name: Generate deployment package
+      run: zip -r deploy.zip . -x '*.git*'
+
+    - name: Deploy to EB
+      uses: einaregilsson/beanstalk-deploy@v16
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: Vhomes-Back
+        environment_name: Nomad-Back-Dev
+        version_label: 12345
+        region: us-west-2
+        deployment_package: deploy.zip
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+
+    # - name: Checkout source code - staging branch
+    #   uses: actions/checkout@v2
+    #   with: 
+    #     ref: eb-ci
 
     # - name: Initialize EB application
     #   uses: hmanzur/actions-aws-eb@v1.0.0
@@ -42,15 +66,15 @@ jobs:
     # - name: Generate deployment package
     #   run: zip -r deploy.zip . -x '*.git*'
 
-    - name: Deploy staging to EB
-      uses: einaregilsson/beanstalk-deploy@v16
-      with:
-        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        application_name: VHomes-Back
-        environment_name: Nomad-Back-Dev
-        version_label: app-0487-210707_19185212345
-        region: us-west-2
+    # - name: Deploy staging to EB
+    #   uses: einaregilsson/beanstalk-deploy@v16
+    #   with:
+    #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     application_name: VHomes-Back
+    #     environment_name: Nomad-Back-Dev
+    #     version_label: 12345
+    #     region: us-west-2
 
 
 # name: Deploy Node app on AWS Elastic Beanstalk
