@@ -21,14 +21,14 @@ jobs:
       with: 
         ref: eb-ci
 
-    - name: Initialize EB application
-      uses: hmanzur/actions-aws-eb@v1.0.0
-      with:
-        command: 'init ${{ env.APP_NAME }}'
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: us-west-1
+    # - name: Initialize EB application
+    #   uses: hmanzur/actions-aws-eb@v1.0.0
+    #   with:
+    #     command: 'init ${{ env.APP_NAME }} --region '
+    #   env:
+    #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     AWS_DEFAULT_REGION: us-west-1
 
     - name: Deploy staging on Elastic Beanstalk
       uses: hmanzur/actions-aws-eb@v1.0.0
