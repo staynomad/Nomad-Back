@@ -1,7 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const nodemailer = require("nodemailer");
-const { baseURL, nodemailerPass } = require("../config/index");
+const { baseURL } = require("../config/index");
+const {
+  sendConfirmationEmail,
+  sendTransferAccept,
+  sendTransferRejection,
+} = require("../helpers/emails.helper");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
 const {
@@ -23,6 +27,7 @@ const router = express.Router();
 const fs = require("fs");
 const ics = require("ics");
 const Housekeeping = require("../models/housekeeping.model");
+const User = require("../models/user.model");
 
 /* Add a listing */
 router.post(
@@ -122,35 +127,8 @@ router.put("/activateListing/:listingId", requireUserAuth, async (req, res) => {
     }
 
     const userInfo = await getUserInfo(req.user._id);
-    // Send confirmation email to host
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "staynomadhomes@gmail.com",
-        pass: nodemailerPass,
-      },
-    });
-    const userMailOptions = {
-      from: '"Nomad" <reservations@visitnomad.com>',
-      to: userInfo.email,
-      subject: `Thank you for listing on Nomad!`,
-      text: `Your listing is live! Click the following link to view your listing page.
 
-         ${baseURL}/listing/${req.params.listingId}`,
-      html: `<p>
-          Your listing is live! Click the following link to view your listing page. <br>
-          <a href="${baseURL}/listing/${req.params.listingId}">${baseURL}/listing/${req.params.listingId}</a>
-         </p>`,
-    };
-    transporter.sendMail(userMailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(
-          `Create listing confirmation email sent to ${userInfo.email}`
-        );
-      }
-    });
+    sendConfirmationEmail(userInfo.name, userInfo.email, req.params.listingId);
 
     // update the housekeeping collection that keeps track of the number of active listings
     const curr = new Date();
@@ -409,10 +387,6 @@ router.get("/byRadius", async (req, res) => {
             const dx = Math.abs(lng - listingLngConverted) * kx;
             const dy = Math.abs(lat - listingLatConverted) * ky;
 
-            // console.log(Math.sqrt(dx ** 2 + dy ** 2))
-            // console.log(radiusInKilometers)
-            // console.log(Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers)
-
             return Math.sqrt(dx ** 2 + dy ** 2) <= radiusInKilometers;
           }
         });
@@ -629,35 +603,8 @@ router.get("/byTransferEmail", requireUserAuth, async (req, res) => {
 router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { email, listingId } = req.body;
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "staynomadhomes@gmail.com",
-        pass: nodemailerPass,
-      },
-    });
-    const userMailOptions = {
-      from: '"Nomad" <reservations@visitnomad.com>',
-      to: email,
-      subject: `You've Been Invited!`,
-      // we want to include the original host's name here as well
-      text: `
-          ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to ${baseURL}/MyAccount. If you do not yet have a Nomad account, please sign up for a host account first.
-              2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
-              3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
-              4. You're all done! Click on "My Listings" in the side menu to view your new listing.
-          `,
-      html: `
-          <p>
-          ${req.user.name} has invited you to host their listing! To accept this invitation, please do the following:
-              1. Go to <a href="${baseURL}/MyAccount">${baseURL}/MyAccount</a>. If you do not yet have a Nomad account, please sign up for a host account first.
-              2. Navigate to your profile and select "Transfer Requests" on the side menu. Here, you will see the listings you have been invited to host.
-              3. To accept all requests, simply click "Accept All." If you would like to accept an individual request, click "Accept" under the listing you want to accept.
-              4. You're all done! Click on "My Listings" in the side menu to view your new listing.
-          </p>
-          `,
-    };
+
+    const user = await User.findOne({ email: email });
 
     const transferEmail = { from: req.user.email, to: email };
     const listingToTransfer = await Listing.findOneAndUpdate(
@@ -669,16 +616,7 @@ router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
         errors: "Listing could not be found.",
       });
     } else {
-      transporter.sendMail(userMailOptions, (error, info) => {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log(`Transfer request has been sent to ${email}`);
-        }
-      });
-      res.status(200).json({
-        message: `Transfer request has been sent to ${email}`,
-      });
+      sendTransferInvite(user.name, email, req.user.name);
     }
   } catch (error) {
     console.log(error);
@@ -692,14 +630,6 @@ router.put("/sendListingTransfer", requireUserAuth, async (req, res) => {
 router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { acceptAll, listingId } = req.body;
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "staynomadhomes@gmail.com",
-        pass: nodemailerPass,
-      },
-    });
 
     if (acceptAll) {
       const listingsToTransfer = await Listing.find({
@@ -730,35 +660,15 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
             currentListing.userId = mongoose.Types.ObjectId(req.user._id);
             await currentListing.save();
           }
+          const sendUser = await User.findOne({ email: email });
 
-          let userMailOptions = {
-            from: '"Nomad" <reservations@visitnomad.com>',
-            to: email,
-            subject: `Your Transfer Was Successful!`,
-            // we'll need to add in the new host's name here
-            text: `
-                ${
-                  req.user.name
-                } has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingEmailBody.join("\n")}
-              `,
-            html: `
-                <p>
-                  ${
-                    req.user.name
-                  } has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingEmailBody.join("\n")}
-                </p>
-              `,
-          };
-
-          transporter.sendMail(userMailOptions, (error, info) => {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log(`All transfers successful`);
-            }
-          });
+          sendTransferAccept(
+            sendUser.name,
+            email,
+            req.user.name,
+            req.user.email,
+            listingEmailBody
+          );
         });
 
         res.status(200).json({
@@ -776,30 +686,19 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
         listingToTransfer.userId = mongoose.Types.ObjectId(req.user._id);
         listingToTransfer.transferEmail = {};
         await listingToTransfer.save();
+        const sendUser = await User.findOne({ email: emailToSendTo });
 
-        let userMailOptions = {
-          from: '"Nomad" <reservations@visitnomad.com>',
-          to: emailToSendTo,
-          subject: `Your Transfer Was Successful!`,
-          // we'll need to add in the new host's name here
-          text: `
-              ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
-                ${listingToTransfer._id}
-            `,
-          html: `
-              <p>
-                ${req.user.name} has accepted your invitation! You will no longer have access to the following listing(s):
-                  ${listingToTransfer._id}
-              </p>
-            `,
-        };
-        transporter.sendMail(userMailOptions, (error, info) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log(`Transfer successful`);
-          }
-        });
+        let listings = [];
+        listings.push(listingToTransfer);
+
+        sendTransferAccept(
+          sendUser.name,
+          emailToSendTo,
+          req.user.name,
+          req.user.email,
+          listings
+        );
+
         res.status(200).json({
           listingToTransfer,
         });
@@ -817,14 +716,6 @@ router.put("/acceptListingTransfer", requireUserAuth, async (req, res) => {
 router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
   try {
     const { rejectAll, listingId } = req.body;
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "staynomadhomes@gmail.com",
-        pass: nodemailerPass,
-      },
-    });
 
     if (rejectAll) {
       const listingsToTransfer = await Listing.find({
@@ -855,34 +746,15 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
             await currentListing.save();
           }
 
-          let userMailOptions = {
-            from: '"Nomad" <reservations@visitnomad.com>',
-            to: email,
-            subject: `Your Transfer Was Rejected`,
-            // we'll need to add in the new host's name here
-            text: `
-                ${
-                  req.user.name
-                } has rejected your invitation. You will retain access to the following listing(s):
-                  ${listingEmailBody.join("\n")}
-              `,
-            html: `
-                <p>
-                ${
-                  req.user.name
-                } has rejected your invitation. You will retain access to the following listing(s):
-                  ${listingEmailBody.join("\n")}
-                </p>
-              `,
-          };
+          const sendUser = await User.findOne({ email: email });
 
-          transporter.sendMail(userMailOptions, (error, info) => {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log(`All transfers successfully rejected`);
-            }
-          });
+          sendTransferRejection(
+            sendUser.name,
+            email,
+            req.user.name,
+            req.user.email,
+            listingEmailBody
+          );
         });
 
         res.status(200).json({
@@ -900,32 +772,18 @@ router.put("/rejectListingTransfer", requireUserAuth, async (req, res) => {
         listingToTransfer.transferEmail = {};
         await listingToTransfer.save();
 
-        let userMailOptions = {
-          from: '"Nomad" <reservations@visitnomad.com>',
-          to: emailToSendTo,
-          subject: `Your Transfer Was Rejected`,
-          // we'll need to add in the new host's name here
-          text: `
-                ${req.user.name} has rejected your invitation. You will retain access to the following listing(s):
-                  ${listingToTransfer._id}
-              `,
-          html: `
-                <p>
-                ${req.user.name} has rejected your invitation. You will retain access to the following listing(s):
-                  ${listingToTransfer._id}
-                </p>
-            `,
-        };
-        transporter.sendMail(userMailOptions, (error, info) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log(`Transfer rejection successful`);
-          }
-        });
-        res.status(200).json({
-          listingToTransfer,
-        });
+        const sendUser = await User.findOne({ email: emailToSendTo });
+
+        let listings = [];
+        listings.push(listingToTransfer);
+
+        sendTransferRejection(
+          sendUser.name,
+          emailToSendTo,
+          req.user.name,
+          req.user.email,
+          listings
+        );
       }
     }
   } catch (error) {
@@ -1056,12 +914,6 @@ router.get("/allPopularityListings", async (req, res) => {
     res.status(200).json({ listings });
   }
 });
-
-// router.put('/resetCount', (req, res) => {
-//   const temp = require('../config/taskScheduler');
-//   temp();
-//   res.status(200).json({ success: true });
-// });
 
 router.post("/exportListing", async (req, res) => {
   const { userId, listingId, listingCalendar } = req.body;
