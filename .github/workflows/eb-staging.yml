@@ -33,7 +33,7 @@ jobs:
         environment_name: Nomad-Back-Dev
         region: us-west-2
         version_label: ${{ github.SHA	}}
-        version_description: ${{ github.SHA }}
+        version_description: ${{ GITHUB_EVENT_NAME }}
         deployment_package: deploy.zip
         use_existing_version_if_available: true
         wait_for_deployment: false
