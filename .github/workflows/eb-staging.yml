@@ -1,4 +1,4 @@
-name: Deploy Staging Branch to Elastic Beanstalk
+name: Deploy staging to Elastic Beanstalk
 
 env: 
   APP_NAME: VHomes-Back
@@ -9,8 +9,8 @@ env:
 on:
   push:
     branches:
-    - staging
-on: workflow_dispatch
+    - eb-ci
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
       with: 
-        ref: staging
+        ref: eb-ci
 
     - name: Generate deployment package
       run: zip -r deploy.zip . -x '*.git*'
