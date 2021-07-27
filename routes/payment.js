@@ -5,13 +5,14 @@ const Listing = require("../models/listing.model");
 const Reservation = require("../models/reservation.model");
 const { baseURL } = require("../config/index");
 const User = require("../models/user.model");
+const { requireUserAuth } = require("../utils");
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
 const stripe = require("stripe")(stripeSecretKey);
 
 // Create stripe checkout session
-router.post("/create-session", async (req, res) => {
+router.post("/create-session", requireUserAuth, async (req, res) => {
   try {
     const { dates, days, listingId, reservationId } = req.body;
     const listingDetails = await Listing.findOne({
@@ -33,7 +34,7 @@ router.post("/create-session", async (req, res) => {
     }
 
     const user = await User.findOne({
-      _id: listingDetails.user,
+      _id: req.user._id,
     });
     if (!user) {
       return res.status(404).json({

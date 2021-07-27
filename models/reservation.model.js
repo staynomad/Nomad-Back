@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const { Array, Mixed, Number, ObjectId, String, Date } = Schema.Types;
+const { Array, Number, ObjectId } = Schema.Types;
 
 const ReservationSchema = new Schema(
   {
@@ -9,7 +9,7 @@ const ReservationSchema = new Schema(
       type: ObjectId,
       required: true,
     },
-    listing: {
+    listingId: {
       type: ObjectId,
       required: true,
     },
