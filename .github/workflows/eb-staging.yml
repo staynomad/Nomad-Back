@@ -1,4 +1,4 @@
-name: Deploy staging to Elastic Beanstalk
+name: Deploy Staging Branch to Elastic Beanstalk
 
 env: 
   APP_NAME: VHomes-Back
@@ -9,7 +9,7 @@ env:
 on:
   push:
     branches:
-    - eb-ci
+    - staging
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v2
       with: 
-        ref: eb-ci
+        ref: staging
 
     - name: Generate deployment package
       run: zip -r deploy.zip . -x '*.git*'
@@ -37,111 +37,3 @@ jobs:
         deployment_package: deploy.zip
         use_existing_version_if_available: true
         wait_for_deployment: false
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-
-    # - name: Checkout source code - staging branch
-    #   uses: actions/checkout@v2
-    #   with: 
-    #     ref: eb-ci
-
-    # - name: Initialize EB application
-    #   uses: hmanzur/actions-aws-eb@v1.0.0
-    #   with:
-    #     command: 'init ${{ env.APP_NAME }} --region '
-    #   env:
-    #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     AWS_DEFAULT_REGION: us-west-1
-
-    # - name: Deploy staging on Elastic Beanstalk
-    #   uses: hmanzur/actions-aws-eb@v1.0.0
-    #   with:
-    #     command: 'deploy ${{ env.ENVIRONMENT_NAME }}'
-    #   env:
-    #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
-
-    # - name: Generate deployment package
-    #   run: zip -r deploy.zip . -x '*.git*'
-
-    # - name: Deploy staging to EB
-    #   uses: einaregilsson/beanstalk-deploy@v16
-    #   with:
-    #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     application_name: VHomes-Back
-    #     environment_name: Nomad-Back-Dev
-    #     version_label: 12345
-    #     region: us-west-2
-
-
-# name: Deploy Node app on AWS Elastic Beanstalk
-
-# env:
-#   APP_NAME: my-awesome-app
-#   S3_BUCKET: my-awesome-app-bucket
-#   AWS_REGION: us-east-1
-#   AWS_PLATFORM: Docker
-#   PIPELINE_ID: ${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}
-
-# on:
-#   push:
-#     branches: [ main ]
-
-# jobs:
-#   create_eb_version:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Configure AWS credentials 
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ env.AWS_REGION }}
-#       - run: |
-#           AWS_VERSION_LABEL=${{env.APP_NAME}}-${{env.PIPELINE_ID}}
-
-#           echo "Creating Source Bundle"
-#           zip -r ${{env.APP_NAME}}.zip app.js Dockerfile dockerignore package.json
-#           S3_KEY="$AWS_VERSION_LABEL.zip"
-
-#           echo "Uploading Source Bundle to S3"
-#           aws s3 cp ${{env.APP_NAME}}.zip s3://${{env.S3_BUCKET}}/${S3_KEY} --region ${{env.AWS_REGION}}
-
-#           echo "Creating Elastic Beanstalk version"
-#           aws elasticbeanstalk create-application-version --application-name ${{env.APP_NAME}} --version-label $AWS_VERSION_LABEL --region ${{env.AWS_REGION}} --source-bundle S3Bucket=${{env.S3_BUCKET}},S3Key=${S3_KEY} --auto-create-application
-
-#   deploy_aws:
-#     needs: [create_eb_version]
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Set up Python 3.6 (needed for eb cli)
-#         uses: actions/setup-python@v1
-#         with:
-#           python-version: "3.6"
-#       - name: Configure AWS credentials 
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-id: ${{ secrets.AWS_ID }}
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ env.AWS_REGION }}
-#       - run: |
-#           AWS_VERSION_LABEL=${{env.APP_NAME}}-${{env.PIPELINE_ID}}
-
-#           echo "Installing Elastic Beanstalk Cli"
-#           python -m pip install --upgrade pip
-#           pip install awsebcli --upgrade
-#           eb --version
-
-#           echo "Deploy init"
-#           eb init -i ${{env.APP_NAME}} -p ${{env.AWS_PLATFORM}} -k ${{secrets.AWS_ID}} --region ${{env.AWS_REGION}}
-#           eb deploy ${{env.APP_NAME}} --version ${AWS_VERSION_LABEL}
-#           echo "Deploy finished"
