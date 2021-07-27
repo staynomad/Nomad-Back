@@ -49,7 +49,7 @@ jobs:
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         application_name: VHomes-Back
         environment_name: Nomad-Back-Dev
-        version_label: 12345
+        version_label: app-0487-210707_19185212345
         region: us-west-2
 
 
