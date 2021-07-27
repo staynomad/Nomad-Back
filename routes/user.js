@@ -4,11 +4,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const { requireUserAuth } = require("../utils");
 const { multerUploads, uploadImagesToAWS } = require("./photos");
-<<<<<<< HEAD
 const { sendVerificationEmail } = require("../helpers/emails.helper");
-=======
-const { sendVerificationEmail } = require("../helpers/account.helper");
->>>>>>> e94ef45 (linting previous code)
 
 // Returns user object given a userId. If verbose = 1 is set, full friend objects are returned
 router.get("/getUserInfo/:userId", async (req, res) => {
