@@ -30,28 +30,27 @@ jobs:
     #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     #     AWS_DEFAULT_REGION: us-west-1
 
-    - name: Deploy staging on Elastic Beanstalk
-      uses: hmanzur/actions-aws-eb@v1.0.0
-      with:
-        command: 'deploy ${{ env.ENVIRONMENT_NAME }}'
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
+    # - name: Deploy staging on Elastic Beanstalk
+    #   uses: hmanzur/actions-aws-eb@v1.0.0
+    #   with:
+    #     command: 'deploy ${{ env.ENVIRONMENT_NAME }}'
+    #   env:
+    #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
 
     # - name: Generate deployment package
     #   run: zip -r deploy.zip . -x '*.git*'
 
-    # - name: Deploy staging to EB
-    #   uses: einaregilsson/beanstalk-deploy@v16
-    #   with:
-    #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     application_name: VHomes-Back
-    #     environment_name: Nomad-Back-Dev
-    #     version_label: 12345
-    #     region: us-west-2
-    #     deployment_package: deploy.zip
+    - name: Deploy staging to EB
+      uses: einaregilsson/beanstalk-deploy@v16
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: VHomes-Back
+        environment_name: Nomad-Back-Dev
+        version_label: 12345
+        region: us-west-2
 
 
 # name: Deploy Node app on AWS Elastic Beanstalk
