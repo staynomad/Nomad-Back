@@ -32,7 +32,7 @@ jobs:
         application_name: Vhomes-Back
         environment_name: Nomad-Back-Dev
         region: us-west-2
-        version: ${{ github.SHA	}}
+        version_label: ${{ github.SHA	}}
         version_description: ${{ github.SHA }}
         deployment_package: deploy.zip
         use_existing_version_if_available: true
