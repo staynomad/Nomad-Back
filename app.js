@@ -69,7 +69,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 app.get("/", async (req, res) => {
-  res.json("Server is running!");
+  res.status(200).json("Server is running!");
 });
 
 // error handler\
