@@ -15,47 +15,56 @@ const { requireUserAuth, getUserInfo } = require("../utils");
 // Create a reservation
 router.post("/createReservation", requireUserAuth, async (req, res) => {
   try {
-    const { listing, days, numDays } = req.body;
-    const listingInfo = await Listing.findOne({
-      _id: listing,
-    });
+    const { listingId, days, numDays } = req.body;
+    const listingInfo = await Listing.findById(listingId);
     if (!listingInfo) {
-      return res.status(400).json({
+      return res.status(404).json({
         errors: "Listing does not exist. Please try again.",
       });
     }
     // Parse string dates to new date objects
-    const availableStart = new Date(listingInfo.available[0]);
-    const availableEnd = new Date(listingInfo.available[1]);
-    const reservationStart = new Date(days[0]);
-    const reservationEnd = new Date(days[1]);
+    const { availableStart, availableEnd } = {
+      availableStart: listingInfo.available[0],
+      availableEnd: listingInfo.available[1],
+    };
+
+    const { reservationStart, reservationEnd } = {
+      reservationStart: days[0],
+      reservationEnd: days[1],
+    };
+
+    // const availableStart = new Date(listingInfo.available[0]);
+    // const availableEnd = new Date(listingInfo.available[1]);
+    // const reservationStart = new Date(days[0]);
+    // const reservationEnd = new Date(days[1]);
+
     // Verify that the booked dates and available dates do not conflict with reservation
-    if (
-      reservationStart.getTime() < availableStart.getTime() ||
-      reservationEnd.getTime() > availableEnd.getTime()
-    ) {
+    if (reservationStart < availableStart || reservationEnd > availableEnd) {
       return res.status(400).json({
         errors: "Selected days are invalid. Please try again.",
       });
     }
     for (let i = 0; i < listingInfo.booked.length; i++) {
-      const bookedStart = new Date(listingInfo.booked[i].start);
-      const bookedEnd = new Date(listingInfo.booked[i].end);
+      const { bookedStart, bookedEnd } = {
+        bookedStart: listingInfo.booked[i].start,
+        bookedEnd: listingInfo.booked[i].end,
+      };
       if (
-        (reservationStart.getTime() >= bookedStart.getTime() &&
-          reservationStart.getTime() <= bookedEnd.getTime()) ||
-        (reservationEnd.getTime() >= bookedStart.getTime() &&
-          reservationEnd.getTime() <= bookedEnd.getTime())
+        (reservationStart >= bookedStart && reservationStart <= bookedEnd) ||
+        (reservationEnd >= bookedStart && reservationEnd <= bookedEnd)
       ) {
         return res.status(400).json({
           errors: "Selected days are invalid. Please try again.",
         });
       }
     }
+
+    console.log(days);
+
     // Create a new object in reservations collection and update 'booked' field in listing
     const newReservation = await new Reservation({
       user: req.user._id,
-      listing,
+      listingId,
       active: false,
       checkedIn: false,
       days,
@@ -219,7 +228,11 @@ router.post("/deactivate/:reservationId", requireUserAuth, async (req, res) => {
       update,
       options
     );
-    const bookedListing = await Listing.findById(reservation.listing);
+    /* Temp fix for backwards compatibility */
+    const reservationId = reservation.listing
+      ? reservation.listing
+      : reservation.listingId;
+    const bookedListing = await Listing.findById(reservationId);
     if (!reservation) {
       return res.status(404).json({
         errors: ["Reservation does not exist"],
@@ -254,7 +267,11 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
       update,
       options
     );
-    const bookedListing = await Listing.findById(reservation.listing);
+    /* Temp fix for reverse compatibility for listingId change in reservations */
+    const reservationId = reservation.listing
+      ? reservation.listing
+      : reservation.listingId;
+    const bookedListing = await Listing.findById(reservationId);
     if (!reservation) {
       return res.status(404).json({
         errors: ["Reservation does not exist"],
@@ -272,7 +289,7 @@ router.post("/activate/:reservationId", requireUserAuth, async (req, res) => {
       reservation,
     });
   } catch (error) {
-    // console.log(error);
+    console.log(error);
     res.status(500).json({
       errors: ["Error checking in. Please try again!"],
     });

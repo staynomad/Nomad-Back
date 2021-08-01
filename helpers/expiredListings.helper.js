@@ -45,6 +45,7 @@ const findExpiringListings = async function () {
         // mark listing as inactive
         listing.active = false;
         listing.save();
+        console.log(listing.title, "marked as inactive");
       }
     }
   } catch (err) {
