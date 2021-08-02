@@ -8,8 +8,19 @@ const {
 } = require("../helpers/emails.helper");
 const Listing = require("../models/listing.model");
 const { requireUserAuth, getUserInfo } = require("../utils");
-const { multerUploads, uploadImagesToAWS } = require("./photos");
+const {
+  deleteImagesFromAWS,
+  multerUploads,
+  uploadImagesToAWS,
+} = require("./photos");
+// const { check, validationResult } = require("express-validator");
 const popularity = require("../models/popularity.model");
+// const { insertIndex, searchIndex } = require('../elastic-search/esClient');
+// const {
+//   listingIndex,
+//   listingType,
+//   convertListing,
+// } = require('../elastic-search/esClientconst');
 
 const router = express.Router();
 
@@ -35,11 +46,8 @@ router.post(
         booked,
         calendarURL,
         amenities,
+        coordinates,
       } = JSON.parse(req.files["listingData"][0].buffer.toString()).newListing;
-
-      console.log(
-        JSON.parse(req.files["listingData"][0].buffer.toString()).newListing
-      );
 
       const imageUploadRes = await uploadImagesToAWS(req.files["image"]);
 
@@ -63,7 +71,7 @@ router.post(
         }
       }
 
-      const newListing = await new Listing({
+      const newListingData = {
         title,
         location,
         pictures: imageUploadRes,
@@ -76,7 +84,17 @@ router.post(
         amenities,
         active: false,
         userId: req.user._id,
-      }).save();
+      };
+
+      if (
+        coordinates &&
+        coordinates !== null &&
+        coordinates.lng !== null &&
+        coordinates.lat !== null
+      )
+        newListingData.coords = coordinates;
+      else delete newListingData.coords;
+      const newListing = await new Listing(newListingData).save();
 
       // index the listing to elastic search
       // await insertIndex(listingIndex, listingType, convertListing(newListing));
@@ -160,43 +178,104 @@ router.put(
 );
 
 /* Update a listing */
-router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
-  try {
-    console.log(req.user);
-    const listing = await Listing.findOne({
-      _id: req.params.listingId,
-      userId: req.user._id,
-    });
+router.put(
+  "/editListing/:listingId",
+  multerUploads,
+  requireUserAuth,
+  async (req, res) => {
+    try {
+      const listing = await Listing.findOne({
+        _id: req.params.listingId,
+        userId: req.user._id,
+      });
 
-    if (!listing) {
-      res.status(404).json({
-        errors: ["Listing was not found. Please try again!"],
-      });
-    } else {
-      const updatedKeys = Object.keys(req.body);
-      updatedKeys.forEach(async (key) => {
-        if (
-          key &&
-          key !== null &&
-          listing[key] !== req.body[key] &&
-          key !== "listingId"
-        ) {
-          console.log("changing " + key);
-          listing[key] = req.body[key];
-        }
-      });
-      await listing.save();
-      res.status(200).json({
-        listing,
+      if (!listing) {
+        res.status(404).json({
+          errors: ["Listing was not found. Please try again!"],
+        });
+      } else {
+        const dataToUpdate = JSON.parse(
+          req.files["listingData"][0].buffer.toString()
+        ).editedListing;
+        const imageUploadRes = await uploadImagesToAWS(req.files["image"]);
+
+        const updatedKeys = Object.keys(dataToUpdate);
+        updatedKeys.forEach(async (key) => {
+          if (
+            key &&
+            key !== null &&
+            listing[key] !== dataToUpdate[key] &&
+            key !== "listingId"
+          ) {
+            console.log("changing " + key);
+            listing[key] = dataToUpdate[key];
+          }
+        });
+
+        if (imageUploadRes && imageUploadRes.length > 0)
+          listing.pictures = [...listing.pictures, ...imageUploadRes];
+
+        await listing.save();
+        res.status(200).json({
+          listing,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        errors: ["Error occurred while creating listing. Please try again!"],
       });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while creating listing. Please try again!"],
-    });
   }
-});
+);
+
+/* Delete image(s) from a listing */
+router.put(
+  "/editListingImages/:listingId",
+  requireUserAuth,
+  async (req, res) => {
+    try {
+      const listing = await Listing.findOne({
+        _id: req.params.listingId,
+        userId: req.user._id,
+      });
+
+      if (!listing) {
+        res.status(404).json({
+          errors: ["Listing was not found. Please try again!"],
+        });
+      } else {
+        const { imageURLs } = req.body;
+        const { pictures } = listing;
+
+        let newPhotoArr = [];
+
+        for (let i = 0; i < pictures.length; i++) {
+          const currentPhotoURL = pictures[i];
+          if (imageURLs.includes(currentPhotoURL)) continue;
+          else newPhotoArr.push(currentPhotoURL);
+        }
+
+        console.log(imageURLs);
+
+        await deleteImagesFromAWS(imageURLs);
+        listing.pictures = newPhotoArr;
+
+        await listing.save();
+        res.status(200).json({
+          success: true,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        errors: [
+          "Error occurred while removing image from listing. Please try again!",
+        ],
+      });
+    }
+  }
+);
 
 /* Get all listings */
 router.get("/", async (req, res) => {
@@ -292,6 +371,7 @@ router.get("/byRadius", async (req, res) => {
 
         const listingsInRadius = listingDocs.filter((listing) => {
           if (
+            !listing.coords ||
             !listing.coords.listingLat ||
             !listing.coords.listingLng ||
             !listing.active

@@ -3,8 +3,8 @@ const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
-const https = require("https");
-const { findExpiringListings } = require("./helpers/expiredListings.helper");
+const cron = require("node-cron");
+const { allCronJobs } = require("./helpers/cronJobs.helper");
 
 const { DATABASE_URI, environment } = require("./config");
 const loginRouter = require("./routes/login");
@@ -69,7 +69,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 app.get("/", async (req, res) => {
-  res.json("Server is running!");
+  res.status(200).json("Server is running!");
 });
 
 // error handler\
@@ -83,24 +83,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-const pingHealthCheck = async () => {
-  await https
-    .get("https://hc-ping.com/aa5812c2-7b3f-4572-b7cb-5c2ee53bc3fa")
-    .on("error", (err) => {
-      console.log("Ping failed: " + err);
-    });
-};
-
-const cron = require("node-cron");
-const { AppStream } = require("aws-sdk");
-cron.schedule("0 0 * * *", require("./config/taskScheduler"), {
-  timezone: "America/Los_Angeles",
-});
-cron.schedule("0 8 * * * *", pingHealthCheck, {
-  timezone: "America/Los_Angeles",
-});
-cron.schedule("0 8 * * *", findExpiringListings, {
-  scheduled: true,
+cron.schedule("0 8 * * *", allCronJobs, {
   timezone: "America/Los_Angeles",
 });
 
