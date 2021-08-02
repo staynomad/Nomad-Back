@@ -1,12 +1,12 @@
-const { baseURL } = require("../config");
 const express = require("express");
 const router = express.Router();
 const { requireUserAuth } = require("../utils");
-const { sendVerificationEmail } = require("../helpers/account.helper");
+const { sendVerificationEmail } = require("../helpers/emails.helper");
 
 router.post("/sendVerificationEmail", requireUserAuth, async (req, res) => {
   try {
-    sendVerificationEmail(req.body.email, req.user._id);
+    console.log(req)
+    sendVerificationEmail('S', "stanxy357@gmail.com", 12345);
     res.status(200).json({
       message: `Verified ${req.user._id}`,
     });
