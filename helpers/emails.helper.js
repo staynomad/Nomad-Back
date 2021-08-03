@@ -24,7 +24,7 @@ const sendExpirationReminder = async (name, email, listingName) => {
   sendEmail(userMailOptions);
 };
 
-const sendVerificationEmail = async (name = null, email, userId) => {
+const sendVerificationEmail = async (email, userId, name = null) => {
   if (name == null) {
     setGreeting = "Welcome!";
   } else {

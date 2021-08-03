@@ -56,7 +56,7 @@ const reservationInfo = {
 // send these two separately
 const sendEmails = async () => {
   sendExpirationReminder(name, email, listing);
-  sendVerificationEmail(name, email, userId);
+  sendVerificationEmail(email, userId, name);
   sendConfirmationEmail(name, email, listingID);
   sendTransferInvite(name, email, "John");
   sendTransferAccept(name, email, "John", email, listings);
