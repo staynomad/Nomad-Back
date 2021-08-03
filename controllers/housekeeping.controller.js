@@ -1,8 +1,6 @@
-const { Router } = require("express");
 const Housekeeping = require("../models/housekeeping.model");
 
-const router = Router();
-router.get("/:name", async (req, res) => {
+const getName = async (req, res) => {
   try {
     const { name } = req.params;
     const result = await Housekeeping.findOne({ name });
@@ -12,6 +10,6 @@ router.get("/:name", async (req, res) => {
       errors: "There was an error getting the payload for " + req.params.name,
     });
   }
-});
+};
 
-module.exports = router;
+module.exports = { getName };
