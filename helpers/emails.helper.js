@@ -24,9 +24,15 @@ const sendExpirationReminder = async (name, email, listingName) => {
   sendEmail(userMailOptions);
 };
 
-const sendVerificationEmail = async (name, email, userId) => {
+const sendVerificationEmail = async (name = null, email, userId) => {
+  if (name == null) {
+    setGreeting = "Welcome!";
+  } else {
+    setGreeting = `Welcome, ${name}!`;
+  }
+
   const HTMLOptions = {
-    greeting: `Welcome, ${name}!`,
+    greeting: setGreeting,
     alert: "We're excited to have you!",
     action: "Activate your account now",
     description: `Click the button below or go to the following link to verify your acccount: 
