@@ -1,0 +1,56 @@
+yarn add v1.22.5
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+info fsevents@2.3.2: The platform "win32" is incompatible with this module.
+info "fsevents@2.3.2" is an optional dependency and failed compatibility check. Excluding it from installation.
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+success Saved lockfile.
+success Saved 41 new dependencies.
+info Direct dependencies
+└─ lint-staged@11.1.1
+info All dependencies
+├─ @types/parse-json@4.0.0
+├─ aggregate-error@3.1.0
+├─ ansi-colors@4.1.1
+├─ clean-stack@2.2.0
+├─ colorette@1.2.2
+├─ commander@7.2.0
+├─ cosmiconfig@7.0.0
+├─ dedent@0.7.0
+├─ enquirer@2.3.6
+├─ error-ex@1.3.2
+├─ execa@5.1.1
+├─ get-own-enumerable-property-symbols@3.0.2
+├─ get-stream@6.0.1
+├─ human-signals@2.1.0
+├─ is-arrayish@0.2.1
+├─ is-obj@1.0.1
+├─ is-regexp@1.0.0
+├─ is-unicode-supported@0.1.0
+├─ json-parse-even-better-errors@2.3.1
+├─ lines-and-columns@1.1.6
+├─ lint-staged@11.1.1
+├─ listr2@3.11.0
+├─ log-symbols@4.1.0
+├─ log-update@4.0.0
+├─ merge-stream@2.0.0
+├─ micromatch@4.0.4
+├─ mimic-fn@2.1.0
+├─ npm-run-path@4.0.1
+├─ onetime@5.1.2
+├─ p-map@4.0.0
+├─ parse-json@5.2.0
+├─ path-key@3.1.1
+├─ path-type@4.0.0
+├─ please-upgrade-node@3.2.0
+├─ semver-compare@1.0.0
+├─ slice-ansi@3.0.0
+├─ string-argv@0.3.1
+├─ stringify-object@3.3.0
+├─ strip-final-newline@2.0.0
+├─ wrap-ansi@7.0.0
+└─ yaml@1.10.2
+$ husky install
+husky - Git hooks installed
+Done in 3.97s.
