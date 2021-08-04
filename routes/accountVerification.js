@@ -6,12 +6,12 @@ const { sendVerificationEmail } = require("../helpers/emails.helper");
 router.post("/sendVerificationEmail", requireUserAuth, async (req, res) => {
   try {
     console.log(req);
-    sendVerificationEmail("stanxy357@gmail.com", 12345, "S");
+    sendVerificationEmail(req.user.email, req.user._id, req.user.name);
     res.status(200).json({
       message: `Verified ${req.user._id}`,
     });
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     res.status(500).json({
       errors: ["Error verifying account. Please try again!"],
     });
