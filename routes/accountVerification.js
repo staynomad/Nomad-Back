@@ -1,3 +1,5 @@
+/* BASE PATH: /accountVerification */
+
 const express = require("express");
 const router = express.Router();
 const { requireUserAuth } = require("../utils");

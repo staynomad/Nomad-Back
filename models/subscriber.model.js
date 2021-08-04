@@ -7,5 +7,5 @@ const UserSchema = new Schema({
     required: true,
   },
 });
-const User = mongoose.model("coming-soon-emails", UserSchema);
+const User = mongoose.model("email-subscription", UserSchema);
 module.exports = User;
