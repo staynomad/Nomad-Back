@@ -15,7 +15,7 @@ const {
 
 // Replace this with your own email address and name
 
-const email = "nishantbalaji30@gmail.com";
+const email = "YOUR_EMAIL";
 const name = "YOUR_NAME";
 const listing = "house";
 const listingID = "12345";
@@ -56,7 +56,7 @@ const reservationInfo = {
 // send these two separately
 const sendEmails = async () => {
   sendExpirationReminder(name, email, listing);
-  sendVerificationEmail(name, email, userId);
+  sendVerificationEmail(email, userId, name);
   sendConfirmationEmail(name, email, listingID);
   sendTransferInvite(name, email, "John");
   sendTransferAccept(name, email, "John", email, listings);

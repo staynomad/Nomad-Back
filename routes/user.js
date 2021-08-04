@@ -112,7 +112,7 @@ router.post("/setUserInfo/:userId", async (req, res) => {
       { strict: false, new: true }
     );
     if (userFound.isHost === true && userFound.isVerified !== true) {
-      sendVerificationEmail(userFound.email, req.params.userId);
+      sendVerificationEmail(userFound.email, req.params.userId, userFound.name);
     }
     res.status(200).json({
       userFound,
