@@ -6,7 +6,7 @@ const { sendVerificationEmail } = require("../helpers/emails.helper");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const googleLogin = async (req, res) => {
+const login = async (req, res) => {
   // isHost is undefined when call comes from login, otherwise has boolean value
   const { token, isHost } = req.body;
   // if user clicks out of google account selection popup
@@ -60,4 +60,4 @@ const googleLogin = async (req, res) => {
     });
   }
 };
-module.exports = { googleLogin };
+module.exports = { login };
