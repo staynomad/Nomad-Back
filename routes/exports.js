@@ -1,10 +1,13 @@
+/* BASE PATH: /exports */
+
 const express = require("express");
 const router = express.Router();
-const { exportURL } = require("../config/index");
+const Exports = require("../controllers/exports.controller.js");
 
-router.get("/:filename", async (req, res) => {
-  const file = `./exports/${req.params.filename}`;
-  res.download(file);
-});
+/*
+  REQ PARAMS: filename
+  DESCRIPTION: retrieves (downloads) exported listing calendar file
+*/
+router.get("/:filename", Exports.exportListingCalendar);
 
 module.exports = router;
