@@ -1,19 +1,12 @@
+/* BASE PATH: /ping */
+
 const express = require("express");
 const router = express.Router();
-const mongoose = require("mongoose");
+const Ping = require("../controllers/ping.controller.js");
 
-router.get("/", async (req, res) => {
-  try {
-    res.json({
-      state: "up",
-      dbState: mongoose.STATES[mongoose.connection.readyState],
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      errors: "Unsuccessful ping.",
-    });
-  }
-});
+/*
+  DESCRIPTION: returns server and database statuses
+*/
+router.get("/", Ping.ping);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const { baseURL } = require("../config");
+const { baseURL } = require("../config/index");
 const { sendVerificationEmail } = require("../helpers/emails.helper");
 
 const sendEmail = async (req, res) => {
