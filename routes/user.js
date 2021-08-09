@@ -3,7 +3,10 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const { requireUserAuth } = require("../utils");
-const { multerUploads, uploadImagesToAWS } = require("./photos");
+const {
+  multerUploads,
+  uploadImagesToAWS,
+} = require("../helpers/photos.helper");
 const { sendVerificationEmail } = require("../helpers/emails.helper");
 
 // Returns user object given a userId. If verbose = 1 is set, full friend objects are returned

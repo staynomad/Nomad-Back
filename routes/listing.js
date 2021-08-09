@@ -12,7 +12,7 @@ const {
   deleteImagesFromAWS,
   multerUploads,
   uploadImagesToAWS,
-} = require("./photos");
+} = require("../helpers/photos.helper");
 // const { check, validationResult } = require("express-validator");
 const popularity = require("../models/popularity.model");
 // const { insertIndex, searchIndex } = require('../elastic-search/esClient');
