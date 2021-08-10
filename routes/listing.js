@@ -27,7 +27,10 @@ const {
   exportListings,
 } = require("../controllers/listing.controller");
 
-// Create a listing
+/*
+  REQ BODY: name, email, subject, text
+  DESCRIPTION: creates a listing
+*/
 router.post("/createListing", multerUploads, requireUserAuth, createListing);
 
 // Change listing's active field to true

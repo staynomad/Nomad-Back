@@ -19,7 +19,6 @@ const ics = require("ics");
 const Housekeeping = require("../models/housekeeping.model");
 const User = require("../models/user.model");
 
-/* Add a listing */
 const createListing = async (req, res) => {
   try {
     const {
