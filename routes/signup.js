@@ -3,10 +3,8 @@ const User = require("../models/user.model");
 const { getUserToken, passGenService } = require("../utils");
 const { check, body, validationResult } = require("express-validator");
 const router = express.Router();
-const {
-  incHousekeepingUsers,
-  sendVerificationEmail,
-} = require("../helpers/account.helper");
+const { incHousekeepingUsers } = require("../helpers/account.helper");
+const { sendVerificationEmail } = require("../helpers/emails.helper");
 
 /* POST users listing. */
 router.post(
