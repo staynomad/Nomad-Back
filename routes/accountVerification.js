@@ -1,21 +1,18 @@
+/* BASE PATH: /accountVerification */
+
 const express = require("express");
 const router = express.Router();
 const { requireUserAuth } = require("../utils");
-const { sendVerificationEmail } = require("../helpers/emails.helper");
+const AccountVerification = require("../controllers/accountVerification.controller.js");
 
-router.post("/sendVerificationEmail", requireUserAuth, async (req, res) => {
-  try {
-    console.log(req);
-    sendVerificationEmail(req.user.email, req.user._id, req.user.name);
-    res.status(200).json({
-      message: `Verified ${req.user._id}`,
-    });
-  } catch (error) {
-    //console.log(error);
-    res.status(500).json({
-      errors: ["Error verifying account. Please try again!"],
-    });
-  }
-});
+/*
+  REQ USER: email, _id, name
+  DESCRIPTION: sends verification email to signed in user (indicated by bearer token)
+*/
+router.post(
+  "/sendVerificationEmail",
+  requireUserAuth,
+  AccountVerification.sendEmail
+);
 
 module.exports = router;
