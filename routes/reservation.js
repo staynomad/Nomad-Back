@@ -25,7 +25,11 @@ router.get("/", getAllReservations);
 router.get("/getByUser", requireUserAuth, allReservationsByUserId);
 
 // Get reservations corresponding to listingId
-router.get("/getByListing/:listing", allReservationsByListingID);
+router.get(
+  "/getByListing/:listing",
+  requireUserAuth,
+  allReservationsByListingID
+);
 
 // Replace this with a soft delete so that users can revert if they accidentally delete
 /* router.delete(
