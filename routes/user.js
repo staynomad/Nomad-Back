@@ -22,7 +22,7 @@ router.get("/getUserInfo/:userId", getUserByID);
 router.get("/getByEmail/:email", getUserByEmail);
 
 // Updates isVerified to true and returns user information
-router.post("/verify/:userId", verifyUser);
+router.post("/verify/:userId", requireUserAuth, verifyUser);
 
 router.post("/setUserInfo/:userId", setUserInfo);
 
