@@ -9,7 +9,7 @@ const {
   allReservationsByListingID,
   checkOutReservation,
   checkInReservation,
-  getListingById,
+  getReservationById,
 } = require("../controllers/reservation.controller");
 
 // Create a reservation
@@ -62,7 +62,7 @@ router.post("/deactivate/:reservationId", requireUserAuth, checkOutReservation);
 // This will be called when the user checks in
 router.post("/activate/:reservationId", requireUserAuth, checkInReservation);
 
-/* Get listing by listingID (MongoDB Object ID) */
-router.get("/byId/:id", getListingById);
+/* Get reservation by reservationID (MongoDB Object ID) */
+router.get("/byId/:id", getReservationById);
 
 module.exports = router;
