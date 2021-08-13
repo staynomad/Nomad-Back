@@ -871,7 +871,8 @@ const getAllPopularListings = async (req, res) => {
 };
 
 const exportListings = async (req, res) => {
-  const { userId, listingId, listingCalendar } = req.body;
+  const { listingId, listingCalendar } = req.body;
+  const userId = req.user._id;
   var curr = new Date();
   var events = [
     {
