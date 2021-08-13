@@ -9,7 +9,7 @@ const sendExpirationReminder = async (name, email, listingName) => {
     description: `Please check your account, as your listing for
      <b style="color:white">${listingName}</b> expires next week.`,
     buttonText: "Take me There!",
-    buttonURL: `${baseURL}/myAccount`,
+    buttonLink: `${baseURL}/myAccount`,
   };
   const html = getHTML(HTMLOptions);
   const attachments = getAttachments();
@@ -41,7 +41,7 @@ const sendVerificationEmail = async (email, userId, name = null) => {
       ${baseURL}/accountVerification/${userId}
     </a>`,
     buttonText: "Activate Account",
-    buttonURL: `${baseURL}/accountVerification/${userId}`,
+    buttonLink: `${baseURL}/accountVerification/${userId}`,
   };
   const html = getHTML(HTMLOptions);
   const attachments = getAttachments();
@@ -67,7 +67,7 @@ const sendConfirmationEmail = (name, email, listingID) => {
           ${baseURL}/listing/${listingID}
         </a>`,
     buttonText: "View Listing!",
-    buttonURL: `${baseURL}/listing/${listingID}`,
+    buttonLink: `${baseURL}/listing/${listingID}`,
   };
 
   const html = getHTML(HTMLOptions);
@@ -104,7 +104,7 @@ const sendTransferInvite = (receiveName, email, sentName) => {
             <br />
         `,
     buttonText: "Take me There!",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   const html = getHTML(HTMLOptions);
@@ -136,7 +136,7 @@ const sendTransferAccept = (
         <br />
         ${listings.join("<br />")}`,
     buttonText: "See your Listings",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   let html = getHTML(HTMLOptions);
@@ -160,7 +160,7 @@ const sendTransferAccept = (
         <br />
         ${listings.join("<br />")}`,
     buttonText: "See your Listings",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   html = getHTML(HTMLOptions);
@@ -191,7 +191,7 @@ const sendTransferRejection = (
         <br />
         ${listings.join("<br />")}`,
     buttonText: "See your Listings",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   let html = getHTML(HTMLOptions);
@@ -215,7 +215,7 @@ const sendTransferRejection = (
         <br />
         ${listings.join("<br />")}`,
     buttonText: "See your Listings",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   html = getHTML(HTMLOptions);
@@ -265,7 +265,7 @@ const sendReservationConfirmationGuest = (
     </a>. 
     Hope you enjoy your stay!`,
     buttonText: "See your Reservations",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   const html = getHTML(HTMLOptions);
@@ -317,7 +317,7 @@ const sendReservationConfirmationHost = (
     contact@visitnomad.com
     </a>. Thank you for choosing NomΛd!`,
     buttonText: "See your Listings",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   const html = getHTML(HTMLOptions);
@@ -362,7 +362,7 @@ const sendCheckinGuest = (
     <br />
     Hope you enjoy your stay!`,
     buttonText: "View Your Account",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   const html = getHTML(HTMLOptions);
@@ -405,7 +405,7 @@ const sendCheckinHost = (
     <br />
     Thank you for choosing NomΛd!`,
     buttonText: "View Your Listings",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   const html = getHTML(HTMLOptions);
@@ -449,7 +449,7 @@ const sendCheckoutGuest = (
     <br />
     Hope you enjoyed your stay!`,
     buttonText: "View Your Account",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   const html = getHTML(HTMLOptions);
@@ -491,7 +491,7 @@ const sendCheckoutHost = (
     <br />
     Thank you for choosing NomΛd!`,
     buttonText: "View Your Listings",
-    buttonURL: `${baseURL}/MyAccount`,
+    buttonLink: `${baseURL}/MyAccount`,
   };
 
   const html = getHTML(HTMLOptions);
