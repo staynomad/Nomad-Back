@@ -9,6 +9,6 @@ const { requireUserAuth } = require("../utils");
   REQ PARAMS: filename
   DESCRIPTION: retrieves (downloads) exported listing calendar file
 */
-router.get("/:filename", requireUserAuth, Exports.retrieveExport);
+router.get("/:filename", Exports.retrieveExport);
 
 module.exports = router;
