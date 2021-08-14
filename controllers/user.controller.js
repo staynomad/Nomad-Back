@@ -215,7 +215,10 @@ const cancelFriendRequest = async (req, res) => {
       { _id: userId },
       { $pull: { outgoingFriendRequests: friendId } }
     );
-    user.friends.push = friendId;
+
+    // Push no longer used as requests must be accepted before friends are added
+    // user.friends.push = friendId;
+
     // Add userId to friend's friends array
     const friend = await User.findOneAndUpdate(
       { _id: friendId },
