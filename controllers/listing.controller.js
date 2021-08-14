@@ -286,33 +286,47 @@ const getActiveListings = async (req, res) => {
 
 const getFilteredListings = async (req, res) => {
   try {
-    var listings;
-    (minRating = 0), (startingPrice = 10000);
-    minGuests = 0;
-    // if (minRatingClicked) {
-    //   minRating = req.body.minRating
-    // }
-    if (req.body.startingPriceClicked) {
-      startingPrice = req.body.startingPrice;
+    /* Filter variables passed from front */
+    const filters = req.body;
+    let queryObj = {};
+
+    /* Create the query object based on the filterParams passed in */
+    for (const filterParam in filters) {
+      if (filters[filterParam].length === 0) continue;
+      else {
+        /* Check if country or state matches value passed (same dropdown value as form) */
+        if (filterParam === "country" || filterParam === "state") {
+          queryObj[`location.${filterParam}`] = filters[filterParam];
+        }
+        /* Price less than or equal to maxPrice */
+        if (filterParam === "maxPrice")
+          queryObj.price = { $lte: parseFloat(filters[filterParam], 10) };
+        /* Max number of guests greater than or equal to minGuests*/
+        if (filterParam === "minGuests")
+          queryObj[`details.maxpeople`] = {
+            $gte: parseFloat(filters[filterParam], 10),
+          };
+        /* Checks the description, location, and title to see if any of them contain the search term */
+        if (filterParam === "search")
+          queryObj.$or = [
+            { description: { $regex: filters[filterParam], $options: "i" } },
+            { location: { $regex: filters[filterParam], $options: "i" } },
+            { title: { $regex: filters[filterParam], $options: "i" } },
+          ];
+      }
     }
-    if (req.body.minGuestsClicked) {
-      minGuests = req.body.minGuests;
-    }
-    listings = await Listing.find({
-      // 'rating.user': { $gte: minRating },
-      price: { $lte: startingPrice },
-      "details.maxpeople": { $gte: minGuests },
-      active: true,
+
+    await Listing.find(queryObj, (err, listingDocs) => {
+      if (err || !listingDocs || listingDocs.length === 0) {
+        res.status(404).json({
+          errors: [
+            "No listings found with the given filter(s).  Please try again!",
+          ],
+        });
+      } else {
+        res.status(200).json(listingDocs);
+      }
     });
-    if (!listings) {
-      res.status(404).json({
-        errors: ["There are currently no listings! Please try again later."],
-      });
-    } else {
-      res.status(200).json({
-        listings,
-      });
-    }
   } catch (error) {
     console.error(error);
     res.status(500).json({

@@ -25,7 +25,7 @@ const exportsRouter = require("./routes/exports.js");
 const adminVerifyRouter = require("./routes/adminVerification");
 const containerRouter = require("./routes/container");
 const pingRouter = require("./routes/ping");
-const housekeepingRouter = require("./routes/housekeeping");
+// const housekeepingRouter = require("./routes/housekeeping");
 
 const app = express();
 app.use(bodyParser.json());
@@ -50,7 +50,7 @@ app.use("/exports", exportsRouter);
 app.use("/adminVerify", adminVerifyRouter);
 app.use("/container", containerRouter);
 app.use("/ping", pingRouter);
-app.use("/housekeeping", housekeepingRouter);
+// app.use("/housekeeping", housekeepingRouter);
 
 mongoose.connect(DATABASE_URI, {
   useCreateIndex: true,

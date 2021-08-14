@@ -36,6 +36,7 @@ const login = async (req, res, next) => {
       userId: user.id,
       isHost: user.isHost,
       user: user,
+      isVerified: user.isVerified,
     });
   } catch (error) {
     next(error);
