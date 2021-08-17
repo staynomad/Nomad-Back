@@ -53,6 +53,7 @@ const login = async (req, res) => {
       token: userToken,
       userId: user.id,
       isHost: user.isHost,
+      isVerified: user.isVerified,
     });
   } catch (err) {
     return res.status(500).json({

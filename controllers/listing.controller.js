@@ -7,7 +7,7 @@ const {
   sendTransferRejection,
 } = require("../helpers/emails.helper");
 const Listing = require("../models/listing.model");
-const { getUserInfo } = require("../utils");
+const { getUserInfo, stateOptions } = require("../utils");
 const {
   deleteImagesFromAWS,
   uploadImagesToAWS,
@@ -307,12 +307,36 @@ const getFilteredListings = async (req, res) => {
             $gte: parseFloat(filters[filterParam], 10),
           };
         /* Checks the description, location, and title to see if any of them contain the search term */
-        if (filterParam === "search")
+        if (filterParam === "search") {
+          const stateToCheck = stateOptions.find(
+            (ele) =>
+              ele.label.toLowerCase() == filters[filterParam].toLowerCase()
+          );
+
+          console.log(stateToCheck);
           queryObj.$or = [
             { description: { $regex: filters[filterParam], $options: "i" } },
-            { location: { $regex: filters[filterParam], $options: "i" } },
+            {
+              "location.city": { $regex: filters[filterParam], $options: "i" },
+            },
+            {
+              "location.state": { $regex: filters[filterParam], $options: "i" },
+            },
+            {
+              "location.zipcode": {
+                $regex: filters[filterParam],
+                $options: "i",
+              },
+            },
             { title: { $regex: filters[filterParam], $options: "i" } },
           ];
+
+          if (stateToCheck) {
+            queryObj.$or.push({
+              "location.state": { $regex: stateToCheck.value, $options: "i" },
+            });
+          }
+        }
       }
     }
 
