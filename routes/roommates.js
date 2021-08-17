@@ -1,4 +1,4 @@
-/* Placeholder request for roommates, currently just obtaining names of users in database */
+// Placeholder request for roommates, currently just obtaining names of users in database
 const express = require("express");
 const router = express.Router();
 

@@ -1,9 +1,19 @@
+/* BASE PATH: /signup */
+
 const express = require("express");
 const router = express.Router();
 const { check, body } = require("express-validator");
 const Signup = require("../controllers/signup.controller");
 
-/* POST users listing. */
+/*
+INPUT:
+  name (body) - string name provied by user during signup
+  email (body) - string email provided by user during signup
+  password (body) - string pre-encrypted value of user's password
+  isHost (body) - boolean value indicating if user signs up as a host
+DESCRIPTION:
+  signs user up by adding user to database
+*/
 router.post(
   "/",
   [

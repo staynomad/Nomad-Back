@@ -1,3 +1,5 @@
+/* BASE PATH: /reservation */
+
 const express = require("express");
 const router = express.Router();
 const { requireUserAuth } = require("../utils");
@@ -12,19 +14,50 @@ const {
   getReservationById,
 } = require("../controllers/reservation.controller");
 
-// Create a reservation
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+  listingId (body) - ID of listing being reserved
+  days (body) - array of 2 UTC timestamps, first is start date second is end date
+  numDays (body) - int number of days listing is being reserved for
+DESCRIPTION:
+  creates unactivated reservation in database
+*/
 router.post("/createReservation", requireUserAuth, createReservation);
 
-// Activates a reservation -> call after payment
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+  listingId (body) - ID of listing being reserved
+  reservationId (body) - ID of reservation being activated
+DESCRIPTION:
+  cctivates a reservation, called after payment is completed
+*/
 router.put("/activateReservation", requireUserAuth, activateReservation);
 
-// Get ALL reservations. Not requiring user auth
+/*
+INPUT:
+  N/A
+DESCRIPTION:
+   gets all reservations
+*/
 router.get("/", getAllReservations);
 
-// Get all reservations by userId
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+DESCRIPTION:
+  gets all reservations from a specified userId
+*/
 router.get("/getByUser", requireUserAuth, allReservationsByUserId);
 
-// Get reservations corresponding to listingId
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+  listing (params) - ID of to get all reservations from
+DESCRIPTION:
+  gets all reservations from a specified listingId
+*/
 router.get(
   "/getByListing/:listing",
   requireUserAuth,
@@ -56,13 +89,30 @@ router.get(
     }
 ) */
 
-// Use this when the user checks out of their stay
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+  reservationId (params) - ID of reservation being checked out of
+DESCRIPTION:
+  used to check out user from their stay
+*/
 router.post("/deactivate/:reservationId", requireUserAuth, checkOutReservation);
 
-// This will be called when the user checks in
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+  reservationId (params) - ID of reservation being checked into
+DESCRIPTION:
+  used to check in user to their stay
+*/
 router.post("/activate/:reservationId", requireUserAuth, checkInReservation);
 
-/* Get reservation by reservationID (MongoDB Object ID) */
+/*
+INPUT:
+  id (params) - ID of reservation being requested
+DESCRIPTION:
+  returns reservation by ID (MongoDB Object ID)
+*/
 router.get("/byId/:id", getReservationById);
 
 module.exports = router;

@@ -1,3 +1,5 @@
+/* BASE PATH: /payouts */
+
 const express = require("express");
 const router = express.Router();
 const { requireUserAuth } = require("../utils");
@@ -6,10 +8,22 @@ const {
   stripeDashboard,
 } = require("../controllers/payout.controller");
 
-// Route to put user into Stripe connection flow
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+  email (body) - string email corresponding to user being added to Stripe flow
+DESCRIPTION:
+  puts user into Stripe connection flow
+*/
 router.post("/setup", requireUserAuth, stripeConnection);
 
-// Route to get link to the user's Stripe dashboard
+/*
+INPUT:
+  user (requireUserAuth) - object automatically sent by passing in bearer token
+  email (body) - string email corresponding to user in Stripe flow
+DESCRIPTION:
+  gets link to the user's Stripe dashboard
+*/
 router.post("/express", requireUserAuth, stripeDashboard);
 
 module.exports = router;
