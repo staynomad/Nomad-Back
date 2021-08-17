@@ -1,76 +1,51 @@
 const express = require("express");
 const router = express.Router();
-
-const User = require("../models/user.model");
 const { requireUserAuth } = require("../utils");
+const { multerUploads } = require("../helpers/photos.helper");
+const {
+  getUserByID,
+  getUserByEmail,
+  verifyUser,
+  setUserInfo,
+  setProfilePicture,
+  sendFriendRequest,
+  cancelFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  removeFriend,
+} = require("../controllers/user.controller");
 
-router.get ('/getUserInfo/:userId', async (req, res) => {
-  try {
-    const userFound = await User.findOne ({_id: req.params.userId});
-    if (!userFound) {
-      return res.status (400).json ({
-        error: 'User not found. Please try again.',
-      });
-    }
-    if (userFound['description']) {
-      console.log ('description identified: ', userFound.description);
-      res.status (200).json ({
-        name: userFound.name,
-        email: userFound.email,
-        password: userFound.password,
-        description: userFound.description,
-      });
-    } else {
-      res.status (200).json ({
-        name: userFound.name,
-        email: userFound.email,
-        password: userFound.password,
-      });
-    }
-  } catch (error) {
-    console.log (error);
-    res.status (500).json ({
-      error: 'Error getting user. Please try again.',
-    });
-  }
-});
+// Returns user object given a userId. If verbose = 1 is set, full friend objects are returned
+router.get("/getUserInfo/:userId", getUserByID);
+
+// Returns user object given an email. If verbose = 1 is set, full friend objects are returned
+router.get("/getByEmail/:email", getUserByEmail);
 
 // Updates isVerified to true and returns user information
-router.post (
-  '/verify/:userId',
-  async (req, res) => {
-    try {
-      const userFound = await User.findByIdAndUpdate(req.params.userId, { isVerified: true })
-      if (!userFound) {
-        return res.status (400).json ({
-          error: 'User not found. Please try again.',
-        });
-      }
-      res.status (200).json ({
-        name: userFound.name,
-        email: userFound.email,
-        password: userFound.password
-      });
-    }
-    catch (error) {
-      console.log (error);
-      res.status (500).json ({
-        error: 'Error getting user. Please try again.',
-      });
-    }
-  }
-)
+router.post("/verify/:userId", verifyUser);
 
-router.post ('/setUserInfo/:userId', async (req, res) => {
-  try {
-    await User.findOneAndUpdate (
-      {_id: req.params.userId},
-      {$set: req.body},
-      {strict: false}
-    );
-  } catch (e) {
-    console.log ('there was an error in your post request...');
-  }
-});
+router.post("/setUserInfo/:userId", setUserInfo);
 
-module.exports = router
+router.post(
+  "/profileImage/:userId",
+  multerUploads,
+  requireUserAuth,
+  setProfilePicture
+);
+
+// Sends friend request
+router.post("/sendFriendRequest", requireUserAuth, sendFriendRequest);
+
+// Cancels friend request
+router.post("/cancelFriendRequest", requireUserAuth, cancelFriendRequest);
+
+// Accepts friend request
+router.post("/acceptFriendRequest", requireUserAuth, acceptFriendRequest);
+
+// Rejects friend request
+router.post("/rejectFriendRequest", requireUserAuth, rejectFriendRequest);
+
+// Removes userId from friends array
+router.delete("/removeFriend", requireUserAuth, removeFriend);
+
+module.exports = router;

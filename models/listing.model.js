@@ -26,6 +26,10 @@ const ListingSchema = new Schema({
     type: Number,
     required: true,
   },
+  tax: {
+    type: Number,
+    default: null,
+  },
   available: {
     type: Array,
     required: false,
@@ -41,16 +45,45 @@ const ListingSchema = new Schema({
   },
   booked: {
     type: Array,
+    default: [],
   },
   rating: {
-    type: Object,
-    default: null,
+    type: Array,
+    default: [],
   },
   rules: {
     type: Array,
     default: null,
   },
+  calendarURL: {
+    type: String,
+    default: null,
+  },
+  amenities: {
+    type: Array,
+    default: [],
+  },
+  transferEmail: {
+    type: Mixed,
+    default: {},
+    required: false,
+  },
+  active: {
+    type: Boolean,
+    default: false,
+  },
+  coords: {
+    type: Mixed,
+    sparse: true,
+  },
+  reminder: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 });
+
+ListingSchema.set("timestamps", true);
 
 const Listing = mongoose.model("listing", ListingSchema);
 module.exports = Listing;

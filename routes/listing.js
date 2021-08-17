@@ -1,304 +1,99 @@
 const express = require("express");
 const router = express.Router();
+const { requireUserAuth } = require("../utils");
+const { multerUploads } = require("../helpers/photos.helper");
+const {
+  createListing,
+  activateListing,
+  deactivateListing,
+  editListing,
+  editListingImages,
+  getAllListings,
+  getActiveListings,
+  getFilteredListings,
+  getListingsByRadius,
+  getListingsByUser,
+  getListingsByID,
+  getListingsBySearch,
+  deleteListingByID,
+  syncListingsByID,
+  getTransferRequests,
+  sendTransferRequest,
+  acceptTransferRequest,
+  rejectTransferRequest,
+  incrementListingVisit,
+  getPopularListings,
+  getAllPopularListings,
+  exportListings,
+} = require("../controllers/listing.controller");
 
-const Listing = require("../models/listing.model");
-const { requireUserAuth, getUserInfo } = require("../utils");
-// const { check, validationResult } = require("express-validator");
+/*
+  REQ BODY: name, email, subject, text
+  DESCRIPTION: creates a listing
+*/
+router.post("/createListing", multerUploads, requireUserAuth, createListing);
 
-const nodemailer = require('nodemailer');
+// Change listing's active field to true
+router.put("/activateListing/:listingId", requireUserAuth, activateListing);
 
-/* Add a listing */
-router.post("/createListing", requireUserAuth, async (req, res) => {
-  try {
-    const {
-      title,
-      location,
-      pictures,
-      description,
-      details,
-      price,
-      available,
-    } = req.body;
-
-    const verifyData = {
-      title,
-      location,
-      pictures,
-      description,
-      details,
-      price,
-      available,
-    }
-
-    for (var key in verifyData) {
-      if (verifyData.hasOwnProperty(key)) {
-        if (verifyData[key] == null) {
-          return res.status(400).json({
-            error: `Entry for ${key} is invalid`
-          })
-        }
-      }
-    }
-
-    const newListing = await new Listing({
-      title,
-      location,
-      pictures,
-      description,
-      details,
-      price,
-      available,
-      userId: req.user._id,
-    }).save();
-
-    const userInfo = await getUserInfo(req.user._id)
-
-    // Send confirmation email to host
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'vhomesgroup@gmail.com',
-        pass: 'yowguokryuzjmbhj'
-      }
-    })
-    const userMailOptions = {
-      from: '"VHomes" <reservations@vhomesgroup.com>',
-      to: userInfo.email,
-      subject: `Thank you for listing on VHomes!`,
-      text:
-        `Your listing is live! Click the following link to view your listing page.
-
-         https://vhomesgroup.com/${newListing._id}`,
-      html:
-        `<p>
-          Your listing is live! Click the following link to view your listing page. <br>
-          <a href="https://vhomesgroup.com/${newListing._id}">http://localhost:3000/listing/${newListing._id}</a>
-         </p>`
-    }
-    transporter.sendMail(userMailOptions, (error, info) => {
-      if (error) {
-        console.log(error)
-      }
-      else {
-        console.log(`Create listing confirmation email sent to ${userInfo.email}`)
-      }
-    })
-
-    // Need to talk about return values, validation, etc.
-    res.status(201).json({
-      newListing,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while creating listing. Please try again!"],
-    });
-  }
-});
+// Change listing's active field to false
+router.put("/deactivateListing/:listingId", requireUserAuth, deactivateListing);
 
 /* Update a listing */
-router.put("/editListing/:listingId", requireUserAuth, async (req, res) => {
-  try {
-    console.log(req.user);
-    const listing = await Listing.findOne({
-      _id: req.params.listingId,
-      userId: req.user._id,
-    });
+router.put(
+  "/editListing/:listingId",
+  multerUploads,
+  requireUserAuth,
+  editListing
+);
 
-    if (!listing) {
-      res.status(404).json({
-        errors: ["Listing was not found. Please try again!"],
-      });
-    } else {
-      const updatedKeys = Object.keys(req.body);
-      updatedKeys.forEach(async (key) => {
-        if (
-          key &&
-          key !== null &&
-          listing[key] !== req.body[key] &&
-          key !== "listingId"
-        ) {
-          console.log("changing " + key);
-          listing[key] = req.body[key];
-        }
-      });
-      await listing.save();
-      res.status(200).json({
-        listing,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while creating listing. Please try again!"],
-    });
-  }
-});
+/* Delete image(s) from a listing */
+router.put("/editListingImages/:listingId", requireUserAuth, editListingImages);
 
 /* Get all listings */
-router.get("/", async (req, res) => {
-  try {
-    const listings = await Listing.find({});
-    if (!listings) {
-      res.status(404).json({
-        errors: ["There are currently no listings! Please try again later."],
-      });
-    } else {
-      res.status(200).json({
-        listings,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while getting listings. Please try again!"],
-    });
-  }
-});
+router.get("/", getAllListings);
+
+/* Get all active listings */
+router.get("/active", getActiveListings);
 
 /* Get all listings by filter */
-router.post("/filteredListings", async (req, res) => {
-  const { minRatingClicked, startingPriceClicked, minGuestsClicked } = req.body;
-  try {
-    var listings;
-    var filterClicked = minRatingClicked || startingPriceClicked; // or minGuestsClicked
-    if (filterClicked) {
-      listings = await Listing.find({
-        "rating.user": { $gte: req.body.minRating },
-        price: { $gte: req.body.startingPrice },
-      });
-    } else if (minGuestsClicked) {
-      // ideally want to get rid of this part
-      listings = await Listing.find({
-        "rating.user": { $gte: req.body.minRating },
-        price: { $gte: req.body.startingPrice },
-        "details.maxpeople": { $gte: req.body.minGuests }, // doesn't work since this field is a String
-      });
-    } else {
-      console.log("no listings have been specified");
-      listings = await Listing.find({});
-    }
-    if (!listings) {
-      res.status(404).json({
-        errors: ["There are currently no listings! Please try again later."],
-      });
-    } else {
-      res.status(200).json({
-        listings,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while getting listings. Please try again!"],
-    });
-  }
-});
+router.post("/filteredListings", getFilteredListings);
 
-/* Get all listings belonging to user */
-router.get("/byUserId", requireUserAuth, async (req, res) => {
-  try {
-    const userListings = await Listing.find({ userId: req.user._id });
-    if (!userListings) {
-      res.status(404).json({
-        errors: ["There are currently no listings! Please try again later."],
-      });
-    } else {
-      res.status(200).json({
-        userListings,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while getting listings. Please try again!"],
-    });
-  }
-});
+/* Get all listings in a radius around lat and lng */
+router.get("/byRadius", getListingsByRadius);
+
+/* Get all listings belonging to user in parameter */
+router.get("/byUserId/:userId", getListingsByUser);
 
 /* Get listing by listingID (MongoDB Object ID) */
-router.get("/byId/:id", async (req, res) => {
-  try {
-    const listing = await Listing.findById(req.params.id);
-    if (!listing) {
-      res.status(404).json({
-        errors: ["Listing does not exist."],
-      });
-    } else {
-      res.status(200).json({
-        listing,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: ["Error occurred while getting listings. Please try again!"],
-    });
-  }
-});
+router.get("/byId/:id", getListingsByID);
 
 /* Get listing by search term */
-router.post("/search", async (req, res) => {
-  const { itemToSearch } = req.body;
-  try {
-    let decodedItemToSearch = decodeURI(itemToSearch);
-    const listings = await Listing.find({});
-    const filteredListings = listings.filter((listing) => {
-      const { street, city, zipcode, state } = listing.location;
-      if (
-        street.toLowerCase().includes(decodedItemToSearch) ||
-        city.toLowerCase().includes(decodedItemToSearch) ||
-        zipcode.includes(decodedItemToSearch) ||
-        state.toLowerCase().includes(decodedItemToSearch)
-      )
-        return true;
-    });
-
-    if (filteredListings.length === 0) {
-      return res.status(404).json({
-        errors: ["There were no listings found with the given search term."],
-      });
-    } else {
-      res.status(200).json({
-        filteredListings,
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: [
-        "Error occurred while searching for listings. Please try again!",
-      ],
-    });
-  }
-});
+router.post("/search", getListingsBySearch);
 
 /* Delete listing by id */
-router.delete("/delete/:listingId", requireUserAuth, async (req, res) => {
-  try {
-    const listing = await Listing.findOne({
-      _id: req.params.listingId,
-      userId: req.user._id,
-    });
+router.delete("/delete/:listingId", requireUserAuth, deleteListingByID);
 
-    if (!listing) {
-      res.status(500).json({
-        errors: ["Listing was not found. Please try again!"],
-      });
-    } else {
-      listing.remove();
-      res.status(200).json({
-        message: ["Listing was removed."],
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      errors: [
-        "Error occurred while attempting to remove listing. Please try again!",
-      ],
-    });
-  }
-});
+router.put("/syncListing/:listingId", syncListingsByID);
+
+// Get all transfer requests
+router.get("/byTransferEmail", requireUserAuth, getTransferRequests);
+
+// Send request to transfer listing
+router.put("/sendListingTransfer", requireUserAuth, sendTransferRequest);
+
+// Accept request(s)
+router.put("/acceptListingTransfer", requireUserAuth, acceptTransferRequest);
+
+// Reject request(s)
+router.put("/rejectListingTransfer", requireUserAuth, rejectTransferRequest);
+
+router.put("/increment/:listingId", incrementListingVisit);
+
+router.get("/popularlistings/:numberOfListing", getPopularListings);
+
+router.get("/allPopularityListings", getAllPopularListings);
+
+router.post("/exportListing", exportListings);
 
 module.exports = router;
