@@ -874,11 +874,11 @@ const getPopularListings = async (req, res) => {
     if (listings.length < 5) {
       const listingSet = new Set();
       for (element of listings) {
-        listingSet.add(element.listingId);
+        listingSet.add(element.listingId.toString());
       }
       const newListing = await Listing.find({ active: true }).limit(5);
       for (element of newListing) {
-        if (!listingSet.has(element)) {
+        if (!listingSet.has(element._id.toString())) {
           listings.push({ listingId: element._id });
         }
         if (listings.length == 5) {
