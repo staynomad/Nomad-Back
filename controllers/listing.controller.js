@@ -308,12 +308,10 @@ const getFilteredListings = async (req, res) => {
           };
         /* Checks the description, location, and title to see if any of them contain the search term */
         if (filterParam === "search") {
-          const stateToCheck = stateOptions.find(
-            (ele) =>
-              ele.label.toLowerCase() == filters[filterParam].toLowerCase()
+          const stateToCheck = stateOptions.find((ele) =>
+            ele.label.toLowerCase().includes(filters[filterParam].toLowerCase())
           );
 
-          console.log(stateToCheck);
           queryObj.$or = [
             { description: { $regex: filters[filterParam], $options: "i" } },
             {
