@@ -94,6 +94,6 @@ router.get("/popularlistings/:numberOfListing", getPopularListings);
 
 router.get("/allPopularityListings", getAllPopularListings);
 
-router.post("/exportListing", exportListings);
+router.post("/exportListing", requireUserAuth, exportListings);
 
 module.exports = router;

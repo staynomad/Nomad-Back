@@ -9,7 +9,7 @@ const {
   allReservationsByListingID,
   checkOutReservation,
   checkInReservation,
-  getListingById,
+  getReservationById,
 } = require("../controllers/reservation.controller");
 
 // Create a reservation
@@ -25,7 +25,11 @@ router.get("/", getAllReservations);
 router.get("/getByUser", requireUserAuth, allReservationsByUserId);
 
 // Get reservations corresponding to listingId
-router.get("/getByListing/:listing", allReservationsByListingID);
+router.get(
+  "/getByListing/:listing",
+  requireUserAuth,
+  allReservationsByListingID
+);
 
 // Replace this with a soft delete so that users can revert if they accidentally delete
 /* router.delete(
@@ -58,7 +62,7 @@ router.post("/deactivate/:reservationId", requireUserAuth, checkOutReservation);
 // This will be called when the user checks in
 router.post("/activate/:reservationId", requireUserAuth, checkInReservation);
 
-/* Get listing by listingID (MongoDB Object ID) */
-router.get("/byId/:id", getListingById);
+/* Get reservation by reservationID (MongoDB Object ID) */
+router.get("/byId/:id", getReservationById);
 
 module.exports = router;

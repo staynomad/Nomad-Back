@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const { baseURL } = require("../config/index");
+const { baseURL, exportURL } = require("../config/index");
 const {
   sendConfirmationEmail,
   sendTransferAccept,
@@ -907,7 +907,10 @@ const getAllPopularListings = async (req, res) => {
 };
 
 const exportListings = async (req, res) => {
-  const { userId, listingId, listingCalendar } = req.body;
+  const { listingId, listingCalendar } = req.body;
+  const userId = req.user._id;
+  const availableStart = new Date(listingCalendar.available[0] * 1000);
+  const availableEnd = new Date(listingCalendar.available[1] * 1000);
   var curr = new Date();
   var events = [
     {
@@ -916,9 +919,9 @@ const exportListings = async (req, res) => {
       url: `${baseURL}/listing/${listingId}`,
       start: [curr.getFullYear(), 1, 1],
       end: [
-        listingCalendar.available[0].substring(0, 4),
-        listingCalendar.available[0].substring(5, 7),
-        listingCalendar.available[0].substring(8),
+        availableStart.getFullYear(),
+        availableStart.getMonth(),
+        availableStart.getDate(),
       ],
     },
     {
@@ -926,28 +929,26 @@ const exportListings = async (req, res) => {
       description: "UNAVAILABLE",
       url: `${baseURL}/listing/${listingId}`,
       start: [
-        listingCalendar.available[1].substring(0, 4),
-        listingCalendar.available[1].substring(5, 7),
-        listingCalendar.available[1].substring(8),
+        availableEnd.getFullYear(),
+        availableEnd.getMonth(),
+        availableEnd.getDate(),
       ],
       end: [curr.getFullYear() + 1, 12, 31],
     },
   ];
   for (let i = 0; i < listingCalendar.booked.length; i++) {
+    let bookedStart = new Date(listingCalendar.booked[i].start * 1000);
+    let bookedEnd = new Date(listingCalendar.available[i].end * 1000);
     events.push({
       title: "NomΛd Listing",
       description: "UNAVAILABLE",
       url: `${baseURL}/listing/${listingId}`,
       start: [
-        listingCalendar.booked[i].start.substring(0, 4),
-        listingCalendar.booked[i].start.substring(5, 7),
-        listingCalendar.booked[i].start.substring(8),
+        bookedStart.getFullYear(),
+        bookedStart.getMonth(),
+        bookedStart.getDate(),
       ],
-      end: [
-        listingCalendar.booked[i].end.substring(0, 4),
-        listingCalendar.booked[i].end.substring(5, 7),
-        listingCalendar.booked[i].end.substring(8),
-      ],
+      end: [bookedEnd.getFullYear(), bookedEnd.getMonth(), bookedEnd.getDate()],
     });
   }
   ics.createEvents(events, (error, value) => {

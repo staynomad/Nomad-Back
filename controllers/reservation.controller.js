@@ -294,8 +294,8 @@ const checkInReservation = async (req, res) => {
   }
 };
 
-/* Get listing by listingID (MongoDB Object ID) */
-const getListingById = async (req, res) => {
+/* Get reservation by reservationID (MongoDB Object ID) */
+const getReservationById = async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
     if (!reservation) {
@@ -323,5 +323,5 @@ module.exports = {
   allReservationsByListingID,
   checkOutReservation,
   checkInReservation,
-  getListingById,
+  getReservationById,
 };
