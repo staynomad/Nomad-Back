@@ -94,9 +94,13 @@ const verifyUser = async (req, res) => {
 const setUserInfo = async (req, res) => {
   try {
     let userFound = await User.findOne({ _id: req.params.userId });
+    let userSameEmail = await User.findOne({ email: req.body.email });
 
-    if (req.body.email && User.findOne(req.body.email)) {
-      if (userFound.email === req.body.email) {
+    if (req.body.email && userSameEmail.email) {
+      if (
+        userFound.email === req.body.email &&
+        userFound.userId !== userSameEmail.userId
+      ) {
         return res.status(400).json({
           error: "Email already taken. Please try again.", // assure that it is not the same email
         });
