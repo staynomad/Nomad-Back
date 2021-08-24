@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cron = require("node-cron");
+const path = require("path");
 const { allCronJobs } = require("./helpers/cronJobs.helper");
 
 const { DATABASE_URI, environment } = require("./config");
