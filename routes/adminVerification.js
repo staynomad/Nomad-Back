@@ -12,4 +12,8 @@ DESCRIPTION:
 */
 router.post("/", AdminVerification.verify);
 
+router.post("/verifyToken", AdminVerification.verifyToken);
+
+router.post("/logout", AdminVerification.deleteRefreshToken);
+
 module.exports = router;
