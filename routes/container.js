@@ -1,6 +1,8 @@
 /* BASE PATH: /container */
 
 const express = require("express");
+const { authAdmin } = require("../controllers/adminVerification.controller");
+// const {  } = require("../controllers/adminVerification.controller");
 const router = express.Router();
 const {
   newContainer,
@@ -18,7 +20,7 @@ INPUT:
 DESCRIPTION:
   creates new listing container
 */
-router.post("/", newContainer);
+router.post("/", authAdmin, newContainer);
 
 /*
 INPUT:
@@ -26,7 +28,7 @@ INPUT:
 DESCRIPTION:
   deletes existing listing container by title
 */
-router.delete("/byTitle", deleteContainer);
+router.delete("/byTitle", authAdmin, deleteContainer);
 
 /*
 INPUT:
@@ -35,7 +37,7 @@ INPUT:
 DESCRIPTION:
   adds listing to listing container specified by title
 */
-router.post("/addListing", addListing);
+router.post("/addListing", authAdmin, addListing);
 
 /*
 INPUT:
@@ -52,7 +54,7 @@ INPUT:
 DESCRIPTION:
   deletes listing from listing container
 */
-router.delete("/deleteListing", deleteListing);
+router.delete("/deleteListing", authAdmin, deleteListing);
 
 /*
 INPUT:
