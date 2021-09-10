@@ -84,11 +84,6 @@ const verifyUser = async (req, res) => {
       error: "Error getting user. Please try again.",
     });
   }
-  res.status(200).json({
-    name: userFound.name,
-    email: userFound.email,
-    password: userFound.password,
-  });
 };
 
 const setUserInfo = async (req, res) => {
