@@ -7,6 +7,9 @@ const cron = require("node-cron");
 const path = require("path");
 const { allCronJobs } = require("./helpers/cronJobs.helper");
 
+//For Testing purposes of housekeeping remove after done testing.
+const resetDayCount = require("./config/taskScheduler");
+
 const { DATABASE_URI, environment } = require("./config");
 const loginRouter = require("./routes/login");
 const signUpRouter = require("./routes/signup");
@@ -29,6 +32,9 @@ const pingRouter = require("./routes/ping");
 const housekeepingRouter = require("./routes/housekeeping");
 
 const app = express();
+
+resetDayCount();
+
 app.use(bodyParser.json());
 app.use(cors({ origin: true }));
 app.use(morgan("dev"));

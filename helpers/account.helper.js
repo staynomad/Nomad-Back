@@ -5,8 +5,8 @@ const incHousekeepingUsers = async () => {
   const curr = new Date();
   const field = curr.getMonth() + 1 + "/" + curr.getDate();
   await Housekeeping.findOneAndUpdate(
-    { name: "users" },
-    { $inc: { ["payload." + field]: 1 } }
+    { name: "users", "payload.date": field },
+    { $inc: { "payload.$.count": 1 } }
   );
 };
 
