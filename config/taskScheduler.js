@@ -2,7 +2,7 @@ const Popularity = require("../models/popularity.model");
 const Housekeeping = require("../models/housekeeping.model");
 
 const resetDayCount = async () => {
-  // await resetPopularityCount();
+  await resetPopularityCount();
   await resetHousekeepingCount();
 };
 

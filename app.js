@@ -33,8 +33,6 @@ const housekeepingRouter = require("./routes/housekeeping");
 
 const app = express();
 
-resetDayCount();
-
 app.use(bodyParser.json());
 app.use(cors({ origin: true }));
 app.use(morgan("dev"));
