@@ -31,7 +31,7 @@ const resetPopularityCount = async () => {
     });
   });
 
-  await Popularity.deleteMany({ visitCount: 0 }, (err) => {
+  await Popularity.deleteMany({ visitCount: { $lt: 1 } }, (err) => {
     if (err) {
       console.log("There was an error while deleting");
     } else {
