@@ -6,9 +6,9 @@ const HousekeepingSchema = new Schema({
     required: true,
   },
   payload: {
-    type: Object,
+    type: Array,
     required: true,
-    default: {},
+    default: [],
   },
 });
 

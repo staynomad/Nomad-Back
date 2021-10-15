@@ -117,8 +117,8 @@ const activateListing = async (req, res) => {
     const curr = new Date();
     const field = curr.getMonth() + 1 + "/" + curr.getDate();
     await Housekeeping.findOneAndUpdate(
-      { name: "activeListings" },
-      { $inc: { ["payload." + field]: 1 } }
+      { name: "activeListings", "payload.date": field },
+      { $inc: { "payload.$.count": 1 } }
     );
 
     return res.status(200).json({

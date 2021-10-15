@@ -31,7 +31,7 @@ const resetPopularityCount = async () => {
     });
   });
 
-  await Popularity.deleteMany({ visitCount: 0 }, (err) => {
+  await Popularity.deleteMany({ visitCount: { $lt: 1 } }, (err) => {
     if (err) {
       console.log("There was an error while deleting");
     } else {
@@ -48,21 +48,34 @@ const resetHousekeepingCount = async () => {
     const month = curr.getMonth() + 1; // to deal with javascript off by 1 for month
     const field = month + "/" + date;
 
-    const yesterday = new Date();
-    yesterday.setDate(curr.getDate() - 1);
-    const oldDate = yesterday.getDate();
-    const oldMonth = yesterday.getMonth() + 1;
-    const oldField = oldMonth + "/" + oldDate;
-
     const helperFunc = async (name) => {
       const oldResult = await Housekeeping.findOne({ name });
-      let oldPayload = oldResult.payload[oldField];
-      if (!oldPayload) {
-        oldPayload = 0;
+      let oldIndex = oldResult.payload.length - 1; //Gets the last array element from the payload
+      let oldCount;
+      let oldDay;
+
+      //Checks if there are zero objects in array.
+      if (oldIndex === -1) {
+        oldCount = 0;
+      } else {
+        //Gets the previous object's count in the array.
+        oldCount = oldResult.payload[oldIndex].count;
+        oldDay = oldResult.payload[oldIndex].date;
       }
+
+      /*Prevents the housekeeping from pushing a new object (mostly for testing purposes since the cron job will only run once each day.*/
+      if (field === oldDay) {
+        return;
+      }
+
+      //Pushes a new payload object to keep track of the date and count
       await Housekeeping.findOneAndUpdate(
         { name },
-        { $set: { ["payload." + field]: oldPayload } }
+        {
+          $push: {
+            payload: { date: field, count: oldCount },
+          },
+        }
       );
     };
 

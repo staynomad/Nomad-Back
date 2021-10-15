@@ -29,6 +29,7 @@ const pingRouter = require("./routes/ping");
 const housekeepingRouter = require("./routes/housekeeping");
 
 const app = express();
+
 app.use(bodyParser.json());
 app.use(cors({ origin: true }));
 app.use(morgan("dev"));
