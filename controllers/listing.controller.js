@@ -302,10 +302,15 @@ const getFilteredListings = async (req, res) => {
         if (filterParam === "maxPrice")
           queryObj.price = { $lte: parseFloat(filters[filterParam], 10) };
         /* Max number of guests greater than or equal to minGuests*/
-        if (filterParam === "minGuests")
-          queryObj[`details.maxpeople`] = {
-            $gte: parseFloat(filters[filterParam], 10),
+        if (filterParam === "minGuests") {
+          queryObj = {
+            "details.maxpeople": { $gte: parseFloat(filters[filterParam], 10) },
           };
+        }
+        //Budget price
+        if (filterParam === "startingPrice") {
+          queryObj.price = { $gte: parseFloat(filters[filterParam], 10) };
+        }
         /* Checks the description, location, and title to see if any of them contain the search term */
         if (filterParam === "search") {
           const stateToCheck = stateOptions.find((ele) =>
